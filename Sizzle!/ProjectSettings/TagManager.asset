@@ -8,6 +8,10 @@ TagManager:
   - Ingredient
   - Knife
   - PlayerHand
+  - Meat
+  - Cup
+  - Food
+  - Bowl
   layers:
   - Default
   - TransparentFX
@@ -21,7 +25,7 @@ TagManager:
   - 
   - whatIsGround
   - groundMask
-  - 
+  - isPickable
   - 
   - 
   - 
