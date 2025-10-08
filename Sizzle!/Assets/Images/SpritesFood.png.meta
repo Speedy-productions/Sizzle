@@ -584,8 +584,8 @@ TextureImporter:
       name: Carne2
       rect:
         serializedVersion: 2
-        x: 241
-        y: 102
+        x: 231
+        y: 99
         width: 179
         height: 61
       alignment: 0

@@ -49,6 +49,11 @@ public class PopupChar : MonoBehaviour
 
     void Start()
     {
+        if (OrderManager.Instance == null)
+        {
+            Debug.LogError("OrderManager no inicializado antes de PopupChar");
+            return;
+        }
         ShowPopup();
     }
     public void ShowPopup()
