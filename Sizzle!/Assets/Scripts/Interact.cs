@@ -114,9 +114,9 @@ public class Interaccion : MonoBehaviour
             if (dPantalla > radioPantalla) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
-            if (dist > Mathf.Max(6f, distanciaInteraccion + 0.6f)) continue;
+            if (dist > Mathf.Max(4f, distanciaInteraccion + 0.6f)) continue;
 
-            float score = dPantalla * 10f + dist;
+            float score = dPantalla * 5f + dist;
             if (score < mejorScore) { mejorScore = score; mejor = go; }
         }
 
