@@ -123,7 +123,7 @@ public class CookMeatInPan : MonoBehaviour
 
         if (aimingPan && hasMeatInHand && !isCooking && !currentMeat)
         {
-            var inter = GameObject.FindObjectOfType<Interaccion>();
+            var inter = GameObject.FindObjectOfType<Interact>();
             var carne = inter ? inter.GetComponentInChildren<MeatCookingState>() : null;
             if (!carne || carne.currentState == MeatCookingState.CookingState.Raw || carne.currentState == MeatCookingState.CookingState.Cooking)
                 show = true;

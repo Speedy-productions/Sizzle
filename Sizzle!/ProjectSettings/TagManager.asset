@@ -4,8 +4,14 @@
 TagManager:
   serializedVersion: 3
   tags:
+  - Blade
+  - Ingredient
+  - Knife
   - PlayerHand
   - Meat
+  - Cup
+  - Food
+  - Bowl
   layers:
   - Default
   - TransparentFX
@@ -13,13 +19,13 @@ TagManager:
   - 
   - Water
   - UI
-  - isPickable
+  - 
   - 
   - 
   - 
   - whatIsGround
   - groundMask
-  - 
+  - isPickable
   - 
   - 
   - 

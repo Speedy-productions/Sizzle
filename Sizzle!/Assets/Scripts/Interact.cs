@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class Interaccion : MonoBehaviour
+public class Interact : MonoBehaviour
 {
     [Header("Referencias")]
     public Transform manoJugador;     // hueso/objeto de la mano
@@ -20,7 +20,7 @@ public class Interaccion : MonoBehaviour
 
     [Header("Sartén (apuntar)")]
     public float distanciaPan = 6f;
-    public float radioPantallaPan = 0.12f;  
+    public float radioPantallaPan = 0.12f;
 
     [Header("Punto de agarre")]
     public Transform puntoDeAgarre;         // empty hijo de la mano
@@ -61,6 +61,15 @@ public class Interaccion : MonoBehaviour
         // T: empezar a cocinar en el sartén apuntado
         if (Input.GetKeyDown(KeyCode.T) && panApuntado && carneEnMano)
             panApuntado.TryStartCooking(carneEnMano);
+
+        // Detectar tabla de cortar
+        CuttingBoard tablaApuntada = DetectarTablaApuntada();
+        Ingredient ingredienteEnMano = GetIngredienteEnMano();
+
+        // T: colocar ingrediente en la tabla apuntada
+        if (Input.GetKeyDown(KeyCode.T) && tablaApuntada && ingredienteEnMano)
+            tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
+
 
         // Q: voltear solo el sartén apuntado
         if (Input.GetKeyDown(KeyCode.Q) && panApuntado)
@@ -114,9 +123,9 @@ public class Interaccion : MonoBehaviour
             if (dPantalla > radioPantalla) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
-            if (dist > Mathf.Max(4f, distanciaInteraccion + 0.6f)) continue;
+            if (dist > Mathf.Max(6f, distanciaInteraccion + 0.6f)) continue;
 
-            float score = dPantalla * 5f + dist;
+            float score = dPantalla * 10f + dist;
             if (score < mejorScore) { mejorScore = score; mejor = go; }
         }
 
@@ -200,7 +209,7 @@ public class Interaccion : MonoBehaviour
             if (vp.z <= 0f) continue;
 
             float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
-            if (dPantalla > radioPantallaPan) continue;           
+            if (dPantalla > radioPantallaPan) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
             if (dist > distanciaPan) continue;
@@ -236,6 +245,11 @@ public class Interaccion : MonoBehaviour
         LimpiarHighlight();
 
         var destino = SlotMano();
+        var tabla = objeto.GetComponentInParent<CuttingBoard>();
+        if (tabla != null)
+        {
+            tabla.RemoveIngredient();
+        }
         objeto.transform.SetParent(destino);
         objeto.transform.localPosition = Vector3.zero;
         objeto.transform.localRotation = Quaternion.identity;
@@ -290,6 +304,44 @@ public class Interaccion : MonoBehaviour
                     Physics.IgnoreCollision(playerCol, c, false);
         }
     }
+
+    CuttingBoard DetectarTablaApuntada()
+    {
+        var tablas = FindObjectsOfType<CuttingBoard>(false);
+        if (tablas.Length == 0) return null;
+
+        CuttingBoard mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
+
+        foreach (var tabla in tablas)
+        {
+            var r = tabla.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : tabla.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue; // mismo radio del sartén
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore) { mejorScore = score; mejor = tabla; }
+        }
+
+        return mejor;
+    }
+
+    Ingredient GetIngredienteEnMano()
+    {
+        var slot = SlotMano();
+        if (!slot || slot.childCount == 0) return null;
+        return slot.GetChild(0).GetComponent<Ingredient>();
+    }
+
 
     void OnDisable() => LimpiarHighlight();
 }
