@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class Ingredient : MonoBehaviour
 {
+
     public GameObject ingSlicedPrefab;
     [Tooltip("Image (tipo Filled) que sirve como barra situada en el prefab (World Space Canvas). Asignar en el prefab).")]
     public Image progressFill;

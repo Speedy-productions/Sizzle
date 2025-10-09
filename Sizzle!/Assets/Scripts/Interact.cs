@@ -38,9 +38,13 @@ public class Interact : MonoBehaviour
 
     GameObject objetoSeleccionado;
     CookMeatInPan ultimoPanApuntado;
+    CookFriesInFryer ultimaFreidoraApuntada;
 
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
+
+
+
 
     void Update()
     {
@@ -81,6 +85,21 @@ public class Interact : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.G) && ObjetosEnMano() > 0)
             SoltarObjeto();
+
+        CookFriesInFryer freidora = DetectarFreidoraApuntada();
+        FriesCookingState friesEnMano = GetFriesEnMano();
+
+        if (freidora != ultimaFreidoraApuntada)
+        {
+            if (ultimaFreidoraApuntada) ultimaFreidoraApuntada.ShowAimHint(false, false);
+            ultimaFreidoraApuntada = freidora;
+        }
+        if (freidora) freidora.ShowAimHint(true, friesEnMano != null);
+
+        // T: empezar a freír si apuntas a la freidora
+        if (Input.GetKeyDown(KeyCode.T) && freidora && friesEnMano)
+        freidora.TryStartCooking(friesEnMano);
+            
     }
 
     // n de objetos en mano 
@@ -145,6 +164,10 @@ public class Interact : MonoBehaviour
         var meat = go.GetComponentInParent<MeatCookingState>();
         if (meat && meat.isOnPan) return;
 
+        // No resaltar fries si ya están en la freidora
+        var fries = go.GetComponentInParent<FriesCookingState>();
+        if (fries && fries.isInFryer) return;
+
         if (!highlightOverlayMat) return;
 
         var renderers = go.GetComponentsInChildren<Renderer>(true);
@@ -173,6 +196,7 @@ public class Interact : MonoBehaviour
             rend.materials = nuevos.ToArray();
         }
     }
+
 
     // Quitar el overlay y restaura los materiales
     public void LimpiarHighlight()
@@ -220,6 +244,44 @@ public class Interact : MonoBehaviour
 
         return mejor;
     }
+
+    CookFriesInFryer DetectarFreidoraApuntada()
+    {
+        var fryers = FindObjectsOfType<CookFriesInFryer>(false);
+        if (fryers.Length == 0) return null;
+
+        CookFriesInFryer mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
+
+        foreach (var f in fryers)
+        {
+            var r = f.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : f.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue;
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore) { mejorScore = score; mejor = f; }
+        }
+        return mejor;
+    }
+
+    FriesCookingState GetFriesEnMano()
+    {
+        var slot = SlotMano();
+        if (!slot || slot.childCount == 0) return null;
+        return slot.GetChild(0).GetComponent<FriesCookingState>();
+    }
+
+
 
     // Carne que lleva en la mano (primer hijo del slot)
     MeatCookingState GetCarneEnMano()
