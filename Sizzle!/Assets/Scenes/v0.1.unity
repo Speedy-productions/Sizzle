@@ -299,7 +299,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.88
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
       propertyPath: m_LocalPosition.z
@@ -366,6 +366,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 958520085}
   m_SourcePrefab: {fileID: 100100000, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+--- !u!4 &206923979 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8234469714527775707, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+  m_PrefabInstance: {fileID: 175116709}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &227483761
 GameObject:
   m_ObjectHideFlags: 0
@@ -391,7 +396,7 @@ Transform:
   m_GameObject: {fileID: 227483761}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 1.698, z: 0.757}
+  m_LocalPosition: {x: 0.06, y: 1.358, z: 0.365}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -699,7 +704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6919d21cf664a574aa4aed5522923d95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HeadLook
-  headBone: {fileID: 1287526974}
+  headBone: {fileID: 206923979}
   cameraTransform: {fileID: 1045242933}
   maxUp: 60
   maxDown: 45
@@ -716,8 +721,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d8bfbf06ecbcf64b946208b09d94be2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  moveSpeed: 10
-  groundDrag: 0
+  moveSpeed: 15
+  groundDrag: 6
   playerHeight: 3
   whatIsGround:
     serializedVersion: 2
@@ -798,7 +803,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &990975697
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -993,7 +998,7 @@ Transform:
   m_GameObject: {fileID: 1045242930}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 427.15, y: 10.77, z: 1284}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1058,11 +1063,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!4 &1287526974 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -2639638324218457063, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
-  m_PrefabInstance: {fileID: 175116709}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1289297285
 GameObject:
   m_ObjectHideFlags: 0
@@ -1110,6 +1110,76 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveCamera
   cameraPos: {fileID: 227483762}
+--- !u!1 &1477612155
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1477612157}
+  - component: {fileID: 1477612156}
+  m_Layer: 0
+  m_Name: GameMaster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1477612156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1477612155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa2e52c6e0460643a801739f7526ecd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrderManager
+  foodGroups:
+  - name: Tapa
+    variants:
+    - {fileID: -1116443847, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1255946502, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1304072708, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Lechuga
+    variants:
+    - {fileID: -1671090298, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 142678192, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -744855049, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Carne
+    variants:
+    - {fileID: 1550837041, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1921789490, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 477058696, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Tomate
+    variants:
+    - {fileID: -349011472, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1040042879, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1279840353, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Base
+    variants:
+    - {fileID: -1958163849, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -334723527, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1970395307, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+--- !u!4 &1477612157
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1477612155}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 438.63684, y: 0, z: 450.83582}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1784700415
 GameObject:
   m_ObjectHideFlags: 0
@@ -1237,6 +1307,148 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &2023293472
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 444.6
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.3
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 493.3
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      propertyPath: m_Name
+      value: NPC
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: -8700617353114198275, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+    - {fileID: 65702495048144492, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+    - {fileID: -4941907964325586381, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2023293474}
+  m_SourcePrefab: {fileID: 100100000, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+--- !u!1 &2023293473 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+  m_PrefabInstance: {fileID: 2023293472}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2023293474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2023293473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67fe7bcffd0581b43bf294ccfb70e223, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupChar
+  popupPrefab: {fileID: 2899755648069495033, guid: 5d08542108b940b4ba2a76b8fe8bdf8d, type: 3}
+  foodGroups:
+  - name: Tapa
+    variants:
+    - {fileID: -1116443847, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1255946502, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1304072708, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Lechuga
+    variants:
+    - {fileID: -1671090298, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 142678192, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -744855049, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Carne
+    variants:
+    - {fileID: 1550837041, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1921789490, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 477058696, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Tomate
+    variants:
+    - {fileID: -349011472, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1040042879, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1279840353, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Base
+    variants:
+    - {fileID: -1958163849, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -334723527, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1970395307, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  bubbleGroups:
+  - name: Calmado
+    variants:
+    - {fileID: 1790867671, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: -1780795686, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: 768716370, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  - name: Grosero
+    variants:
+    - {fileID: 1810795432, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: -643589402, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: -2012441500, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  - name: Normal
+    variants:
+    - {fileID: 1978575675, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: -1799599557, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: 2085850041, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  - name: Elegante
+    variants:
+    - {fileID: 1112657734, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: 821617359, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+    - {fileID: 1594364896, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  switchInterval: 1
+  popupDuration: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1247,3 +1459,5 @@ SceneRoots:
   - {fileID: 175116709}
   - {fileID: 1289297286}
   - {fileID: 109701359}
+  - {fileID: 2023293472}
+  - {fileID: 1477612157}
