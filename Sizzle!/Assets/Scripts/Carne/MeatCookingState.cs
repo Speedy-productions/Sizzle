@@ -4,6 +4,7 @@ public class MeatCookingState : MonoBehaviour
 {
     public enum CookingState { Raw, Cooking, Cooked, Burned }
     public CookingState currentState = CookingState.Raw;
+    public string meatName;
 
     [Header("Estados")]
     public bool isOnPan = false;          // está en el sartén

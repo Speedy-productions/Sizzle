@@ -10,7 +10,7 @@ public class Blade : MonoBehaviour
     public float decayRate = 0.5f;
 
     private float progress = 0f;
-    private Ingredient currentIngredient = null;
+    private SliceIngredient currentIngredient = null;
     private Image currentFillImage = null;
 
     void Start()
@@ -54,7 +54,7 @@ public class Blade : MonoBehaviour
         RaycastHit hit;
         if (!Physics.Raycast(ray, out hit)) return;
 
-        Ingredient hitIng = hit.collider.GetComponent<Ingredient>();
+        SliceIngredient hitIng = hit.collider.GetComponent<SliceIngredient>();
         if (hitIng == null) return;
 
         // Solo se permite la mecánica si el ingrediente está colocado en la tabla

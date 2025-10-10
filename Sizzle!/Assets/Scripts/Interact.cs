@@ -9,7 +9,7 @@ public class Interact : MonoBehaviour
     public Camera camaraJugador;      // cámara del jugador
 
     [Header("Distancias")]
-    public float distanciaInteraccion = 5f; // pickables
+    public float distanciaInteraccion = 2.5f; // pickables
     public float distanciaSoltar = 1.2f;    // drop frente a la cámara
 
     [Header("Capas")]
@@ -38,13 +38,9 @@ public class Interact : MonoBehaviour
 
     GameObject objetoSeleccionado;
     CookMeatInPan ultimoPanApuntado;
-    CookFriesInFryer ultimaFreidoraApuntada;
 
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
-
-
-
 
     void Update()
     {
@@ -68,12 +64,18 @@ public class Interact : MonoBehaviour
 
         // Detectar tabla de cortar
         CuttingBoard tablaApuntada = DetectarTablaApuntada();
-        Ingredient ingredienteEnMano = GetIngredienteEnMano();
+        SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
 
-        // T: colocar ingrediente en la tabla apuntada
+        // T: colocar ingrediente en la tabla apuntada (cortar)
         if (Input.GetKeyDown(KeyCode.T) && tablaApuntada && ingredienteEnMano)
             tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
 
+        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
+        MesaArmado mesaApuntada = DetectarMesaApuntada();
+        Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
+
+        if (Input.GetKeyDown(KeyCode.T) && mesaApuntada && ingredienteEnManoPedido)
+            mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
 
         // Q: voltear solo el sartén apuntado
         if (Input.GetKeyDown(KeyCode.Q) && panApuntado)
@@ -85,21 +87,6 @@ public class Interact : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.G) && ObjetosEnMano() > 0)
             SoltarObjeto();
-
-        CookFriesInFryer freidora = DetectarFreidoraApuntada();
-        FriesCookingState friesEnMano = GetFriesEnMano();
-
-        if (freidora != ultimaFreidoraApuntada)
-        {
-            if (ultimaFreidoraApuntada) ultimaFreidoraApuntada.ShowAimHint(false, false);
-            ultimaFreidoraApuntada = freidora;
-        }
-        if (freidora) freidora.ShowAimHint(true, friesEnMano != null);
-
-        // T: empezar a freír si apuntas a la freidora
-        if (Input.GetKeyDown(KeyCode.T) && freidora && friesEnMano)
-        freidora.TryStartCooking(friesEnMano);
-            
     }
 
     // n de objetos en mano 
@@ -120,7 +107,9 @@ public class Interact : MonoBehaviour
         var candidatos = new List<GameObject>();
         foreach (var go in todos)
         {
-            if (((1 << go.layer) & mask) == 0) continue;
+            // permitir también objetos Tag "Food" aunque su capa no esté en el mask
+            if (((1 << go.layer) & mask) == 0 && !go.CompareTag("Food")) continue;
+
             if (slot && go.transform.IsChildOf(slot)) continue;
             if (go == jugador) continue;
             candidatos.Add(go);
@@ -142,7 +131,7 @@ public class Interact : MonoBehaviour
             if (dPantalla > radioPantalla) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
-            if (dist > Mathf.Max(6f, distanciaInteraccion + 0.6f)) continue;
+            if (dist > Mathf.Max(4f, distanciaInteraccion + 0.6f)) continue;
 
             float score = dPantalla * 10f + dist;
             if (score < mejorScore) { mejorScore = score; mejor = go; }
@@ -157,16 +146,12 @@ public class Interact : MonoBehaviour
         objetoSeleccionado = mejor;
     }
 
-    // Aplica overlay unlit sin tocar los materiales (se agrega al final)
+    // Aplica overlay unlit sin tocar los materiales
     void AplicarHighlight(GameObject go)
     {
         // No resaltar carne si está en el sartén
         var meat = go.GetComponentInParent<MeatCookingState>();
         if (meat && meat.isOnPan) return;
-
-        // No resaltar fries si ya están en la freidora
-        var fries = go.GetComponentInParent<FriesCookingState>();
-        if (fries && fries.isInFryer) return;
 
         if (!highlightOverlayMat) return;
 
@@ -196,7 +181,6 @@ public class Interact : MonoBehaviour
             rend.materials = nuevos.ToArray();
         }
     }
-
 
     // Quitar el overlay y restaura los materiales
     public void LimpiarHighlight()
@@ -244,44 +228,6 @@ public class Interact : MonoBehaviour
 
         return mejor;
     }
-
-    CookFriesInFryer DetectarFreidoraApuntada()
-    {
-        var fryers = FindObjectsOfType<CookFriesInFryer>(false);
-        if (fryers.Length == 0) return null;
-
-        CookFriesInFryer mejor = null;
-        float mejorScore = float.MaxValue;
-        Vector2 centro = new(0.5f, 0.5f);
-
-        foreach (var f in fryers)
-        {
-            var r = f.GetComponentInChildren<Renderer>();
-            Vector3 pos = r ? r.bounds.center : f.transform.position;
-
-            var vp = camaraJugador.WorldToViewportPoint(pos);
-            if (vp.z <= 0f) continue;
-
-            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
-            if (dPantalla > radioPantallaPan) continue;
-
-            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
-            if (dist > distanciaPan) continue;
-
-            float score = dPantalla * 10f + dist;
-            if (score < mejorScore) { mejorScore = score; mejor = f; }
-        }
-        return mejor;
-    }
-
-    FriesCookingState GetFriesEnMano()
-    {
-        var slot = SlotMano();
-        if (!slot || slot.childCount == 0) return null;
-        return slot.GetChild(0).GetComponent<FriesCookingState>();
-    }
-
-
 
     // Carne que lleva en la mano (primer hijo del slot)
     MeatCookingState GetCarneEnMano()
@@ -397,13 +343,70 @@ public class Interact : MonoBehaviour
         return mejor;
     }
 
-    Ingredient GetIngredienteEnMano()
+    SliceIngredient GetIngredienteEnMano()
     {
         var slot = SlotMano();
         if (!slot || slot.childCount == 0) return null;
-        return slot.GetChild(0).GetComponent<Ingredient>();
+        return slot.GetChild(0).GetComponent<SliceIngredient>();
     }
 
+    MesaArmado DetectarMesaApuntada()
+    {
+        var mesas = FindObjectsOfType<MesaArmado>(false);
+        if (mesas.Length == 0) return null;
+
+        MesaArmado mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
+
+        foreach (var mesa in mesas)
+        {
+            var r = mesa.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : mesa.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue;
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore) { mejorScore = score; mejor = mesa; }
+        }
+
+        return mejor;
+    }
+
+    Ingredient GetIngredienteEnManoPedido()
+    {
+        var slot = SlotMano();
+        if (!slot || slot.childCount == 0) return null;
+
+        // Intenta obtener Ingredient (para prefabs ya procesados)
+        var ing = slot.GetChild(0).GetComponent<Ingredient>();
+        if (ing != null) return ing;
+
+        // Si es carne (Meat) devolvemos su Ingredient si existe
+        var meat = slot.GetChild(0).GetComponent<MeatCookingState>();
+        if (meat != null)
+        {
+            Ingredient tmp = slot.GetChild(0).gameObject.GetComponent<Ingredient>();
+            if (tmp == null)
+            {
+                // si por alguna razón no tiene Ingredient, le añadimos uno permanente
+                tmp = slot.GetChild(0).gameObject.AddComponent<Ingredient>();
+                tmp.ingredientName = meat.meatName;
+                tmp.requireCookedMeat = true;
+            }
+            return tmp;
+        }
+
+        // Si no es ni Ingredient ni carne, no es válido para mesa de armado
+        return null;
+    }
 
     void OnDisable() => LimpiarHighlight();
 }

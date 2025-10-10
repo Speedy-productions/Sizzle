@@ -275,5 +275,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15625635ac368454da52b5b065dc4b2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
-  ingSlicedPrefab: {fileID: 7041683020158330340, guid: a39885acf60cabb49ae5f1ed9464e7b9, type: 3}
-  progressFill: {fileID: 3344355665745171801}
+  ingredientName: Lechuga
+  requireCookedMeat: 0

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7657959904922306582}
   - component: {fileID: -7745522058467400437}
   - component: {fileID: 2946612080205560270}
+  - component: {fileID: -1034941140769218642}
   m_Layer: 12
   m_Name: Food_Chopped Lettuce
   m_TagString: Ingredient
@@ -162,3 +163,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.29179525, y: 0.13218822, z: 0.17655088}
   m_Center: {x: 0.0045761093, y: 0.054207228, z: -0.000000007450581}
+--- !u!114 &-1034941140769218642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7041683020158330340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15625635ac368454da52b5b065dc4b2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
+  ingredientName: LechugaSliced
+  requireCookedMeat: 0

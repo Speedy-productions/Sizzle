@@ -176,8 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15625635ac368454da52b5b065dc4b2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
-  ingSlicedPrefab: {fileID: 6014539355592864146, guid: 84c1822a4f069684fb10b63ebaeb6c96, type: 3}
-  progressFill: {fileID: 7372575694007367914}
+  ingredientName: Tomate
+  requireCookedMeat: 0
 --- !u!1 &5682868431882941558
 GameObject:
   m_ObjectHideFlags: 0

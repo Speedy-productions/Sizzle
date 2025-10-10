@@ -5,9 +5,9 @@ public class CuttingBoard : MonoBehaviour
     [Tooltip("Empty transform donde se colocará el ingrediente (hijo de la tabla).")]
     public Transform posicionIngrediente;
 
-    private Ingredient currentIngredient;
+    private SliceIngredient currentIngredient;
 
-    public void TryPlaceIngredient(Ingredient ingrediente)
+    public void TryPlaceIngredient(SliceIngredient ingrediente)
     {
         if (ingrediente == null) return;
 
@@ -51,7 +51,7 @@ public class CuttingBoard : MonoBehaviour
     }
 
     public bool HasIngredient() => currentIngredient != null;
-    public Ingredient GetIngredient() => currentIngredient;
+    public SliceIngredient GetIngredient() => currentIngredient;
 
     // (Opcional) visual hint
     public void ShowAimHint(bool show, bool _) { /* implementar si tienes UI para la tabla */ }
