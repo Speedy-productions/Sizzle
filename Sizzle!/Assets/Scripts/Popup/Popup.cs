@@ -7,19 +7,6 @@ public class Popup : MonoBehaviour
     public Image bubbleIcon;
 
     private Transform target;
-    private Camera mainCamera;
-
-    private void Start()
-    {
-        mainCamera = Camera.main;
-    }
-
-    private void Update()
-    {
-        if (mainCamera != null)
-            transform.LookAt(transform.position + mainCamera.transform.rotation * Vector3.forward,
-                             mainCamera.transform.rotation * Vector3.up);
-    }
 
     public void Show(Transform targetTransform, Sprite food, Sprite bubble)
     {
