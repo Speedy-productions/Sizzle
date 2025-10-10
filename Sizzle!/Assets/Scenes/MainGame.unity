@@ -2559,6 +2559,76 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &783727666
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 783727668}
+  - component: {fileID: 783727667}
+  m_Layer: 0
+  m_Name: OrderManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &783727667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 783727666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa2e52c6e0460643a801739f7526ecd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrderManager
+  foodGroups:
+  - name: Tapa
+    variants:
+    - {fileID: -1116443847, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1255946502, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1304072708, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Carne
+    variants:
+    - {fileID: 1550837041, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1921789490, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 477058696, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Lechuga
+    variants:
+    - {fileID: -1671090298, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 142678192, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -744855049, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Tomate
+    variants:
+    - {fileID: -349011472, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: 1040042879, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1279840353, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+  - name: Base
+    variants:
+    - {fileID: -1958163849, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -334723527, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+    - {fileID: -1970395307, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+--- !u!4 &783727668
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 783727666}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 18.71, y: 2.324, z: 30.486}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3252,9 +3322,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1070338297}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 092ea440e66c0594cb092aad98106e16, type: 3}
+  m_Script: {fileID: 11500000, guid: 67fe7bcffd0581b43bf294ccfb70e223, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIOrderDisplay
+  popupPrefab: {fileID: 2899755648069495033, guid: 5d08542108b940b4ba2a76b8fe8bdf8d, type: 3}
+  foodGroups: []
+  bubbleGroups: []
+  switchInterval: 1
+  popupDuration: 5
 --- !u!4 &1070338299
 Transform:
   m_ObjectHideFlags: 0
@@ -7035,3 +7110,4 @@ SceneRoots:
   - {fileID: 404401209}
   - {fileID: 1640151962}
   - {fileID: 474439356}
+  - {fileID: 783727668}
