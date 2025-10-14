@@ -3,67 +3,110 @@ using UnityEngine;
 
 public class ArmarPedido : MonoBehaviour
 {
-    [Header("Receta actual")]
-    public RecipeSO currentRecipe;
+    [Header("Receta (para prefab final)")]
+    public RecipeSO currentRecipe; // solo para saber qué prefab instanciar
 
-    public void SetCurrentRecipe(RecipeSO recipe)
+    [Header("Opciones")]
+    public bool requireExactOrder = true;   // Debe coincidir exactamente con el pedido activo
+    public bool requireExactCount = true;   // No más ni menos ingredientes que el pedido
+
+    public void SetCurrentRecipe(RecipeSO recipe) => currentRecipe = recipe;
+
+    /// <summary>Se llama cada vez que se coloca un ingrediente en la mesa.</summary>
+    public void OnIngredientPlaced(
+    string ingredientName,
+    List<GameObject> currentPlaced,
+    RecipeSO recipeFromMesa,
+    MesaArmado mesa // <- nueva referencia
+)
     {
-        currentRecipe = recipe;
-    }
+        if (recipeFromMesa != null)
+            currentRecipe = recipeFromMesa;
 
-    public void OnIngredientPlaced(string ingredientName, List<GameObject> currentPlaced)
-    {
-        if (currentRecipe == null) return;
+        // Debe existir un pedido activo
+        if (OrderManager.Instance == null || OrderManager.Instance.CurrentOrder == null)
+            return;
 
-        if (CheckIfRecipeComplete(currentPlaced))
+        if (CheckIfOrderComplete(currentPlaced, OrderManager.Instance.CurrentOrder))
         {
-            CombineIntoFinalDish(currentPlaced);
+            CombineIntoFinalDish(currentPlaced, mesa); // <- usamos la mesa pasada
         }
     }
 
-    private bool CheckIfRecipeComplete(List<GameObject> placed)
-    {
-        List<string> placedNames = new List<string>();
-        foreach (var obj in placed)
-        {
-            string name = GetIngredientName(obj);
-            if (name != null && !placedNames.Contains(name))
-                placedNames.Add(name);
-        }
 
-        foreach (var required in currentRecipe.requiredIngredients)
+    bool CheckIfOrderComplete(List<GameObject> placed, Order activeOrder)
+    {
+        if (activeOrder == null || activeOrder.ingredients == null) return false;
+
+        var expected = activeOrder.ingredients;
+        Debug.Log($"[ArmarPedido] placed={placed.Count} vs expected={expected.Length}");
+
+        if (requireExactCount && placed.Count != expected.Length) return false;
+        if (placed.Count < expected.Length) return false;
+
+        for (int i = 0; i < expected.Length; i++)
         {
-            if (!placedNames.Contains(required))
+            var obj = placed[i];
+            if (!obj) { Debug.Log("[ArmarPedido] obj null en index " + i); return false; }
+
+            string have = ResolveName(obj);
+            string want = NormalizeName(expected[i]);
+            if (!string.Equals(have, want))
+            {
+                Debug.Log($"[ArmarPedido] MISMATCH idx {i}: have='{have}' want='{want}'");
                 return false;
+            }
+
+            if (obj.TryGetComponent(out Ingredient ing) && !ing.IsReady())
+            {
+                Debug.Log($"[ArmarPedido] NOT READY idx {i}: '{have}'");
+                return false;
+            }
+
+            if (obj.transform.parent == null)
+            {
+                Debug.Log($"[ArmarPedido] NOT ON TABLE idx {i}: '{have}'");
+                return false;
+            }
         }
 
         return true;
     }
 
-    private string GetIngredientName(GameObject obj)
+
+    string NormalizeName(string name)
     {
-        if (obj.TryGetComponent(out Ingredient ing)) return ing.ingredientName;
-        if (obj.TryGetComponent(out SliceIngredient slice)) return slice.ingredientName;
-        if (obj.TryGetComponent(out MeatCookingState meat)) return meat.meatName;
-        return null;
+        if (string.IsNullOrEmpty(name)) return name;
+        name = name.Replace("Sliced", "").Replace("Slice", "").Replace("Cortado", "");
+        return name.Trim();
     }
 
-    private void CombineIntoFinalDish(List<GameObject> placedIngredients)
+    string ResolveName(GameObject obj)
+    {
+        if (obj.TryGetComponent(out Ingredient ing)) return NormalizeName(ing.ingredientName);
+        if (obj.TryGetComponent(out SliceIngredient slice)) return NormalizeName(slice.ingredientName);
+        if (obj.TryGetComponent(out MeatCookingState meat)) return NormalizeName(meat.meatName);
+        return NormalizeName(obj.name);
+    }
+
+    void CombineIntoFinalDish(List<GameObject> placedIngredients, MesaArmado mesa)
     {
         if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
         {
-            Debug.LogWarning("No hay receta o prefab final asignado.");
+            Debug.LogWarning("[ArmarPedido] No hay RecipeSO o finalProductPrefab asignado.");
             return;
         }
+        if (placedIngredients == null || placedIngredients.Count == 0) return;
 
         Vector3 spawnPos = placedIngredients[0].transform.position;
 
-        // Activar kinematic en carnes antes de destruir
+        // Asegurar carnes kinematic
         foreach (var ing in placedIngredients)
         {
+            if (!ing) continue;
             if (ing.TryGetComponent(out MeatCookingState meat))
             {
-                Rigidbody rb = ing.GetComponent<Rigidbody>();
+                var rb = ing.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
                     rb.isKinematic = true;
@@ -72,14 +115,20 @@ public class ArmarPedido : MonoBehaviour
             }
         }
 
+        // Destruir ingredientes y limpiar tracking
         foreach (var ing in placedIngredients)
-        {
-            Destroy(ing);
-        }
+            if (ing) Object.Destroy(ing);
+
         placedIngredients.Clear();
 
-        Instantiate(currentRecipe.finalProductPrefab, spawnPos, Quaternion.identity);
+        // Reset visual/altura de la mesa
+        if (mesa) mesa.ResetAfterComplete(false);
 
-        Debug.Log($"¡Platillo completado!: {currentRecipe.recipeName}");
+        // Instanciar producto final
+        Object.Instantiate(currentRecipe.finalProductPrefab, spawnPos, Quaternion.identity);
+
+        Debug.Log($"[ArmarPedido] ¡Platillo completado!: {currentRecipe.recipeName}");
     }
+
+
 }

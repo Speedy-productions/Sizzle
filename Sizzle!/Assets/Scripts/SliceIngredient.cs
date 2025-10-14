@@ -69,8 +69,8 @@ public class SliceIngredient : MonoBehaviour
         if (rb == null) rb = cortado.AddComponent<Rigidbody>();
 
         // heredar la capa del original (para que siga siendo 'pickable')
-        // heredar SOLO la capa (útil para pickable). El TAG lo aporta el prefab cortado (p.ej. "Fries")
         cortado.layer = gameObject.layer;
+        cortado.tag = gameObject.tag;
 
         // si el prefab cortado trae FriesCookingState, asegurar estado crudo y fuera de freidora
         var fries = cortado.GetComponent<FriesCookingState>();

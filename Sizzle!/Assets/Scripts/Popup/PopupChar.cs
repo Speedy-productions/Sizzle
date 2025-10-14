@@ -86,6 +86,7 @@ public class PopupChar : MonoBehaviour
                 Debug.LogError("No se generó una orden");
                 yield break;
             }
+            OrderManager.Instance.SetCurrentOrder(newOrder);
 
             BubbleGroup bGroup = bubbleGroups[Random.Range(0, bubbleGroups.Length)];
             Sprite nextBubbleSprite = bGroup.variants[Random.Range(0, bGroup.variants.Length)];
@@ -94,8 +95,9 @@ public class PopupChar : MonoBehaviour
             {
                 Sprite foodSprite = GetSpriteByName(ingredientName);
                 currentPopup.Show(transform, foodSprite, nextBubbleSprite);
-                yield return new WaitForSeconds(switchInterval); 
+                yield return new WaitForSeconds(switchInterval);
             }
+
         }
     }
 }

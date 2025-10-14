@@ -139,7 +139,9 @@ public class Interact : MonoBehaviour
             if (go == jugador) continue;
 
 
-
+            var mesaPadre = go.GetComponentInParent<MesaArmado>();
+            if (mesaPadre && mesaPadre.Contains(go) && !mesaPadre.IsTopIngredient(go))
+                continue;
             candidatos.Add(go);
         }
 
@@ -321,24 +323,36 @@ public class Interact : MonoBehaviour
     {
         LimpiarHighlight();
 
-        var destino = SlotMano();
-        var tabla = objeto.GetComponentInParent<CuttingBoard>();
-        if (tabla != null)
+
+        var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
+        if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
         {
-            tabla.RemoveIngredient();
+            Debug.Log("[INTERACT] No puedes agarrar un ingrediente que no sea el tope de la pila.");
+            return;
         }
-        objeto.transform.SetParent(destino);
+        var destino = SlotMano();
+
+        // Si viene de la mesa, quítalo del stack
+        var mesa = objeto.GetComponentInParent<MesaArmado>();
+        if (mesa != null) mesa.RemoveIngredient(objeto);
+
+        // Si viene de la tabla, quítalo también
+        var tabla = objeto.GetComponentInParent<CuttingBoard>();
+        if (tabla != null) tabla.RemoveIngredient();
+
+        // === Mantener escala mundial original ===
+        Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
+        WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, destino, Sw);
+
+        // Colocar en la mano
         objeto.transform.localPosition = Vector3.zero;
         objeto.transform.localRotation = Quaternion.identity;
 
-
+        // Físicas y flags
         ConfigurarFisicaObjeto(objeto, true);
 
         var meat = objeto.GetComponent<MeatCookingState>();
-        if (meat != null)
-        {
-            meat.LockOnTable(false);
-        }
+        if (meat != null) meat.LockOnTable(false);
 
         foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
             c.isTrigger = true;
@@ -352,13 +366,18 @@ public class Interact : MonoBehaviour
         }
     }
 
+
+
     void SoltarObjeto()
     {
         var slot = SlotMano();
         if (!slot || slot.childCount == 0) return;
 
         var objeto = slot.GetChild(0).gameObject;
-        objeto.transform.SetParent(null);
+
+        // === Mantener escala mundial original al salir al mundo (parent=null) ===
+        Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
+        WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, null, Sw);
 
         // Suelta delante de la cámara
         objeto.transform.position = camaraJugador.transform.position + camaraJugador.transform.forward * distanciaSoltar;
@@ -371,7 +390,6 @@ public class Interact : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            // Impulso natural al soltar
             Vector3 impulso = camaraJugador.transform.forward * fuerzaLanzamiento + Vector3.up * fuerzaVertical;
             rb.AddForce(impulso, ForceMode.VelocityChange);
             rb.AddTorque(Random.insideUnitSphere * torqueLanzamiento, ForceMode.VelocityChange);
@@ -388,6 +406,7 @@ public class Interact : MonoBehaviour
                     Physics.IgnoreCollision(playerCol, c, false);
         }
     }
+
 
     CuttingBoard DetectarTablaApuntada()
     {
@@ -461,28 +480,47 @@ public class Interact : MonoBehaviour
         var slot = SlotMano();
         if (!slot || slot.childCount == 0) return null;
 
-        // Intenta obtener Ingredient (para prefabs ya procesados)
-        var ing = slot.GetChild(0).GetComponent<Ingredient>();
+        var go = slot.GetChild(0).gameObject;
+
+        // 1) Si ya trae Ingredient, úsalo
+        var ing = go.GetComponent<Ingredient>();
         if (ing != null) return ing;
 
-        // Si es carne (Meat) devolvemos su Ingredient si existe
-        var meat = slot.GetChild(0).GetComponent<MeatCookingState>();
+        // 2) Si es carne, crear/asegurar Ingredient con meatName y requireCookedMeat = true
+        var meat = go.GetComponent<MeatCookingState>();
         if (meat != null)
         {
-            Ingredient tmp = slot.GetChild(0).gameObject.GetComponent<Ingredient>();
-            if (tmp == null)
-            {
-                // si por alguna razón no tiene Ingredient, le añadimos uno permanente
-                tmp = slot.GetChild(0).gameObject.AddComponent<Ingredient>();
-                tmp.ingredientName = meat.meatName;
-                tmp.requireCookedMeat = true;
-            }
+            var tmp = go.AddComponent<Ingredient>();
+            tmp.ingredientName = meat.meatName; // ej: "Carne"
+            tmp.requireCookedMeat = true;
             return tmp;
         }
 
-        // Si no es ni Ingredient ni carne, no es válido para mesa de armado
+        // 3) Si es SliceIngredient, crear/asegurar Ingredient con el nombre del slice
+        var slice = go.GetComponent<SliceIngredient>();
+        if (slice != null)
+        {
+            var tmp = go.AddComponent<Ingredient>();
+            // Normalizamos a nombre "base" por si tus prefabs usan LechugaSliced, TomateSliced, etc.
+            tmp.ingredientName = NormalizarNombre(slice.ingredientName);
+            tmp.requireCookedMeat = false;
+            return tmp;
+        }
+
+        // 4) No válido para la mesa
         return null;
     }
+
+    // Helper local (puedes moverlo donde prefieras)
+    string NormalizarNombre(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return name;
+
+        // quita sufijos típicos de corte
+        name = name.Replace("Sliced", "").Replace("Slice", "").Replace("Cortado", "");
+        return name.Trim();
+    }
+
 
     void OnDisable() => LimpiarHighlight();
 }
