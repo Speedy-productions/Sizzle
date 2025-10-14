@@ -4,6 +4,8 @@ public class FriesCookingState : MonoBehaviour
 {
     public enum CookingState { Raw, Cooking, Cooked, Burned }
     public CookingState currentState = CookingState.Raw;
+    public Quaternion initialWorldRot { get; private set; }
+    public Vector3 initialWorldScale { get; private set; }
 
     [Header("Materiales/Render")]
     [SerializeField] Material rawMaterial;         // Opcional (si quieres)
@@ -25,16 +27,15 @@ public class FriesCookingState : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
 
-        // Verificar si friesParentPrefab no está vacío y obtener los renderers de los hijos
-        if (friesParentPrefab != null)
+        // Siempre tomar los renderers de ESTA instancia (hijos)
+        friesRenderers = GetComponentsInChildren<Renderer>(true);
+        if (friesRenderers == null || friesRenderers.Length == 0)
         {
-            // Obtener todos los renderers de los hijos del prefab
-            friesRenderers = friesParentPrefab.GetComponentsInChildren<Renderer>();
+            Debug.LogWarning("[FriesCookingState] No se encontraron renderers en hijos de la instancia.");
         }
-        else
-        {
-            Debug.LogError("El prefab del padre de las papas no está asignado.");
-        }
+
+        initialWorldRot   = transform.rotation;   // rotación “correcta” del prefab en mundo
+    initialWorldScale = transform.lossyScale;
     }
 
     void Update()

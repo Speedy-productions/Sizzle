@@ -3,21 +3,22 @@ using UnityEngine;
 public class CookFriesInFryer : MonoBehaviour
 {
     [Header("Config")]
-    [SerializeField] Transform basketCenter;   // Punto donde posas las papas (cesta)
-    [SerializeField] float cookingTime = 8f;   // Tiempo a “lista”
-    [SerializeField] float burningTime = 5f;   // De lista ? quemada
+    [SerializeField] Transform basketCenter;
+    [SerializeField] float cookingTime = 8f;
+    [SerializeField] float burningTime = 5f;
 
     [Header("UI")]
-    [SerializeField] GameObject fryerCanvasHint; // Canvas “Presiona T para freír”
+    [SerializeField] GameObject fryerCanvasHint;
     [SerializeField] CookingProgressUI cookingUI;
 
     [Header("Referencias")]
-    public GameObject[] decorativeFries;              // Papas decorativas (prefabs decorativos en la freidora)
+    public GameObject[] decorativeFries;
+
 
     [Header("Materiales")]
-    public Material rawMaterial;                      // Material para las papas crudas
-    public Material cookedMaterial;                   // Material para las papas cocidas
-    public Material burnedMaterial;                   // Material para las papas quemadas
+    public Material rawMaterial;
+    public Material cookedMaterial;
+    public Material burnedMaterial;
 
     private FriesCookingState currentFries;
     private bool isCooking = false;
@@ -26,11 +27,16 @@ public class CookFriesInFryer : MonoBehaviour
     private bool hasPlayerFries = false;
     private float currentCookingTime = 0f;
 
-    void Start() => ResetSystem();
+    void Start()
+    {
+        Debug.Log($"[FRYER] Start -> ResetSystem() en {name}");
+        ResetSystem();
+    }
 
     void Update()
     {
-        if (!currentFries) return;
+        if (!currentFries)
+            return;
 
         if (isCooking)
         {
@@ -38,43 +44,77 @@ public class CookFriesInFryer : MonoBehaviour
 
             float total = cookingTime + burningTime;
             float t = Mathf.Clamp01(timeAcc / total);
-            float frac = cookingTime / total; // Umbral de “lista”
+            float frac = cookingTime / total;
             if (cookingUI) cookingUI.SetProgress(t, frac);
 
             if (timeAcc >= total)
             {
+                Debug.Log($"[FRYER] {name} -> Tiempo total alcanzado. Marcando BURNED a {currentFries.name}");
                 currentFries.MarkBurned();
-                SetDecorativeFriesToBurned();  // Asegurarse de quemar las papas decorativas también
+                SetDecorativeFriesToBurned();
             }
             else if (timeAcc >= cookingTime && currentFries.currentState != FriesCookingState.CookingState.Cooked)
             {
+                Debug.Log($"[FRYER] {name} -> Alcanzó tiempo de COOKED para {currentFries.name}");
                 currentFries.MarkCooked();
-                SetDecorativeFriesToCooked();  // Cambiar las papas decorativas a cocidas
+                SetDecorativeFriesToCooked();
             }
         }
 
-        // Si alguien retiró las papas de la cesta
+        // Detecta si sacaron las papas de la cesta
         if (currentFries && currentFries.transform.parent != basketCenter)
+        {
+            Debug.LogWarning($"[FRYER] {name} -> currentFries ya no tiene parent basketCenter. StopAll()");
             StopAll();
+        }
     }
 
     public bool TryStartCooking(FriesCookingState fries)
     {
-        if (!fries || isCooking) return false;
+        Debug.Log($"[FRYER] TryStartCooking() llamado con: {(fries ? fries.name : "NULL")}");
+
+        if (!fries || isCooking)
+        {
+            Debug.LogWarning($"[FRYER] TryStartCooking() -> Abort. fries={(fries != null)}, isCooking={isCooking}");
+            return false;
+        }
+
         if (fries.currentState == FriesCookingState.CookingState.Cooked ||
             fries.currentState == FriesCookingState.CookingState.Burned)
+        {
+            Debug.LogWarning($"[FRYER] TryStartCooking() -> Abort. Estado actual={fries.currentState}");
             return false;
+        }
 
         currentFries = fries;
 
-        // No manipulamos la escala aquí
+        // Logear info del objeto
+        string tagInfo = currentFries.tag;
+        int layerInfo = currentFries.gameObject.layer;
+        Debug.Log($"[FRYER] Aceptado {currentFries.name} (tag={tagInfo}, layer={layerInfo}, estado={currentFries.currentState})");
 
-        // Asignar la posición del basketCenter sin afectar la escala
-        currentFries.transform.SetParent(basketCenter);
-        currentFries.transform.position = basketCenter.position;
-        currentFries.transform.rotation = basketCenter.rotation;
+        // Parenting y colocación
+        var t = currentFries.transform;
 
-        currentFries.transform.rotation = Quaternion.Euler(76.13f, 4.7f, 90.32f); // Los valores de rotación que has proporcionado
+        // Entra al espacio del basket SIN conservar mundo (control total en local)
+        t.SetParent(basketCenter, false);
+
+        // Centrar en la cesta
+        t.localPosition = Vector3.zero;
+
+        // Rotación EXACTA del basket (hereda la orientación del parent)
+        t.localRotation = Quaternion.identity;
+
+        // Mantener escala mundial del prefab (evita deformación al meter/sacar)
+        Vector3 Sp = basketCenter.lossyScale;
+        Vector3 Sw = currentFries.initialWorldScale;
+        t.localScale = new Vector3(
+            Sp.x != 0f ? Sw.x / Sp.x : t.localScale.x,
+            Sp.y != 0f ? Sw.y / Sp.y : t.localScale.y,
+            Sp.z != 0f ? Sw.z / Sp.z : t.localScale.z
+        );
+
+        // (deja el Debug.Log que ya tienes debajo)
 
         currentFries.SetInFryer(true);
 
@@ -90,9 +130,9 @@ public class CookFriesInFryer : MonoBehaviour
         ShowAimHint(false, false);
         currentFries.currentState = FriesCookingState.CookingState.Cooking;
 
-        // Activar las papas decorativas (cuando se empieza a cocinar)
         AddPlayerFriesToFryer();
 
+        Debug.Log($"[FRYER] Cocción iniciada para {currentFries.name} en {name}");
         return true;
     }
 
@@ -101,6 +141,7 @@ public class CookFriesInFryer : MonoBehaviour
         isCooking = false;
         timeAcc = 0f;
         if (cookingUI) cookingUI.SetVisible(false);
+        Debug.Log($"[FRYER] StopCookingUIOnly() en {name}");
     }
 
     public void ShowAimHint(bool aimingFryer, bool hasFriesInHand)
@@ -111,16 +152,21 @@ public class CookFriesInFryer : MonoBehaviour
         {
             var inter = FindObjectOfType<Interact>();
             var fries = inter ? inter.GetComponentInChildren<FriesCookingState>() : null;
+
+            Debug.Log($"[FRYER] ShowAimHint() aiming={aimingFryer} hasFriesInHand={hasFriesInHand} inter={(inter != null)} fries={(fries != null)} estado={(fries ? fries.currentState : 0)}");
+
             if (fries && (fries.currentState == FriesCookingState.CookingState.Raw ||
                           fries.currentState == FriesCookingState.CookingState.Cooking))
                 show = true;
         }
 
         if (fryerCanvasHint) fryerCanvasHint.SetActive(show);
+        Debug.Log($"[FRYER] ShowAimHint() -> SetActive({show})");
     }
 
     void StopAll()
     {
+        Debug.Log($"[FRYER] StopAll() en {name}. currentFries={(currentFries ? currentFries.name : "NULL")}");
         StopCookingUIOnly();
         if (fryerCanvasHint) fryerCanvasHint.SetActive(false);
 
@@ -130,7 +176,6 @@ public class CookFriesInFryer : MonoBehaviour
             currentFries = null;
         }
 
-        // Cuando las papas del jugador son retiradas, las papas decorativas deben resetearse
         RemovePlayerFriesFromFryer();
     }
 
@@ -146,38 +191,42 @@ public class CookFriesInFryer : MonoBehaviour
             cookingUI.SetVisible(false);
             cookingUI.ResetUI(cookingTime / (cookingTime + burningTime));
         }
+
+        Debug.Log($"[FRYER] ResetSystem() en {name}");
     }
 
-    #region Papas Decorativas (Gestionando Materiales y Estado)
+    #region Papas Decorativas (logs incluidos)
 
     public void AddPlayerFriesToFryer()
     {
-        // Si las papas ya están en la freidora, no hacer nada
-        if (hasPlayerFries) return;
+        if (hasPlayerFries)
+        {
+            Debug.Log($"[FRYER] AddPlayerFriesToFryer() ignorado: ya había papas decorativas activas.");
+            return;
+        }
 
-        // Activar las papas decorativas y empezar la cocción
         SetDecorativeFriesToCooking();
         isCooking = true;
         hasPlayerFries = true;
-        currentCookingTime = 0f;  // Reiniciar el tiempo de cocción
-        cookingUI.SetVisible(true);  // Mostrar el UI de progreso cuando las papas empiezan a cocinarse
+        currentCookingTime = 0f;
+        if (cookingUI) cookingUI.SetVisible(true);
+
+        Debug.Log($"[FRYER] Decorativas -> Cooking (activadas) en {name}");
     }
 
     public void RemovePlayerFriesFromFryer()
     {
-        // Desactivar las papas decorativas
         SetDecorativeFriesToRaw();
-
-        // Detener la cocción y resetear el sistema
         isCooking = false;
         hasPlayerFries = false;
         currentCookingTime = 0f;
-        cookingUI.SetVisible(false);  // Ocultar el UI de progreso cuando se retiran las papas
+        if (cookingUI) cookingUI.SetVisible(false);
+
+        Debug.Log($"[FRYER] Decorativas -> Raw (desactivadas) en {name}");
     }
 
     private void SetDecorativeFriesToCooking()
     {
-        // Activar las papas decorativas
         foreach (var fry in decorativeFries)
         {
             if (fry != null)
@@ -185,9 +234,10 @@ public class CookFriesInFryer : MonoBehaviour
                 Renderer fryRenderer = fry.GetComponent<Renderer>();
                 if (fryRenderer)
                 {
-                    fryRenderer.material = rawMaterial; // Asignar material de papas crudas
+                    fryRenderer.material = rawMaterial;
                 }
                 fry.SetActive(true);
+                Debug.Log($"[FRYER] Deco '{fry.name}' -> ACTIVE + RAW");
             }
         }
     }
@@ -201,8 +251,9 @@ public class CookFriesInFryer : MonoBehaviour
                 Renderer fryRenderer = fry.GetComponent<Renderer>();
                 if (fryRenderer && cookedMaterial)
                 {
-                    fryRenderer.material = cookedMaterial; // Cambiar material a cocinado
+                    fryRenderer.material = cookedMaterial;
                 }
+                Debug.Log($"[FRYER] Deco '{fry.name}' -> COOKED");
             }
         }
     }
@@ -216,8 +267,9 @@ public class CookFriesInFryer : MonoBehaviour
                 Renderer fryRenderer = fry.GetComponent<Renderer>();
                 if (fryRenderer && burnedMaterial)
                 {
-                    fryRenderer.material = burnedMaterial; // Cambiar material a quemado
+                    fryRenderer.material = burnedMaterial;
                 }
+                Debug.Log($"[FRYER] Deco '{fry.name}' -> BURNED");
             }
         }
     }
@@ -228,13 +280,13 @@ public class CookFriesInFryer : MonoBehaviour
         {
             if (fry != null)
             {
-                fry.SetActive(false); // Desactivar las papas decorativas
-
+                fry.SetActive(false);
                 Renderer fryRenderer = fry.GetComponent<Renderer>();
                 if (fryRenderer && rawMaterial)
                 {
-                    fryRenderer.material = rawMaterial; // Cambiar material a crudo
+                    fryRenderer.material = rawMaterial;
                 }
+                Debug.Log($"[FRYER] Deco '{fry.name}' -> DISABLED + RAW");
             }
         }
     }

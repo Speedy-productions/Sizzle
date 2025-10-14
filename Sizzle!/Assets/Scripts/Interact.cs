@@ -38,6 +38,8 @@ public class Interact : MonoBehaviour
 
     GameObject objetoSeleccionado;
     CookMeatInPan ultimoPanApuntado;
+    CookFriesInFryer ultimaFreidoraApuntada;
+
 
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
@@ -81,6 +83,31 @@ public class Interact : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q) && panApuntado)
             panApuntado.TryFlipFromInteraccion();
 
+        // --- FREIDORA: detectar y usar mientras sostienes papas ---
+        CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
+        FriesCookingState friesEnMano = GetFriesEnMano();
+
+        // si cambió la freidora apuntada, oculta hint de la anterior
+        if (freidoraApuntada != ultimaFreidoraApuntada)
+        {
+            if (ultimaFreidoraApuntada) ultimaFreidoraApuntada.ShowAimHint(false, false);
+            ultimaFreidoraApuntada = freidoraApuntada;
+            Debug.Log($"[INTERACT] Freidora apuntada -> {(freidoraApuntada ? freidoraApuntada.name : "NULL")}");
+        }
+
+        // mostrar hint en la freidora actual
+        if (freidoraApuntada)
+            freidoraApuntada.ShowAimHint(true, friesEnMano != null);
+
+        // T: empezar a freír en la freidora apuntada
+        if (Input.GetKeyDown(KeyCode.T) && freidoraApuntada && friesEnMano)
+        {
+            Debug.Log($"[INTERACT] T -> TryStartCooking FRIES con {friesEnMano.name} en {freidoraApuntada.name}");
+            bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
+            Debug.Log($"[INTERACT] TryStartCooking(FRIES) resultado={ok}");
+        }
+
+
         // E/G: agarrar/soltar
         if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
@@ -107,13 +134,15 @@ public class Interact : MonoBehaviour
         var candidatos = new List<GameObject>();
         foreach (var go in todos)
         {
-            // permitir también objetos Tag "Food" aunque su capa no esté en el mask
             if (((1 << go.layer) & mask) == 0 && !go.CompareTag("Food")) continue;
-
             if (slot && go.transform.IsChildOf(slot)) continue;
             if (go == jugador) continue;
+
+
+
             candidatos.Add(go);
         }
+
 
         GameObject mejor = null;
         float mejorScore = float.MaxValue;
@@ -152,6 +181,9 @@ public class Interact : MonoBehaviour
         // No resaltar carne si está en el sartén
         var meat = go.GetComponentInParent<MeatCookingState>();
         if (meat && meat.isOnPan) return;
+
+        var fries = go.GetComponentInParent<FriesCookingState>() ?? go.GetComponent<FriesCookingState>();
+        if (fries && fries.isInFryer) return;
 
         if (!highlightOverlayMat) return;
 
@@ -227,6 +259,43 @@ public class Interact : MonoBehaviour
         }
 
         return mejor;
+    }
+
+    CookFriesInFryer DetectarFreidoraApuntada()
+    {
+        var fryers = FindObjectsOfType<CookFriesInFryer>(false);
+        if (fryers.Length == 0) return null;
+
+        CookFriesInFryer mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
+
+        foreach (var fryer in fryers)
+        {
+            var r = fryer.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : fryer.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue;   // usamos mismo radio que sartén
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;            // mismo alcance que sartén
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore) { mejorScore = score; mejor = fryer; }
+        }
+
+        return mejor;
+    }
+
+    FriesCookingState GetFriesEnMano()
+    {
+        var slot = SlotMano();
+        if (!slot || slot.childCount == 0) return null;
+        return slot.GetChild(0).GetComponent<FriesCookingState>();
     }
 
     // Carne que lleva en la mano (primer hijo del slot)

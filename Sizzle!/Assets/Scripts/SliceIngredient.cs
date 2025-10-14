@@ -50,7 +50,13 @@ public class SliceIngredient : MonoBehaviour
         if (cb != null) cb.RemoveIngredient();
 
         // instanciar prefab cortado en misma posición y rotación
-        GameObject cortado = Instantiate(ingSlicedPrefab, transform.position, transform.rotation);
+        GameObject cortado = Instantiate(
+            ingSlicedPrefab,
+            transform.position,
+            ingSlicedPrefab.transform.rotation 
+        );
+
+        cortado.transform.localScale = ingSlicedPrefab.transform.localScale;
 
         // asegurar que el prefab sea interactuable: collider + rigidbody + capa/tag
         if (cortado.GetComponent<Collider>() == null)
@@ -63,8 +69,16 @@ public class SliceIngredient : MonoBehaviour
         if (rb == null) rb = cortado.AddComponent<Rigidbody>();
 
         // heredar la capa del original (para que siga siendo 'pickable')
+        // heredar SOLO la capa (útil para pickable). El TAG lo aporta el prefab cortado (p.ej. "Fries")
         cortado.layer = gameObject.layer;
-        cortado.tag = gameObject.tag; // opcional: mantener el tag
+
+        // si el prefab cortado trae FriesCookingState, asegurar estado crudo y fuera de freidora
+        var fries = cortado.GetComponent<FriesCookingState>();
+        if (fries != null)
+        {
+            fries.ResetFries();
+            fries.SetInFryer(false);
+        }
 
         // Si el prefab tiene Ingredient (para poder volver a cortarlo o mostrar UI), asegurarnos que su barra está oculta
         SliceIngredient newIng = cortado.GetComponent<SliceIngredient>();
