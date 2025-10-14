@@ -27,13 +27,25 @@ public class MesaArmado : MonoBehaviour
 
         // Activar Kinematic y desactivar gravedad
         Rigidbody rb = obj.GetComponent<Rigidbody>();
-        if (rb != null)
+
+        MeatCookingState meatState = obj.GetComponent<MeatCookingState>();
+        if(meatState != null)
         {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            meatState.SetOnPan(false);
+            meatState.LockOnTable(true);
+
         }
+        else
+        {
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+        }
+
 
         obj.transform.SetParent(assemblePoint);
 

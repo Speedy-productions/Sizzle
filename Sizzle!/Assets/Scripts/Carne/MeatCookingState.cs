@@ -25,6 +25,9 @@ public class MeatCookingState : MonoBehaviour
     public bool isSide1Burned = false;
     public bool isSide2Burned = false;
 
+
+    [HideInInspector] public bool lockedOnTable = false;
+
     Rigidbody rb;
 
     void Awake() => rb = GetComponent<Rigidbody>();
@@ -51,6 +54,8 @@ public class MeatCookingState : MonoBehaviour
     // Activa/desactiva físicas del rigidbody
     public void SetKinematic(bool k)
     {
+        if (lockedOnTable && !k) return; // bloqueado en mesa, kinematic
+
         if (!rb) return;
 
         if (k)
@@ -61,6 +66,15 @@ public class MeatCookingState : MonoBehaviour
 
         rb.isKinematic = k;
         rb.useGravity = !k;
+
+
+    }
+
+    public void LockOnTable(bool locked)
+    {
+        lockedOnTable = locked;
+        SetKinematic(locked);
+        SetCollidersAsTrigger(false);
     }
 
     // Todos los colliders del objeto como trigger 

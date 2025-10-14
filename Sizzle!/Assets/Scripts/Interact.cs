@@ -331,7 +331,14 @@ public class Interact : MonoBehaviour
         objeto.transform.localPosition = Vector3.zero;
         objeto.transform.localRotation = Quaternion.identity;
 
+
         ConfigurarFisicaObjeto(objeto, true);
+
+        var meat = objeto.GetComponent<MeatCookingState>();
+        if (meat != null)
+        {
+            meat.LockOnTable(false);
+        }
 
         foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
             c.isTrigger = true;
