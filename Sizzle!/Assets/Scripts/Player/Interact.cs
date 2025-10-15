@@ -127,7 +127,7 @@ public class Interact : MonoBehaviour
     {
         if (!camaraJugador) { LimpiarHighlight(); objetoSeleccionado = null; return; }
 
-        var todos = FindObjectsOfType<GameObject>(false);
+        var todos = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
         int mask = pickableLayers.value == 0 ? ~0 : pickableLayers.value;
         var slot = SlotMano();
 
@@ -235,7 +235,7 @@ public class Interact : MonoBehaviour
     // Sartén apuntado (por centro de pantalla y distancia)
     CookMeatInPan DetectarPanApuntado()
     {
-        var pans = FindObjectsOfType<CookMeatInPan>(false);
+        var pans = Object.FindObjectsByType<CookMeatInPan>(FindObjectsSortMode.None);
         if (pans.Length == 0) return null;
 
         CookMeatInPan mejor = null;
@@ -265,7 +265,7 @@ public class Interact : MonoBehaviour
 
     CookFriesInFryer DetectarFreidoraApuntada()
     {
-        var fryers = FindObjectsOfType<CookFriesInFryer>(false);
+        var fryers = Object.FindObjectsByType<CookFriesInFryer>(FindObjectsSortMode.None);
         if (fryers.Length == 0) return null;
 
         CookFriesInFryer mejor = null;
@@ -314,10 +314,27 @@ public class Interact : MonoBehaviour
         var rb = objeto.GetComponent<Rigidbody>();
         if (!rb) return;
 
-        rb.isKinematic = enMano;
-        rb.useGravity = !enMano;
-        if (!enMano) rb.linearVelocity = Vector3.zero;
+        if (enMano)
+        {
+            // si vamos a ponerlo kinematic, solo zeroeamos si antes era dinámico
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+        else
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            // ahora sí podemos zeroear (no es kinematic)
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
+
 
     void AgarrarObjeto(GameObject objeto)
     {
@@ -374,30 +391,42 @@ public class Interact : MonoBehaviour
         if (!slot || slot.childCount == 0) return;
 
         var objeto = slot.GetChild(0).gameObject;
+        objeto.transform.SetParent(null);
 
-        // === Mantener escala mundial original al salir al mundo (parent=null) ===
-        Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
-        WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, null, Sw);
-
-        // Suelta delante de la cámara
+        // posición de drop
         objeto.transform.position = camaraJugador.transform.position + camaraJugador.transform.forward * distanciaSoltar;
 
         var rb = objeto.GetComponent<Rigidbody>();
         if (rb)
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            rb.linearVelocity = Vector3.zero;
+            rb.isKinematic = false;        // dinámico
+            rb.useGravity = true;          // gravedad ON
+            rb.linearVelocity = Vector3.zero;    // limpia antes del impulso
             rb.angularVelocity = Vector3.zero;
 
+            // impulso natural
             Vector3 impulso = camaraJugador.transform.forward * fuerzaLanzamiento + Vector3.up * fuerzaVertical;
             rb.AddForce(impulso, ForceMode.VelocityChange);
             rb.AddTorque(Random.insideUnitSphere * torqueLanzamiento, ForceMode.VelocityChange);
         }
 
+        // asegura colliders sólidos
         foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
             c.isTrigger = false;
 
+        // por si vienen de mesa/freidora: quita flags especiales
+        if (objeto.TryGetComponent(out MeatCookingState meat))
+        {
+            meat.LockOnTable(false);
+            meat.SetCollidersAsTrigger(false);
+        }
+        if (objeto.TryGetComponent(out FriesCookingState fries))
+        {
+            fries.isInFryer = false;              // fuera de freidora
+            fries.SetCollidersAsTrigger(false);   // colliders sólidos
+        }
+
+        // restaurar colisiones con el jugador
         if (jugador)
         {
             var playerCol = jugador.GetComponent<Collider>();
@@ -408,9 +437,10 @@ public class Interact : MonoBehaviour
     }
 
 
+
     CuttingBoard DetectarTablaApuntada()
     {
-        var tablas = FindObjectsOfType<CuttingBoard>(false);
+        var tablas = Object.FindObjectsByType<CuttingBoard>(FindObjectsSortMode.None);
         if (tablas.Length == 0) return null;
 
         CuttingBoard mejor = null;
@@ -447,7 +477,7 @@ public class Interact : MonoBehaviour
 
     MesaArmado DetectarMesaApuntada()
     {
-        var mesas = FindObjectsOfType<MesaArmado>(false);
+        var mesas = Object.FindObjectsByType<MesaArmado>(FindObjectsSortMode.None);
         if (mesas.Length == 0) return null;
 
         MesaArmado mejor = null;

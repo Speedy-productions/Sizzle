@@ -25,11 +25,14 @@ public class CookFriesInFryer : MonoBehaviour
     private float timeAcc = 0f;
 
     private bool hasPlayerFries = false;
-    private float currentCookingTime = 0f;
+   
+
+    private Interact inter;
 
     void Start()
     {
         Debug.Log($"[FRYER] Start -> ResetSystem() en {name}");
+        inter = Object.FindFirstObjectByType<Interact>();
         ResetSystem();
     }
 
@@ -64,7 +67,7 @@ public class CookFriesInFryer : MonoBehaviour
         // Detecta si sacaron las papas de la cesta
         if (currentFries && currentFries.transform.parent != basketCenter)
         {
-            Debug.LogWarning($"[FRYER] {name} -> currentFries ya no tiene parent basketCenter. StopAll()");
+            Debug.Log($"[FRYER] {name} -> currentFries ya no tiene parent basketCenter. StopAll()");
             StopAll();
         }
     }
@@ -75,7 +78,7 @@ public class CookFriesInFryer : MonoBehaviour
 
         if (!fries || isCooking)
         {
-            Debug.LogWarning($"[FRYER] TryStartCooking() -> Abort. fries={(fries != null)}, isCooking={isCooking}");
+            Debug.Log($"[FRYER] TryStartCooking() -> Abort. fries={(fries != null)}, isCooking={isCooking}");
             return false;
         }
 
@@ -150,7 +153,7 @@ public class CookFriesInFryer : MonoBehaviour
 
         if (aimingFryer && hasFriesInHand && !isCooking && !currentFries)
         {
-            var inter = FindObjectOfType<Interact>();
+            var inter = Object.FindAnyObjectByType<Interact>();
             var fries = inter ? inter.GetComponentInChildren<FriesCookingState>() : null;
 
             Debug.Log($"[FRYER] ShowAimHint() aiming={aimingFryer} hasFriesInHand={hasFriesInHand} inter={(inter != null)} fries={(fries != null)} estado={(fries ? fries.currentState : 0)}");
@@ -208,7 +211,7 @@ public class CookFriesInFryer : MonoBehaviour
         SetDecorativeFriesToCooking();
         isCooking = true;
         hasPlayerFries = true;
-        currentCookingTime = 0f;
+      
         if (cookingUI) cookingUI.SetVisible(true);
 
         Debug.Log($"[FRYER] Decorativas -> Cooking (activadas) en {name}");
@@ -219,7 +222,7 @@ public class CookFriesInFryer : MonoBehaviour
         SetDecorativeFriesToRaw();
         isCooking = false;
         hasPlayerFries = false;
-        currentCookingTime = 0f;
+        
         if (cookingUI) cookingUI.SetVisible(false);
 
         Debug.Log($"[FRYER] Decorativas -> Raw (desactivadas) en {name}");

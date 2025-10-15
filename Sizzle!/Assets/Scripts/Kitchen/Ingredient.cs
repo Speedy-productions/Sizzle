@@ -23,6 +23,8 @@ public class Ingredient : MonoBehaviour
         var meat = GetComponent<MeatCookingState>();
         if (meat == null) return false;
 
-        return meat.currentState == MeatCookingState.CookingState.Cooked;
+        // Acepta carne COCINADA o QUEMADA para el armado
+        return meat.currentState == MeatCookingState.CookingState.Cooked
+            || meat.currentState == MeatCookingState.CookingState.Burned;
     }
 }

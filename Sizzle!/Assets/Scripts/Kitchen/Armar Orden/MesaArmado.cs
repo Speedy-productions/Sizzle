@@ -127,7 +127,6 @@ public class MesaArmado : MonoBehaviour
 
     void PrepareForTable(GameObject obj)
     {
-        // Si es carne, cortamos estado de sartén y la bloqueamos en mesa
         if (obj.TryGetComponent(out MeatCookingState meat))
         {
             meat.SetOnPan(false);
@@ -137,17 +136,21 @@ public class MesaArmado : MonoBehaviour
         {
             if (obj.TryGetComponent(out Rigidbody rb))
             {
+                // si actualmente es dinámico, zeroeamos antes de pasarlo a kinematic
+                if (!rb.isKinematic)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
                 rb.isKinematic = true;
                 rb.useGravity = false;
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
             }
 
-            // Asegurar colliders sólidos (no trigger) para apilar
             foreach (var c in obj.GetComponentsInChildren<Collider>(true))
                 c.isTrigger = false;
         }
     }
+
 
     string NormalizeName(string name)
     {

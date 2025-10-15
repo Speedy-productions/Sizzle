@@ -54,21 +54,28 @@ public class MeatCookingState : MonoBehaviour
     // Activa/desactiva físicas del rigidbody
     public void SetKinematic(bool k)
     {
-        if (lockedOnTable && !k) return; // bloqueado en mesa, kinematic
-
+        if (lockedOnTable && !k) return; // no permitir soltar si está bloqueado
         if (!rb) return;
+
+        bool wasKinematic = rb.isKinematic;
 
         if (k)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!wasKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
-
-        rb.isKinematic = k;
-        rb.useGravity = !k;
-
-
+        else
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
     }
+
 
     public void LockOnTable(bool locked)
     {

@@ -31,7 +31,7 @@ public class FriesCookingState : MonoBehaviour
         friesRenderers = GetComponentsInChildren<Renderer>(true);
         if (friesRenderers == null || friesRenderers.Length == 0)
         {
-            Debug.LogWarning("[FriesCookingState] No se encontraron renderers en hijos de la instancia.");
+            Debug.Log("[FriesCookingState] No se encontraron renderers en hijos de la instancia.");
         }
 
         initialWorldRot   = transform.rotation;   // rotación “correcta” del prefab en mundo
@@ -58,9 +58,23 @@ public class FriesCookingState : MonoBehaviour
     void SetKinematic(bool k)
     {
         if (!rb) return;
-        if (k) { rb.linearVelocity = Vector3.zero; rb.angularVelocity = Vector3.zero; }
-        rb.isKinematic = k;
-        rb.useGravity = !k;
+        bool wasKinematic = rb.isKinematic;
+
+        if (k)
+        {
+            if (!wasKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+        else
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
     }
 
     public void SetCollidersAsTrigger(bool t)
