@@ -1,8 +1,10 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class TemporizadorUI : MonoBehaviour
 {
+    [SerializeField] private Slider slider;
     public TMP_Text textoTemporizador;
     public float tiempoInicial = 180f; // 3 minutos en segundos
     private float tiempoRestante;
@@ -18,6 +20,11 @@ public class TemporizadorUI : MonoBehaviour
         if (corriendo)
         {
             tiempoRestante -= Time.deltaTime;
+
+            if (tiempoRestante > 0)
+            {
+                slider.value = tiempoRestante / tiempoInicial;
+            }
 
             if (tiempoRestante < 0)
             {
