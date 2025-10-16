@@ -10,10 +10,10 @@ public class Interact : MonoBehaviour
 
     [Header("Distancias")]
     public float distanciaInteraccion = 2.5f; // pickables
-    public float distanciaSoltar = 1.2f;    // drop frente a la cámara
+    public float distanciaSoltar = 1.2f;      // drop frente a la cámara
 
     [Header("Capas")]
-    public LayerMask pickableLayers;        // qué se puede agarrar
+    public LayerMask pickableLayers;          // qué se puede agarrar
 
     [Header("Detección por pantalla")]
     [Range(0.01f, 0.3f)] public float radioPantalla = 0.12f;
@@ -47,45 +47,27 @@ public class Interact : MonoBehaviour
     void Update()
     {
         DetectarObjetoPorCapaSinRaycast_ConHighlight();
-
-        // Sartén apuntado (se usa para T y Q)
         CookMeatInPan panApuntado = DetectarPanApuntado();
         MeatCookingState carneEnMano = GetCarneEnMano();
+
+        // Detectar tabla de cortar
+        CuttingBoard tablaApuntada = DetectarTablaApuntada();
+        SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
+
+        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
+        MesaArmado mesaApuntada = DetectarMesaApuntada();
+        Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
+
+        // --- FREIDORA: detectar y usar mientras sostienes papas ---
+        CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
+        FriesCookingState friesEnMano = GetFriesEnMano();
 
         if (panApuntado != ultimoPanApuntado)
         {
             if (ultimoPanApuntado) ultimoPanApuntado.ShowAimHint(false, false);
             ultimoPanApuntado = panApuntado;
         }
-
         if (panApuntado) panApuntado.ShowAimHint(true, carneEnMano != null);
-
-        // T: empezar a cocinar en el sartén apuntado
-        if (Input.GetKeyDown(KeyCode.T) && panApuntado && carneEnMano)
-            panApuntado.TryStartCooking(carneEnMano);
-
-        // Detectar tabla de cortar
-        CuttingBoard tablaApuntada = DetectarTablaApuntada();
-        SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
-
-        // T: colocar ingrediente en la tabla apuntada (cortar)
-        if (Input.GetKeyDown(KeyCode.T) && tablaApuntada && ingredienteEnMano)
-            tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
-
-        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
-        MesaArmado mesaApuntada = DetectarMesaApuntada();
-        Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
-
-        if (Input.GetKeyDown(KeyCode.T) && mesaApuntada && ingredienteEnManoPedido)
-            mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
-
-        // Q: voltear solo el sartén apuntado
-        if (Input.GetKeyDown(KeyCode.Q) && panApuntado)
-            panApuntado.TryFlipFromInteraccion();
-
-        // --- FREIDORA: detectar y usar mientras sostienes papas ---
-        CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
-        FriesCookingState friesEnMano = GetFriesEnMano();
 
         // si cambió la freidora apuntada, oculta hint de la anterior
         if (freidoraApuntada != ultimaFreidoraApuntada)
@@ -96,23 +78,50 @@ public class Interact : MonoBehaviour
         }
 
         // mostrar hint en la freidora actual
-        if (freidoraApuntada)
-            freidoraApuntada.ShowAimHint(true, friesEnMano != null);
+        if (freidoraApuntada) freidoraApuntada.ShowAimHint(true, friesEnMano != null);
 
-        // T: empezar a freír en la freidora apuntada
-        if (Input.GetKeyDown(KeyCode.T) && freidoraApuntada && friesEnMano)
+
+        // ========================================= CONTROLES =========================================
+
+        // E: empezar a cocinar en el sartén apuntado (cocinar)
+        if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
         {
-            Debug.Log($"[INTERACT] T -> TryStartCooking FRIES con {friesEnMano.name} en {freidoraApuntada.name}");
-            bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
-            Debug.Log($"[INTERACT] TryStartCooking(FRIES) resultado={ok}");
+            panApuntado.TryStartCooking(carneEnMano);
+            return;
         }
 
+        // Q: voltear solo el sartén apuntado (cocinar)
+        if (Input.GetKeyDown(KeyCode.Q) && panApuntado && carneEnMano == null)
+        {
+            panApuntado.TryFlipFromInteraccion();
+            return;
+        }
 
-        // E/G: agarrar/soltar
+        // E: colocar ingrediente en la tabla apuntada (cortar)
+        if (Input.GetKeyDown(KeyCode.E) && tablaApuntada && ingredienteEnMano)
+        {
+            tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
+            return;
+        }
+
+        // E: colocar ingrediente en la mesa (armar)
+        if (Input.GetKeyDown(KeyCode.E) && mesaApuntada && ingredienteEnManoPedido)
+        {
+            mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
+            return;
+        }
+
+        // E: empezar a freír en la freidora apuntada (freir)
+        if (Input.GetKeyDown(KeyCode.E) && freidoraApuntada && friesEnMano)
+        {
+            bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
+            return;
+        }
+
+        // E/Q: agarrar/soltar
         if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
-
-        if (Input.GetKeyDown(KeyCode.G) && ObjetosEnMano() > 0)
+        if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
             SoltarObjeto();
     }
 
