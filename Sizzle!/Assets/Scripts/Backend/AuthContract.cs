@@ -1,3 +1,10 @@
+// -----------------------------------------------
+// IAuth.cs
+// Resumen:
+// - Define una interfaz mínima para autenticación.
+// - La implementación actual (WebAuthProvider) envía credenciales
+//   por HTTPS a la API (TLS) y el server valida con bcrypt.
+// -----------------------------------------------
 using System;
 
 namespace Sizzle.Auth
@@ -10,6 +17,7 @@ namespace Sizzle.Auth
 
     public static class ServerConfig
     {
+        // endpoint HTTPS (ngrok durante desarrollo)
         public const string BaseUrl = "https://edaphic-coralie-preapply.ngrok-free.dev";
     }
 }

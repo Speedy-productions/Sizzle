@@ -1,4 +1,10 @@
-// Assets/Scripts/Backend/WebAuthProvider.cs
+// -----------------------------------------------
+// WebAuthProvider.cs
+// Resumen :
+// - Cliente HTTP de Unity. Envía JSON sobre HTTPS a /auth/login y /auth/register.
+// - La confidencialidad e integridad la aporta TLS (HTTPS). No envia contraseñas en claro “legibles” en la red.
+// - El servidor valida hash bcrypt y responde { ok, user|error }.
+// -----------------------------------------------
 using System;
 using System.Text;
 using UnityEngine;
@@ -20,10 +26,14 @@ namespace Sizzle.Auth
         }
 
         public void ValidateCredentials(string emailOrUser, string password, Action<bool, string> onResult)
-            => _runner.StartCoroutine(PostJson("/auth/login", $"{{\"emailOrUser\":\"{Esc(emailOrUser)}\",\"password\":\"{Esc(password)}\"}}", onResult));
+            => _runner.StartCoroutine(PostJson("/auth/login",
+                 $"{{\"emailOrUser\":\"{Esc(emailOrUser)}\",\"password\":\"{Esc(password)}\"}}",
+                 onResult));
 
         public void Register(string username, string email, string password, Action<bool, string> onResult)
-            => _runner.StartCoroutine(PostJson("/auth/register", $"{{\"username\":\"{Esc(username)}\",\"email\":\"{Esc(email)}\",\"password\":\"{Esc(password)}\"}}", onResult));
+            => _runner.StartCoroutine(PostJson("/auth/register",
+                 $"{{\"username\":\"{Esc(username)}\",\"email\":\"{Esc(email)}\",\"password\":\"{Esc(password)}\"}}",
+                 onResult));
 
         System.Collections.IEnumerator PostJson(string path, string json, Action<bool, string> cb)
         {

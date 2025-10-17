@@ -1,3 +1,10 @@
+// -----------------------------------------------
+// RegisterUI.cs
+// Resumen:
+// - Recoge username, email y contraseña, valida básico en cliente,
+//   y llama a AuthService.Register (HTTPS).
+// - Si ok, limpia inputs y vuelve a la pantalla de login.
+// -----------------------------------------------
 using UnityEngine;
 using TMPro;
 using Sizzle.Auth;
@@ -16,23 +23,6 @@ public class RegisterUI : MonoBehaviour
 
     void OnEnable() => ClearAll();
 
-    void Awake()
-    {
-        Debug.Log($"[RegisterUI:{GetInstanceID()}] Awake. " +
-                  $"username={Has(usernameInput)} email={Has(emailInput)} " +
-                  $"pass={Has(passwordInput)} rep={Has(repeatPasswordInput)}");
-    }
-
-    string Has(UnityEngine.Object o) => o ? "OK" : "NULL";
-
-    [ContextMenu("Dump bindings")]
-    void DumpBindings()
-    {
-        Debug.Log($"[RegisterUI:{GetInstanceID()}] username={usernameInput?.name} " +
-                  $"email={emailInput?.name} pass={passwordInput?.name} " +
-                  $"rep={repeatPasswordInput?.name} menu={menuManager?.name}");
-    }
-
     void ClearAll()
     {
         usernameInput?.SetTextWithoutNotify("");
@@ -46,41 +36,26 @@ public class RegisterUI : MonoBehaviour
         ClearAll();
         if (menuManager && !string.IsNullOrEmpty(loginMenuName))
             menuManager.ShowMenu(loginMenuName);
-        else
-            Debug.LogWarning("[RegisterUI] MenuManager o loginMenuName no configurados.");
     }
 
     public void OnClickRegister()
     {
         if (!usernameInput || !emailInput || !passwordInput || !repeatPasswordInput)
-        {
-            Debug.LogError($"[RegisterUI:{GetInstanceID()}] Referencias NULL. ¿El botón apunta a este objeto?");
-            DumpBindings();
             return;
-        }
 
         var user = usernameInput.text?.Trim() ?? "";
         var mail = emailInput.text?.Trim() ?? "";
         var pass = passwordInput.text ?? "";
         var rep = repeatPasswordInput.text ?? "";
 
-        if (string.IsNullOrWhiteSpace(user) ||
-            string.IsNullOrWhiteSpace(mail) ||
-            string.IsNullOrEmpty(pass) ||
-            string.IsNullOrEmpty(rep))
-        {
-            Debug.LogWarning("[RegisterUI] Faltan campos");
-            return;
-        }
-        if (pass != rep)
-        {
-            Debug.LogWarning("[RegisterUI] Las contraseñas no coinciden");
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(mail) ||
+            string.IsNullOrEmpty(pass) || string.IsNullOrEmpty(rep)) return;
 
-        AuthService.Register(user, mail, pass, (ok, err) =>
+        if (pass != rep) return;
+
+        AuthService.Register(user, mail, pass, (ok, _err) =>
         {
-            if (!ok) { Debug.LogError("[RegisterUI] " + err); return; }
+            if (!ok) return;
             ClearAll();
             OnClickGoLogin();
         });
