@@ -280,7 +280,7 @@ Todo lo que sale de Unity y llega al servidor viaja **cifrado y autenticado** po
 No se exponen usuarios ni contraseñas en claro en la red.
 
 > ⚙️ No se implementa RSA/AES manualmente en Unity; lo maneja TLS.  
-> Por eso hay directamente archivos `public.pem` o `private.pem` en el proyecto.
+> Por eso no hay directamente archivos `public.pem` o `private.pem` en el proyecto.
 
 ---
 
