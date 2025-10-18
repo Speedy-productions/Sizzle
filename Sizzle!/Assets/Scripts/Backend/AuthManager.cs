@@ -28,4 +28,12 @@ public static class AuthService
         if (_provider == null) { onResult?.Invoke(false, "AuthService no inicializado"); return; }
         _provider.Register(username, email, password, onResult);
     }
+
+    public static void StartGoogleLogin(Action<bool, string> onResult)
+    {
+        if (_provider is WebAuthProvider web)
+            web.StartGoogleLogin(onResult);
+        else
+            onResult?.Invoke(false, "Proveedor no soporta Google");
+    }
 }

@@ -67,5 +67,51 @@ namespace Sizzle.Auth
         }
 
         static string Esc(string s) => (s ?? "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        public void StartGoogleLogin(Action<bool, string> onResult)
+        {
+            // genera estado único (puede ser Guid)
+            var state = System.Guid.NewGuid().ToString("N");
+            // abre el navegador del sistema: /auth/google/start?state=...
+            Application.OpenURL(_baseUrl + "/auth/google/start?state=" + state);
+            _runner.StartCoroutine(PollGoogleTx(state, onResult));
+        }
+
+        private System.Collections.IEnumerator PollGoogleTx(string state, Action<bool, string> cb)
+        {
+            var url = _baseUrl + "/auth/google/tx/" + state;
+            var deadline = Time.realtimeSinceStartup + 90f; // 90s timeout
+
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                using (var req = UnityWebRequest.Get(url))
+                {
+                    yield return req.SendWebRequest();
+#if UNITY_2020_2_OR_NEWER
+            bool error = req.result != UnityWebRequest.Result.Success;
+#else
+                    bool error = req.isNetworkError || req.isHttpError;
+#endif
+                    if (!error)
+                    {
+                        var json = req.downloadHandler.text;
+                        // estructura esperada: { status:'pending'|'ok'|'error', data?, error? }
+                        if (json.Contains("\"status\":\"ok\""))
+                        {
+                            cb(true, null);
+                            yield break;
+                        }
+                        if (json.Contains("\"status\":\"error\""))
+                        {
+                            cb(false, "Google auth error");
+                            yield break;
+                        }
+                    }
+                }
+                yield return new WaitForSeconds(2f); // polling cada 2s
+            }
+            cb(false, "Timeout esperando Google");
+        }
+
     }
 }

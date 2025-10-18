@@ -18,6 +18,6 @@ namespace Sizzle.Auth
     public static class ServerConfig
     {
         // endpoint HTTPS (ngrok durante desarrollo)
-        public const string BaseUrl = "https://edaphic-coralie-preapply.ngrok-free.dev";
+        public const string BaseUrl = "https://serversizzle.onrender.com";
     }
 }
