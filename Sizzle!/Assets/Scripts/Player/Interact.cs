@@ -40,12 +40,13 @@ public class Interact : MonoBehaviour
     CookMeatInPan ultimoPanApuntado;
     CookFriesInFryer ultimaFreidoraApuntada;
 
-
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
 
     void Update()
     {
+        NpcFollowPath npcApuntado = DetectarNPCApuntado();
+
         DetectarObjetoPorCapaSinRaycast_ConHighlight();
         CookMeatInPan panApuntado = DetectarPanApuntado();
         MeatCookingState carneEnMano = GetCarneEnMano();
@@ -82,6 +83,12 @@ public class Interact : MonoBehaviour
 
 
         // ========================================= CONTROLES =========================================
+
+        if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
+        {
+            npcApuntado.OnPlayerInteracted();
+            return;
+        }
 
         // E: empezar a cocinar en el sartén apuntado (cocinar)
         if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
@@ -559,6 +566,44 @@ public class Interact : MonoBehaviour
         name = name.Replace("Sliced", "").Replace("Slice", "").Replace("Cortado", "");
         return name.Trim();
     }
+
+    NpcFollowPath DetectarNPCApuntado()
+    {
+        var npcs = Object.FindObjectsByType<NpcFollowPath>(FindObjectsSortMode.None);
+        if (npcs.Length == 0) return null;
+
+        NpcFollowPath mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
+
+        foreach (var npc in npcs)
+        {
+            // If the NPC isn't waiting for the player, skip it
+            if (!npc.IsWaitingForPlayer()) continue;
+
+            var r = npc.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : npc.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue;
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore)
+            {
+                mejorScore = score;
+                mejor = npc;
+            }
+        }
+
+        return mejor;
+    }
+
 
 
     void OnDisable() => LimpiarHighlight();
