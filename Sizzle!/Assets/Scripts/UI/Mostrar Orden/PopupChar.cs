@@ -26,7 +26,11 @@ public class PopupChar : MonoBehaviour
     public float switchInterval = 1f;
     public float popupDuration = 5f;
 
+    [HideInInspector]
+    public NpcFollowPath npcFollowPath;
+
     private Popup currentPopup;
+    private bool notifyCoroutineRunning = false;
 
     // Obtiene un sprite aleatorio de un grupo de sprites de comida por su nombre
     private Sprite GetSpriteByName(string name)
@@ -54,7 +58,6 @@ public class PopupChar : MonoBehaviour
             Debug.LogError("OrderManager no inicializado antes de PopupChar");
             return;
         }
-        ShowPopup();
     }
     public void ShowPopup()
     {
@@ -64,13 +67,27 @@ public class PopupChar : MonoBehaviour
             return;
         }
 
+        if (currentPopup != null)
+        {
+            Debug.LogWarning("Popup ya activo. Ignorando ShowPopup() duplicado.");
+            return;
+        }
+
         currentPopup = Instantiate(popupPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
-        StartCoroutine(AlternateSprites());
+        StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
 
         Destroy(currentPopup.gameObject, popupDuration);
+        if (!notifyCoroutineRunning)
+            StartCoroutine(NotifyNpcAfterPopup(popupDuration));
     }
 
-    IEnumerator AlternateSprites()
+    private IEnumerator NotifyNpcAfterPopup()
+    {
+        yield return new WaitForSeconds(popupDuration); // Wait until popup is destroyed
+        npcFollowPath?.OnPopupClosed(); // Tell the NPC it can resume
+    }
+
+    private IEnumerator AlternateSpritesLimitedTime(float duration)
     {
         if (currentPopup == null)
         {
@@ -78,13 +95,15 @@ public class PopupChar : MonoBehaviour
             yield break;
         }
 
-        while (currentPopup != null)
+        float endTime = Time.time + duration;
+
+        while (Time.time < endTime)
         {
             Order newOrder = OrderManager.Instance.GenerateHamburgerOrder();
             if (newOrder == null)
             {
                 Debug.LogError("No se generó una orden");
-                yield break;
+                break;
             }
             OrderManager.Instance.SetCurrentOrder(newOrder);
 
@@ -93,11 +112,21 @@ public class PopupChar : MonoBehaviour
 
             foreach (string ingredientName in newOrder.ingredients)
             {
+                if (Time.time >= endTime) break;
                 Sprite foodSprite = GetSpriteByName(ingredientName);
                 currentPopup.Show(transform, foodSprite, nextBubbleSprite);
                 yield return new WaitForSeconds(switchInterval);
             }
-
         }
+
+        currentPopup = null;
+    }
+
+    private IEnumerator NotifyNpcAfterPopup(float duration)
+    {
+        notifyCoroutineRunning = true;
+        yield return new WaitForSeconds(duration);
+        npcFollowPath?.OnPopupClosed();
+        notifyCoroutineRunning = false;
     }
 }
