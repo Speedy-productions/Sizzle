@@ -1,9 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
 public class Blade : MonoBehaviour
 {
-    public Camera cam;
+    private Camera cam;
     [Tooltip("Cuánto suma por click (0-1)")]
     public float fillPerClick = 0.25f;
     [Tooltip("Velocidad a la que se vacía por segundo")]
@@ -15,11 +17,36 @@ public class Blade : MonoBehaviour
 
     void Start()
     {
-        if (cam == null) cam = Camera.main;
+        StartCoroutine(WaitForLocalCamera());
+    }
+
+    IEnumerator WaitForLocalCamera()
+    {
+        // Espera hasta encontrar una cámara del jugador local (PhotonView.IsMine)
+        while (cam == null)
+        {
+            foreach (var view in FindObjectsByType<PhotonView>(FindObjectsSortMode.None))
+            {
+                if (view.IsMine)
+                {
+                    Camera playerCam = view.GetComponentInChildren<Camera>();
+                    if (playerCam != null)
+                    {
+                        cam = playerCam;
+                        Debug.Log($"Blade: Cámara del jugador local asignada: {cam.name}");
+                        yield break;
+                    }
+                }
+            }
+
+            yield return new WaitForSeconds(0.2f); // esperar un poco y reintentar
+        }
     }
 
     void Update()
     {
+        if (cam == null) return;
+        
         // Click: intentar incrementar barra sobre ingrediente en tabla
         if (Input.GetMouseButtonDown(0))
         {
@@ -50,6 +77,12 @@ public class Blade : MonoBehaviour
 
     void HandleClick()
     {
+        if (cam == null)
+        {
+            Debug.LogError("Blade: Cámara no asignada al intentar hacer click.");
+            return;
+        }
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (!Physics.Raycast(ray, out hit)) return;
@@ -100,5 +133,10 @@ public class Blade : MonoBehaviour
             currentIngredient = null;
             currentFillImage = null;
         }
+    }
+
+    public void SetCamera(Camera newCam)
+    {
+        cam = newCam;
     }
 }

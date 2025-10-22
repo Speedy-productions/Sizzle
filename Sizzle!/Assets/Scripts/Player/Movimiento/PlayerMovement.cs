@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -23,6 +24,10 @@ public class PlayerMovement : MonoBehaviour
 
     public Animator anim;
 
+    private PhotonView view;
+    Interact interactScript;
+    HeadLook headLookScript;
+
     float horizontalInput;
     float verticalInput;
 
@@ -34,10 +39,31 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        view = GetComponent<PhotonView>();
+
+        if (interactScript == null)
+        {
+            interactScript = GetComponent<Interact>();
+        }
+        if (headLookScript == null)
+        {
+            headLookScript = GetComponent<HeadLook>();
+        }
+
+        if (!view.IsMine)
+        {
+            if (interactScript != null) interactScript.enabled = false;
+            if (headLookScript != null) headLookScript.enabled = false;
+
+            this.enabled = false;
+            return;
+        }
     }
 
     private void Update()
     {
+        if (!view.IsMine) return;
+
         // Check if grounded
         grounded = Physics.SphereCast(transform.position, 0.3f, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f, whatIsGround);
 
@@ -60,6 +86,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!view.IsMine) return;
+
         if (grounded && Mathf.Approximately(horizontalInput, 0f) && Mathf.Approximately(verticalInput, 0f))
         {
             Vector3 v = rb.linearVelocity;

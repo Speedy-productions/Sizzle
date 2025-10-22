@@ -154,6 +154,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6466735485908541966}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8380329723042229604}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7361462564736521807}
   m_SourcePrefab: {fileID: 100100000, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
 --- !u!4 &955131072813511212 stripped
 Transform:
@@ -163,6 +169,11 @@ Transform:
 --- !u!95 &3345450616181744742 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+  m_PrefabInstance: {fileID: 9153557677339531767}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6404376990187005434 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6348084510573757427, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
   m_PrefabInstance: {fileID: 9153557677339531767}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &8342515769679176870 stripped
@@ -259,6 +270,60 @@ CapsuleCollider:
   m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8380329723042229604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8342515769679176870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4370d159c3efcd643b0844b386e14f46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Interaccion
+  manoJugador: {fileID: 6404376990187005434}
+  jugador: {fileID: 0}
+  camaraJugador: {fileID: 0}
+  distanciaInteraccion: 15
+  distanciaSoltar: 5
+  pickableLayers:
+    serializedVersion: 2
+    m_Bits: 4096
+  radioPantalla: 0.14
+  distanciaPan: 14
+  radioPantallaPan: 0.15
+  puntoDeAgarre: {fileID: 0}
+  fuerzaLanzamiento: 14
+  fuerzaVertical: 10
+  torqueLanzamiento: 10
+  highlightOverlayMat: {fileID: 2100000, guid: 1f09d59251233c34b8a946efb8bb5406, type: 2}
+  highlightColor: {r: 0.4071842, g: 1, b: 0.19999999, a: 1}
+  highlightIntensity: 1.5
+  instanciarOverlay: 1
+  playerCamera: {fileID: 0}
+--- !u!114 &7361462564736521807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8342515769679176870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!4 &8686671037022223900 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}

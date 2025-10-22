@@ -1,4 +1,5 @@
 using UnityEngine;
+using Photon.Pun;
 
 public class HeadLook : MonoBehaviour
 {
@@ -10,10 +11,39 @@ public class HeadLook : MonoBehaviour
 
     Quaternion headInitialLocalRot;
     float initialCameraPitch;
+    private PhotonView view;
 
     void Start()
     {
-        if (headBone == null || cameraTransform == null)
+        view = GetComponentInParent<PhotonView>();
+
+        if (view != null && !view.IsMine) // Solo habilitar para el jugador local
+        {
+            enabled = false;
+            return;
+        }
+
+        if (cameraTransform == null)
+        {
+            Camera cam = GetComponentInParent<Camera>();
+            if (cam == null)
+            {
+                cam = GetComponentInChildren<Camera>();
+            }
+            if (cam != null)
+            {
+                cameraTransform = cam.transform;
+                Debug.Log($"HeadLook: cámara asignada automáticamente: {cameraTransform.name}");
+            }
+            else
+            {
+                Debug.LogWarning("HeadLook: no se encontró la cámara del jugador local.");
+                enabled = false;
+                return;
+            }
+        }
+
+        if (headBone == null)
         {
             Debug.LogWarning("HeadLook: asigna headBone y cameraTransform en el Inspector.");
             enabled = false;
