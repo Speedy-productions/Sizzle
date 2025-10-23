@@ -40,6 +40,8 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - CargarEscena
+  - RPC_AvisarAgarrarObjeto
+  - RPC_AvisarSoltarObjeto
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

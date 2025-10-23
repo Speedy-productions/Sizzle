@@ -261,17 +261,17 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 697084030}
+  - {fileID: 1984093784}
   - {fileID: 1678848833}
   - {fileID: 750627035}
-  - {fileID: 1984093784}
+  - {fileID: 589784647}
+  - {fileID: 984098781}
   - {fileID: 241723168}
   - {fileID: 470817885}
-  - {fileID: 984098781}
-  - {fileID: 1535983761}
-  - {fileID: 1391129177}
-  - {fileID: 1256485802}
-  - {fileID: 589784647}
   - {fileID: 2096774781}
+  - {fileID: 1391129177}
+  - {fileID: 1535983761}
+  - {fileID: 1256485802}
   - {fileID: 1160466997}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -911,6 +911,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 241723169}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 241723170}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 241723171}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &241723159 stripped
 GameObject:
@@ -1020,6 +1026,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &241723170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241723159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 241723171}
+  sceneViewId: 9
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &241723171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 241723159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &263349574
 GameObject:
   m_ObjectHideFlags: 0
@@ -1619,6 +1681,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 470817886}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 470817887}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 470817888}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &470817876 stripped
 GameObject:
@@ -1728,6 +1796,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &470817887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470817876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 470817888}
+  sceneViewId: 10
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &470817888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470817876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &475494167
 GameObject:
   m_ObjectHideFlags: 0
@@ -2054,6 +2178,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 589784648}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 589784649}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 589784650}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &589784638 stripped
 GameObject:
@@ -2163,6 +2293,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &589784649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589784638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 589784650}
+  sceneViewId: 7
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &589784650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 589784638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &590446514 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8416272007918961125, guid: 2a52c4f2811f55f42b306572dba49ba1, type: 3}
@@ -2479,6 +2665,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 697084031}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 697084033}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &697084029 stripped
 GameObject:
@@ -2528,6 +2717,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.79, y: 0.58, z: 1.71}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &697084033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 697084029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 15
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &713282989
 GameObject:
   m_ObjectHideFlags: 0
@@ -3343,6 +3554,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 984098782}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 984098783}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 984098784}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &984098772 stripped
 GameObject:
@@ -3452,6 +3669,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &984098783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 984098772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 984098784}
+  sceneViewId: 8
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &984098784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 984098772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &990975696
 GameObject:
   m_ObjectHideFlags: 0
@@ -3558,6 +3831,7 @@ GameObject:
   - component: {fileID: 992811275}
   - component: {fileID: 992811274}
   - component: {fileID: 992811273}
+  - component: {fileID: 992811278}
   m_Layer: 0
   m_Name: TablaCortar
   m_TagString: Untagged
@@ -3672,6 +3946,28 @@ Transform:
   - {fileID: 1546083036}
   m_Father: {fileID: 1066184084}
   m_LocalEulerAnglesHint: {x: 0, y: -360.042, z: 0}
+--- !u!114 &992811278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992811272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 21
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1001402393
 GameObject:
   m_ObjectHideFlags: 0
@@ -4479,6 +4775,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 293498366}
     m_Modifications:
+    - target: {fileID: 5175988695776886091, guid: ee88003b3ca14f84db2ed8dbe3c155bc, type: 3}
+      propertyPath: sceneViewId
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5764413107004820576, guid: ee88003b3ca14f84db2ed8dbe3c155bc, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.7120763
@@ -4627,6 +4927,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1230795640}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1230795642}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &1230795638 stripped
 GameObject:
@@ -4682,6 +4985,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &1230795642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230795638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 18
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &1256485792
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4826,6 +5151,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1256485803}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1256485804}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1256485805}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &1256485793 stripped
 GameObject:
@@ -4935,6 +5266,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &1256485804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1256485793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 1256485805}
+  sceneViewId: 14
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &1256485805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1256485793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &1274421451
 GameObject:
   m_ObjectHideFlags: 0
@@ -5018,6 +5405,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1337764892}
     m_Modifications:
+    - target: {fileID: 1172786808051399077, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: sceneViewId
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 1574587532821202308, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -5534,6 +5925,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1391129178}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1391129179}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1391129180}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &1391129168 stripped
 GameObject:
@@ -5643,6 +6040,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &1391129179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391129168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 1391129180}
+  sceneViewId: 12
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &1391129180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391129168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &1392188837
 GameObject:
   m_ObjectHideFlags: 0
@@ -5850,6 +6303,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5693781707008224445, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
+      propertyPath: sceneViewId
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6032,6 +6489,10 @@ PrefabInstance:
     - target: {fileID: 3917084290289966694, guid: 3ceba1a35cd285b47bdee174c7d3f256, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6331096851126594914, guid: 3ceba1a35cd285b47bdee174c7d3f256, type: 3}
+      propertyPath: sceneViewId
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6572,6 +7033,7 @@ GameObject:
   - component: {fileID: 1487448946}
   - component: {fileID: 1487448945}
   - component: {fileID: 1487448944}
+  - component: {fileID: 1487448949}
   m_Layer: 0
   m_Name: TablaArmar
   m_TagString: Untagged
@@ -6713,6 +7175,28 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1487448942}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1487448949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1487448942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 20
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1511942352
 GameObject:
   m_ObjectHideFlags: 0
@@ -6888,6 +7372,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1535983762}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1535983763}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1535983764}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &1535983752 stripped
 GameObject:
@@ -6997,6 +7487,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &1535983763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535983752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 1535983764}
+  sceneViewId: 13
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &1535983764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535983752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1 &1540266092
 GameObject:
   m_ObjectHideFlags: 0
@@ -7314,6 +7860,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1678848834}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1678848836}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &1678848832 stripped
 GameObject:
@@ -7363,6 +7912,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.79, y: 0.58, z: 1.71}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &1678848836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678848832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 17
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &1736255952
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7455,6 +8026,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Food_Lettuce
       objectReference: {fileID: 0}
+    - target: {fileID: 5876776268607649811, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7507,6 +8082,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1337764892}
     m_Modifications:
+    - target: {fileID: 1172786808051399077, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: sceneViewId
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2220885128379575583, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0.042
@@ -8621,6 +9200,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1984093785}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1984093787}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &1984093783 stripped
 GameObject:
@@ -8670,6 +9252,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.79, y: 0.58, z: 1.71}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &1984093787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984093783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 16
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &2021608167
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8752,6 +9356,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2021608170}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2021608172}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &2021608168 stripped
 GameObject:
@@ -8807,6 +9414,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &2021608172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2021608168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 19
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &2023293472
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8881,6 +9510,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2023293474}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2023293475}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2023293477}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2023293476}
   m_SourcePrefab: {fileID: 100100000, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
 --- !u!1 &2023293473 stripped
 GameObject:
@@ -8949,6 +9587,79 @@ MonoBehaviour:
     - {fileID: 1594364896, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
   switchInterval: 1
   popupDuration: 5
+--- !u!114 &2023293475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2023293473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 2023293477}
+  - {fileID: 2023293476}
+  sceneViewId: 22
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &2023293476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2023293473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonAnimatorView
+  ShowLayerWeightsInspector: 0
+  ShowParameterInspector: 0
+  m_SynchronizeParameters: []
+  m_SynchronizeLayers: []
+--- !u!114 &2023293477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2023293473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1001 &2096774771
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9093,6 +9804,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2096774782}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2096774783}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2096774784}
   m_SourcePrefab: {fileID: 100100000, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
 --- !u!1 &2096774772 stripped
 GameObject:
@@ -9202,6 +9919,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
+--- !u!114 &2096774783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2096774772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 1
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 2096774784}
+  sceneViewId: 11
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &2096774784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2096774772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
+  m_PositionModel:
+    SynchronizeEnabled: 1
+    TeleportEnabled: 1
+    TeleportIfDistanceGreaterThan: 3
+    InterpolateOption: 2
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 1
+    ExtrapolateOption: 0
+    ExtrapolateSpeed: 1
+    ExtrapolateIncludingRoundTripTime: 1
+    ExtrapolateNumberOfStoredPositions: 1
+  m_RotationModel:
+    SynchronizeEnabled: 1
+    InterpolateOption: 1
+    InterpolateRotateTowardsSpeed: 180
+    InterpolateLerpSpeed: 5
+  m_ScaleModel:
+    SynchronizeEnabled: 0
+    InterpolateOption: 0
+    InterpolateMoveTowardsSpeed: 1
+    InterpolateLerpSpeed: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
