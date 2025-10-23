@@ -42,6 +42,13 @@ MonoBehaviour:
   - CargarEscena
   - RPC_AvisarAgarrarObjeto
   - RPC_AvisarSoltarObjeto
+  - RPC_Flip
+  - RPC_SetMaterial
+  - RPC_ClearMeatFromPan
+  - RPC_SetMeatOnPan
+  - RPC_SyncMeatOnPan
+  - RPC_UpdateVisualState
+  - RPC_SetParent
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
