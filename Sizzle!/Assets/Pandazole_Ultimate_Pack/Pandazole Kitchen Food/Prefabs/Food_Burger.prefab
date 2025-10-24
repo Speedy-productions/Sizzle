@@ -14,9 +14,10 @@ GameObject:
   - component: {fileID: 8666288263200158566}
   - component: {fileID: 6615896159404296619}
   - component: {fileID: -6724094905783407467}
+  - component: {fileID: 1687645413358619830}
   m_Layer: 12
   m_Name: Food_Burger
-  m_TagString: Food
+  m_TagString: Burger
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -162,3 +163,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.19256887, y: 0.1542211, z: 0.20213589}
   m_Center: {x: -0.0010664128, y: 0.07540146, z: 0.0026470236}
+--- !u!114 &1687645413358619830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5898702171912911067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37cf37106243a67458da5a50922ac722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Hamburguesa
+  ingredientes: []

@@ -12,6 +12,8 @@ TagManager:
   - Cup
   - Food
   - Bowl
+  - fries
+  - Burger
   layers:
   - Default
   - TransparentFX

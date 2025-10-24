@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 public class Interact : MonoBehaviour
@@ -84,11 +85,7 @@ public class Interact : MonoBehaviour
 
         // ========================================= CONTROLES =========================================
 
-        if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
-        {
-            npcApuntado.OnPlayerInteracted();
-            return;
-        }
+        
 
         // E: empezar a cocinar en el sartén apuntado (cocinar)
         if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
@@ -130,8 +127,103 @@ public class Interact : MonoBehaviour
             AgarrarObjeto(objetoSeleccionado);
         if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
             SoltarObjeto();
+
+        if (Input.GetKeyDown(KeyCode.Q) && mesaApuntada != null)
+        {
+            mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales }
+
+        }
+         // E: interactuar con el NPC
+    if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
+    {
+        // Obtener la hamburguesa en la mano del jugador
+        Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
+
+        // Verificar si el jugador tiene una hamburguesa y si coincide con la orden del NPC
+        if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
+        {
+            Order npcOrder = npcApuntado.GetAssignedOrder();
+            if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
+            {
+                // Si la hamburguesa coincide con la orden, entregarla al NPC
+                TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
+
+                // Aquí llamamos a la UI para agregar dinero
+                DineroUI dineroUI = FindObjectOfType<DineroUI>();  // Obtener la referencia a la UI de dinero
+                    npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
+                    if (dineroUI != null)
+                {
+                    dineroUI.AgregarDinero(10);  // Agregar 10 unidades de dinero (puedes modificar la cantidad)
+                }
+
+                Debug.Log("[INTERACT] ¡Hamburguesa entregada correctamente! Dinero agregado.");
+            }
+            else
+            {
+                    npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
+                    // Si la hamburguesa no coincide con la orden, restamos dinero y cambiamos el estado del NPC
+                    DineroUI dineroUI = FindObjectOfType<DineroUI>();
+                if (dineroUI != null)
+                {
+                    dineroUI.QuitarDinero(5);  // Restamos 5 unidades de dinero
+                }
+
+                
+
+                Debug.Log("[INTERACT] La hamburguesa no coincide con la orden del NPC. Dinero restado.");
+            }
+        }
+        else
+        {
+            npcApuntado.OnPlayerInteracted();
+        }
+    }
     }
 
+
+    Hamburguesa ObtenerHamburguesaEnMano()
+    {
+        var slot = SlotMano();
+        if (slot == null || slot.childCount == 0) return null;
+
+        return slot.GetChild(0).GetComponent<Hamburguesa>();
+    }
+
+
+    bool CompararHamburguesaConOrden(Hamburguesa hamburguesa, Order npcOrder)
+    {
+        // Obtener los ingredientes de la hamburguesa y de la orden del NPC
+        List<string> ingredientesHamburguesa = hamburguesa.GetIngredientes();
+        List<string> ingredientesOrden = new List<string>(npcOrder.ingredients);
+
+        // Normalizar los ingredientes (eliminando espacios y convirtiendo a minúsculas)
+        ingredientesHamburguesa = ingredientesHamburguesa.Select(NormalizarNombre).ToList();
+        ingredientesOrden = ingredientesOrden.Select(NormalizarNombre).ToList();
+
+        // Ordenar ambos arrays antes de compararlos
+        ingredientesHamburguesa.Sort();
+        ingredientesOrden.Sort();
+
+        // Mostrar los ingredientes para depuración
+        Debug.Log("[DEBUG] Ingredientes Hamburguesa: " + string.Join(", ", ingredientesHamburguesa));
+        Debug.Log("[DEBUG] Ingredientes Orden: " + string.Join(", ", ingredientesOrden));
+
+        // Comparar los dos arrays
+        return ingredientesHamburguesa.SequenceEqual(ingredientesOrden);
+    }
+
+    // Transferir la hamburguesa al NPC (esto debería ponerla en la mano del NPC)
+    void TransferirHamburguesaAlNpc(NpcFollowPath npcApuntado, Hamburguesa hamburguesa)
+    {
+        // Aquí se puede definir cómo transferir la hamburguesa al NPC
+        // El NPC puede colocarla en una mano vacía, por ejemplo.
+        // Se puede usar un método similar a "SetIngredientes" para actualizar la hamburguesa en el NPC.
+
+        Debug.Log("[INTERACT] La hamburguesa ha sido transferida al NPC.");
+
+        // Poner la hamburguesa en la mano del NPC (asumimos que existe un método en el NPC para esto)
+        npcApuntado.SetHamburguesaEnMano(hamburguesa);
+    }
     // n de objetos en mano 
     int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
 
