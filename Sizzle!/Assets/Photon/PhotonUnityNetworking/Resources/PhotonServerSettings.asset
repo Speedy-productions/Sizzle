@@ -51,6 +51,8 @@ MonoBehaviour:
   - RPC_SetParent
   - RPC_PerformCut
   - RPC_PlaceIngredient
+  - RPC_CombineIntoFinalDish
+  - RPC_SetCurrentOrder
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

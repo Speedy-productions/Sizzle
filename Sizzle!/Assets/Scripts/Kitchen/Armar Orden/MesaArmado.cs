@@ -1,26 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class MesaArmado : MonoBehaviour
+public class MesaArmado : MonoBehaviourPun
 {
     [Header("Configuración")]
-    [Tooltip("Punto donde se calcula el tope para el siguiente ingrediente. No será padre de los ingredientes.")]
     public Transform assemblePoint;
-
-    [Tooltip("Contenedor fijo para los ingredientes apilados (no se mueve). Si es null, se usa este mismo GameObject.")]
     public Transform stackRoot;
-
-    [Tooltip("Margen adicional de separación vertical entre ingredientes (en metros).")]
     public float separationY = 0.01f;
 
     [Header("Referencias")]
-    public ArmarPedido armarPedido;        // Sistema que valida y combina
-    public RecipeSO currentRecipe;         // Prefab final (si aplica)
+    public ArmarPedido armarPedido;
+    public RecipeSO currentRecipe;
 
-    // Estado interno
     readonly List<GameObject> placedIngredients = new();
-    Vector3 baseAssembleLocalPos;          // posición local inicial del assemblePoint
-    float currentTopY = 0f;                // altura acumulada actual (desde base)
+    Vector3 baseAssembleLocalPos;
+    float currentTopY = 0f;
 
     void Awake()
     {
@@ -31,68 +26,73 @@ public class MesaArmado : MonoBehaviour
             return;
         }
 
-        if (stackRoot == null) stackRoot = transform; // contenedor fijo
-
+        if (stackRoot == null) stackRoot = transform;
         baseAssembleLocalPos = assemblePoint.localPosition;
         ResetStackHeight();
     }
 
-    /// <summary>Coloca un ingrediente que el jugador sostiene, respetando orden y altura real.</summary>
+    // --------------------- SINCRONIZACIÓN DE INGREDIENTE ------------------------
     public void TryPlaceIngredientFromHand(Ingredient ing)
     {
         if (!ing) return;
-
-        if (!ing.IsReady())
-        {
-            Debug.Log($"[MesaArmado] {ing.ingredientName} aún no está listo.");
-            return;
-        }
+        if (!ing.IsReady()) return;
 
         GameObject obj = ing.gameObject;
 
         if (placedIngredients.Contains(obj)) return;
+        if (!IsNextInOrder(ResolveIngredientName(obj), placedIngredients.Count)) return;
 
-        if (!IsNextInOrder(ResolveIngredientName(obj), placedIngredients.Count))
+        if (ing.TryGetComponent(out PhotonView pv))
         {
-            Debug.Log($"[MesaArmado] Este ingrediente no es el siguiente en el pedido.");
+            // 🔸 Todos pueden enviar el RPC (ya no depende solo de pv.IsMine)
+            float nextTopY = currentTopY;
+            photonView.RPC(nameof(RPC_PlaceIngredient), RpcTarget.AllBuffered, pv.ViewID, nextTopY);
+        }
+        else
+        {
+            Debug.LogWarning($"[MesaArmado] {obj.name} no tiene PhotonView asignado.");
+        }
+    }
+
+    // RPC remoto: sincroniza la colocación con posición exacta
+    [PunRPC]
+    void RPC_PlaceIngredient(int viewID, float syncTopY)
+    {
+        PhotonView pv = PhotonView.Find(viewID);
+        if (pv == null)
+        {
+            Debug.LogWarning($"[MesaArmado] No se encontró objeto con ViewID {viewID}");
             return;
         }
 
-        // Físicas / estados (kinematic, colliders, lock si es carne)
+        GameObject obj = pv.gameObject;
         PrepareForTable(obj);
 
-        // === Altura real del objeto
-        float h = GetWorldHeight(obj);
-
-        // === Posición del tope actual
-        assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * currentTopY;
+        assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * syncTopY;
         Vector3 topWorld = assemblePoint.position;
 
-        // === Mantener escala mundial original y parentear al CONTENEDOR FIJO (NO al assemblePoint)
         Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(obj.transform);
         WorldScaleUtils.ReparentKeepWorldScale(obj.transform, stackRoot, Sw);
 
-        // Colocar y orientar
         obj.transform.rotation = Quaternion.identity;
         obj.transform.position = topWorld;
 
-        // Track y subir tope
-        placedIngredients.Add(obj);
-        currentTopY += h + separationY;
+        if (!placedIngredients.Contains(obj))
+            placedIngredients.Add(obj);
+
+        currentTopY = syncTopY + GetWorldHeight(obj) + separationY;
         UpdateAssemblePointY();
 
-        // Notificar armado
         if (armarPedido != null)
+        {
             armarPedido.OnIngredientPlaced(
                 ResolveIngredientName(obj),
                 placedIngredients,
                 currentRecipe,
                 this
             );
-
-        Debug.Log($"[MesaArmado] Colocado: {ResolveIngredientName(obj)} | h={h:F3} | top={currentTopY:F3}");
+        }
     }
-
 
     /// <summary>Quita un ingrediente de la mesa (se usa al agarrarlo con la mano).</summary>
     public void RemoveIngredient(GameObject obj)

@@ -1,38 +1,72 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
-public class ArmarPedido : MonoBehaviour
+public class ArmarPedido : MonoBehaviourPun
 {
     [Header("Receta (para prefab final)")]
-    public RecipeSO currentRecipe; // solo para saber qué prefab instanciar
-
-    [Header("Opciones")]
-    public bool requireExactOrder = true;   // Debe coincidir exactamente con el pedido activo
-    public bool requireExactCount = true;   // No más ni menos ingredientes que el pedido
+    public RecipeSO currentRecipe;
+    public bool requireExactOrder = true;
+    public bool requireExactCount = true;
 
     public void SetCurrentRecipe(RecipeSO recipe) => currentRecipe = recipe;
 
-    /// <summary>Se llama cada vez que se coloca un ingrediente en la mesa.</summary>
-    public void OnIngredientPlaced(
-    string ingredientName,
-    List<GameObject> currentPlaced,
-    RecipeSO recipeFromMesa,
-    MesaArmado mesa // <- nueva referencia
-)
+    public void OnIngredientPlaced(string ingredientName, List<GameObject> currentPlaced, RecipeSO recipeFromMesa, MesaArmado mesa)
     {
         if (recipeFromMesa != null)
             currentRecipe = recipeFromMesa;
 
-        // Debe existir un pedido activo
         if (OrderManager.Instance == null || OrderManager.Instance.CurrentOrder == null)
             return;
 
         if (CheckIfOrderComplete(currentPlaced, OrderManager.Instance.CurrentOrder))
         {
-            CombineIntoFinalDish(currentPlaced, mesa); // <- usamos la mesa pasada
+            // Ahora cualquier jugador puede ejecutar el RPC (no solo el Master)
+            photonView.RPC(nameof(RPC_CombineIntoFinalDish), RpcTarget.AllBuffered, mesa.photonView.ViewID);
         }
     }
 
+    [PunRPC]
+    void RPC_CombineIntoFinalDish(int mesaViewID)
+    {
+        MesaArmado mesa = PhotonView.Find(mesaViewID)?.GetComponent<MesaArmado>();
+        if (mesa == null)
+        {
+            Debug.LogWarning("[ArmarPedido] No se encontró la mesa para combinar.");
+            return;
+        }
+
+        var placedIngredients = mesa.GetPlacedIngredients();
+        if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
+        {
+            Debug.LogWarning("[ArmarPedido] No hay RecipeSO o finalProductPrefab asignado.");
+            return;
+        }
+        if (placedIngredients == null || placedIngredients.Count == 0) return;
+
+        Vector3 spawnPos = placedIngredients[0].transform.position;
+
+        foreach (var ing in placedIngredients)
+        {
+            if (ing != null && ing.TryGetComponent(out PhotonView pv))
+            {
+                if (pv.IsMine || PhotonNetwork.IsMasterClient)
+                    PhotonNetwork.Destroy(ing);
+            }
+        }
+
+        placedIngredients.Clear();
+        if (mesa) mesa.ResetAfterComplete(false);
+
+        // Spawn sincronizado para todos
+        PhotonNetwork.Instantiate(
+            currentRecipe.finalProductPrefab.name,
+            spawnPos,
+            Quaternion.identity
+        );
+
+        Debug.Log($"[ArmarPedido] Platillo completado en red: {currentRecipe.recipeName}");
+    }
 
     bool CheckIfOrderComplete(List<GameObject> placed, Order activeOrder)
     {
@@ -87,47 +121,6 @@ public class ArmarPedido : MonoBehaviour
         if (obj.TryGetComponent(out SliceIngredient slice)) return NormalizeName(slice.ingredientName);
         if (obj.TryGetComponent(out MeatCookingState meat)) return NormalizeName(meat.meatName);
         return NormalizeName(obj.name);
-    }
-
-    void CombineIntoFinalDish(List<GameObject> placedIngredients, MesaArmado mesa)
-    {
-        if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
-        {
-            Debug.LogWarning("[ArmarPedido] No hay RecipeSO o finalProductPrefab asignado.");
-            return;
-        }
-        if (placedIngredients == null || placedIngredients.Count == 0) return;
-
-        Vector3 spawnPos = placedIngredients[0].transform.position;
-
-        // Asegurar carnes kinematic
-        foreach (var ing in placedIngredients)
-        {
-            if (!ing) continue;
-            if (ing.TryGetComponent(out MeatCookingState meat))
-            {
-                var rb = ing.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
-                }
-            }
-        }
-
-        // Destruir ingredientes y limpiar tracking
-        foreach (var ing in placedIngredients)
-            if (ing) Object.Destroy(ing);
-
-        placedIngredients.Clear();
-
-        // Reset visual/altura de la mesa
-        if (mesa) mesa.ResetAfterComplete(false);
-
-        // Instanciar producto final
-        Object.Instantiate(currentRecipe.finalProductPrefab, spawnPos, Quaternion.identity);
-
-        Debug.Log($"[ArmarPedido] ¡Platillo completado!: {currentRecipe.recipeName}");
     }
 
 

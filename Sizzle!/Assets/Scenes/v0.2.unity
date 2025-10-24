@@ -4525,6 +4525,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1162864791}
   - component: {fileID: 1162864790}
+  - component: {fileID: 1162864792}
   m_Layer: 0
   m_Name: OrderManager
   m_TagString: Untagged
@@ -4585,6 +4586,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 293498366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1162864792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162864789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 25
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1190207751
 GameObject:
   m_ObjectHideFlags: 0
@@ -8984,6 +9007,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1860317274}
   - component: {fileID: 1860317275}
+  - component: {fileID: 1860317276}
   m_Layer: 0
   m_Name: PedidoManager
   m_TagString: Untagged
@@ -9021,6 +9045,28 @@ MonoBehaviour:
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   requireExactOrder: 1
   requireExactCount: 1
+--- !u!114 &1860317276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1860317273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 23
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1981316555
 GameObject:
   m_ObjectHideFlags: 0
@@ -9031,6 +9077,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1981316556}
   - component: {fileID: 1981316557}
+  - component: {fileID: 1981316558}
   m_Layer: 0
   m_Name: OrderManager (1)
   m_TagString: Untagged
@@ -9091,6 +9138,28 @@ MonoBehaviour:
     - {fileID: -1958163849, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
     - {fileID: -334723527, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
     - {fileID: -1970395307, guid: 449b7c5383561e149983d65d1170c81b, type: 3}
+--- !u!114 &1981316558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981316555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 24
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &1984093782
 PrefabInstance:
   m_ObjectHideFlags: 0
