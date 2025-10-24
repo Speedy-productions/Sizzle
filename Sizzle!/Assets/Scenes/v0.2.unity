@@ -1782,7 +1782,7 @@ Transform:
   m_GameObject: {fileID: 353582456}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 55.4, y: 0, z: 12}
+  m_LocalPosition: {x: 55.4, y: 2.1999998, z: 12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3552,7 +3552,7 @@ Transform:
   m_GameObject: {fileID: 794266598}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.8850761, z: -0, w: 0.46544638}
-  m_LocalPosition: {x: 83.53, y: 2.49415, z: -43.299988}
+  m_LocalPosition: {x: 83.53, y: 4.4, z: -43.299988}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3769,7 +3769,7 @@ Transform:
   m_GameObject: {fileID: 927012779}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 82, y: 2.49415, z: 1.877655}
+  m_LocalPosition: {x: 82, y: 4.4, z: 1.877655}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6985,7 +6985,7 @@ MonoBehaviour:
   angryFace: {fileID: 1915308441, guid: 53628da2ae300e04fb406edd54d1f2b3, type: 3}
   switchInterval: 1
   popupDuration: 5
-  npcFollowPath: {fileID: 2023293475}
+  npcFollowPath: {fileID: 0}
 --- !u!4 &1390412982
 Transform:
   m_ObjectHideFlags: 0
@@ -7783,7 +7783,7 @@ Transform:
   m_GameObject: {fileID: 1450025447}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 55.4, y: 0, z: -17}
+  m_LocalPosition: {x: 55.4, y: 2.1999998, z: -17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8130,7 +8130,7 @@ Transform:
   m_GameObject: {fileID: 1471451113}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24, y: 0, z: -17}
+  m_LocalPosition: {x: -24, y: 2.1999998, z: -17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8835,7 +8835,7 @@ Transform:
   m_GameObject: {fileID: 1539342490}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24, y: 0, z: -64.8}
+  m_LocalPosition: {x: -24, y: 2.1999998, z: -64.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8928,7 +8928,7 @@ Transform:
   m_GameObject: {fileID: 1550858608}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 32.89206, y: 2.49415, z: 1.877655}
+  m_LocalPosition: {x: 32.89206, y: 4.4, z: 1.877655}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8959,7 +8959,7 @@ Transform:
   m_GameObject: {fileID: 1554713766}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 12}
+  m_LocalPosition: {x: 0, y: 2.1999998, z: 12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9156,7 +9156,7 @@ Transform:
   m_GameObject: {fileID: 1602906488}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -63.6, y: 0, z: -67.7}
+  m_LocalPosition: {x: -63.6, y: 2.2, z: -67.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10039,7 +10039,7 @@ Transform:
   m_GameObject: {fileID: 1783251375}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 82, y: 2.49415, z: -43.3}
+  m_LocalPosition: {x: 82, y: 4.4, z: -43.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10480,7 +10480,7 @@ Transform:
   m_GameObject: {fileID: 1827502346}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -17}
+  m_LocalPosition: {x: 0, y: 2.1999998, z: -17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11168,7 +11168,7 @@ CapsuleCollider:
   m_Radius: 1
   m_Height: 4
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.33, z: 0}
 --- !u!4 &2091581290 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3998149737200859734, guid: aea5e1d394e82fb41a256538a77bc3a3, type: 3}
