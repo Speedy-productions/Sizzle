@@ -1,14 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
-public class SliceIngredient : MonoBehaviour
+public class SliceIngredient : MonoBehaviourPun
 {
     public GameObject ingSlicedPrefab;
-    [Tooltip("Image (tipo Filled) que sirve como barra situada en el prefab (World Space Canvas). Asignar en el prefab).")]
     public Image progressFill;
     public string ingredientName;
 
-    // indica si el ingrediente está actualmente en la tabla
     bool isOnBoard = false;
 
     void Start()
@@ -17,7 +16,6 @@ public class SliceIngredient : MonoBehaviour
             progressFill.gameObject.SetActive(false);
     }
 
-    // llamado por la tabla cuando se coloca o se quita
     public void SetOnBoard(bool on)
     {
         isOnBoard = on;
@@ -30,65 +28,45 @@ public class SliceIngredient : MonoBehaviour
 
     public bool IsOnBoard() => isOnBoard;
 
-    // orienta el objeto hacia el jugador (manteniendo upright)
-    public void FacePlayer(Transform playerCam)
-    {
-        if (playerCam == null) return;
-        Vector3 dir = playerCam.position - transform.position;
-        dir.y = 0f;
-        if (dir.sqrMagnitude > 0.0001f)
-            transform.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
-    }
-
-    // método público para cortar (puede llamarse desde Blade)
     public void Cut()
     {
-        Debug.Log("Ingrediente cortado");
+        if (!photonView.IsMine)
+        {
+            Debug.LogWarning($"[SliceIngredient] No soy el dueño de {name}, no puedo cortar.");
+            return;
+        }
 
-        // avisar a la tabla (si existe) para que limpie su referencia
+        Debug.Log($"[SliceIngredient] Cortando ingrediente: {name}");
+
+        // Avisar a la tabla para limpiar referencia
         CuttingBoard cb = GetComponentInParent<CuttingBoard>();
         if (cb != null) cb.RemoveIngredient();
 
-        // instanciar prefab cortado en misma posición y rotación
-        GameObject cortado = Instantiate(
-            ingSlicedPrefab,
+        // Instanciar en red el prefab cortado
+        GameObject cortado = PhotonNetwork.Instantiate(
+            ingSlicedPrefab.name,  // usa el nombre del prefab registrado en Resources
             transform.position,
-            ingSlicedPrefab.transform.rotation 
+            ingSlicedPrefab.transform.rotation
         );
 
+        // Ajustar escala manualmente (Photon no sincroniza localScale)
         cortado.transform.localScale = ingSlicedPrefab.transform.localScale;
 
-        // asegurar que el prefab sea interactuable: collider + rigidbody + capa/tag
-        if (cortado.GetComponent<Collider>() == null)
-        {
-            // agregar box collider por seguridad si no tiene ninguno
-            cortado.AddComponent<BoxCollider>();
-        }
-
+        // Si tiene Rigidbody o Collider, asegúrate de mantenerlos correctos
         Rigidbody rb = cortado.GetComponent<Rigidbody>();
         if (rb == null) rb = cortado.AddComponent<Rigidbody>();
+        rb.isKinematic = false;
+        rb.useGravity = true;
 
-        // heredar la capa del original (para que siga siendo 'pickable')
-        cortado.layer = gameObject.layer;
-        cortado.tag = gameObject.tag;
+        // Ocultar barra si la tiene
+        var sliced = cortado.GetComponent<SliceIngredient>();
+        if (sliced != null && sliced.progressFill != null)
+            sliced.progressFill.gameObject.SetActive(false);
 
-        // si el prefab cortado trae FriesCookingState, asegurar estado crudo y fuera de freidora
-        var fries = cortado.GetComponent<FriesCookingState>();
-        if (fries != null)
-        {
-            fries.ResetFries();
-            fries.SetInFryer(false);
-        }
-
-        // Si el prefab tiene Ingredient (para poder volver a cortarlo o mostrar UI), asegurarnos que su barra está oculta
-        SliceIngredient newIng = cortado.GetComponent<SliceIngredient>();
-        if (newIng != null && newIng.progressFill != null)
-            newIng.progressFill.gameObject.SetActive(false);
-
-        Destroy(gameObject);
+        // Destruir el original en red
+        PhotonNetwork.Destroy(gameObject);
     }
 
-    // si quieres mantener la detección por colisión también:
     private void OnTriggerEnter(Collider col)
     {
         if (col.CompareTag("Blade"))

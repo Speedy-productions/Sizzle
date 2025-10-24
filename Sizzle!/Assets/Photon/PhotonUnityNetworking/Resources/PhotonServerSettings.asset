@@ -49,6 +49,8 @@ MonoBehaviour:
   - RPC_SyncMeatOnPan
   - RPC_UpdateVisualState
   - RPC_SetParent
+  - RPC_PerformCut
+  - RPC_PlaceIngredient
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

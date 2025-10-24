@@ -1,6 +1,7 @@
+using Photon.Pun;
 using UnityEngine;
 
-public class CuttingBoard : MonoBehaviour
+public class CuttingBoard : MonoBehaviourPun
 {
     [Tooltip("Empty transform donde se colocará el ingrediente (hijo de la tabla).")]
     public Transform posicionIngrediente;
@@ -11,9 +12,35 @@ public class CuttingBoard : MonoBehaviour
     {
         if (ingrediente == null) return;
 
+        PhotonView ingredientePV = ingrediente.GetComponent<PhotonView>();
+        if (ingredientePV != null && photonView != null)
+        {
+            // Enviamos a todos los jugadores la acción de colocar el ingrediente
+            photonView.RPC(nameof(RPC_PlaceIngredient), RpcTarget.AllBuffered, ingredientePV.ViewID);
+        }
+        else
+        {
+            // fallback local
+            PlaceIngredientLocal(ingrediente);
+        }
+    }
+
+    [PunRPC]
+    void RPC_PlaceIngredient(int ingredienteViewID)
+    {
+        PhotonView ingredientePV = PhotonView.Find(ingredienteViewID);
+        if (ingredientePV == null) return;
+
+        SliceIngredient ingrediente = ingredientePV.GetComponent<SliceIngredient>();
+        if (ingrediente == null) return;
+
+        PlaceIngredientLocal(ingrediente);
+    }
+
+    void PlaceIngredientLocal(SliceIngredient ingrediente)
+    {
         currentIngredient = ingrediente;
 
-        // Desactivar fisica antes de mover
         var rb = ingrediente.GetComponent<Rigidbody>();
         if (rb)
         {
@@ -21,19 +48,13 @@ public class CuttingBoard : MonoBehaviour
             rb.useGravity = false;
         }
 
-        // Quitar el parent actual para evitar errores de escala
         ingrediente.transform.SetParent(null);
-
-        // Posicionar justo en el punto designado
         ingrediente.transform.position = posicionIngrediente.position;
-
-        // Rotacion fija: -90 grados en el eje X
         ingrediente.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
 
-        // Marcar que esta sobre la tabla (activa la barra)
         ingrediente.SetOnBoard(true);
 
-        Debug.Log("Ingrediente colocado en la tabla.");
+        Debug.Log($"Ingrediente colocado en la tabla ({ingrediente.name}).");
     }
 
 

@@ -3272,37 +3272,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!1 &889399347
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 889399348}
-  m_Layer: 0
-  m_Name: IngredientePos
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &889399348
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 889399347}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -51.345215, y: 3.45415, z: -16.832764}
-  m_LocalScale: {x: 0.49411276, y: 0.39540234, z: 0.9486233}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1066184084}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &896195576
 GameObject:
   m_ObjectHideFlags: 0
@@ -3851,7 +3820,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9caa0fedc2ea23c4b9b6c6ac9463fdf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CuttingBoard
-  posicionIngrediente: {fileID: 889399348}
+  posicionIngrediente: {fileID: 1546083036}
 --- !u!64 &992811274
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -4142,7 +4111,6 @@ Transform:
   m_Children:
   - {fileID: 992811277}
   - {fileID: 1010198425}
-  - {fileID: 889399348}
   - {fileID: 1815714598}
   - {fileID: 1150954021}
   - {fileID: 1736255965}
@@ -7589,7 +7557,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1546083036
 Transform:
   m_ObjectHideFlags: 0
