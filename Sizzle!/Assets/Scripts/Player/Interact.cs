@@ -1,6 +1,6 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
-using Photon.Pun;
 
 public class Interact : MonoBehaviour
 {
@@ -11,10 +11,10 @@ public class Interact : MonoBehaviour
 
     [Header("Distancias")]
     public float distanciaInteraccion = 2.5f; // pickables
-    public float distanciaSoltar = 1.2f;    // drop frente a la cámara
+    public float distanciaSoltar = 1.2f;      // drop frente a la cámara
 
     [Header("Capas")]
-    public LayerMask pickableLayers;        // qué se puede agarrar
+    public LayerMask pickableLayers;          // qué se puede agarrar
 
     [Header("Detección por pantalla")]
     [Range(0.01f, 0.3f)] public float radioPantalla = 0.12f;
@@ -41,61 +41,35 @@ public class Interact : MonoBehaviour
     CookMeatInPan ultimoPanApuntado;
     CookFriesInFryer ultimaFreidoraApuntada;
 
-    private PhotonView view;
-
-
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
 
-    private void Start()
-    {
-        view = GetComponentInParent<PhotonView>();
-    }
-
     void Update()
     {
-        if (view != null && !view.IsMine) return; // Solo el jugador local puede interactuar
+        NpcFollowPath npcApuntado = DetectarNPCApuntado();
 
         DetectarObjetoPorCapaSinRaycast_ConHighlight();
-
-        // Sartén apuntado (se usa para T y Q)
         CookMeatInPan panApuntado = DetectarPanApuntado();
         MeatCookingState carneEnMano = GetCarneEnMano();
+
+        // Detectar tabla de cortar
+        CuttingBoard tablaApuntada = DetectarTablaApuntada();
+        SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
+
+        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
+        MesaArmado mesaApuntada = DetectarMesaApuntada();
+        Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
+
+        // --- FREIDORA: detectar y usar mientras sostienes papas ---
+        CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
+        FriesCookingState friesEnMano = GetFriesEnMano();
 
         if (panApuntado != ultimoPanApuntado)
         {
             if (ultimoPanApuntado) ultimoPanApuntado.ShowAimHint(false, false);
             ultimoPanApuntado = panApuntado;
         }
-
         if (panApuntado) panApuntado.ShowAimHint(true, carneEnMano != null);
-
-        // T: empezar a cocinar en el sartén apuntado
-        if (Input.GetKeyDown(KeyCode.T) && panApuntado && carneEnMano)
-            panApuntado.TryStartCooking(carneEnMano);
-
-        // Detectar tabla de cortar
-        CuttingBoard tablaApuntada = DetectarTablaApuntada();
-        SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
-
-        // T: colocar ingrediente en la tabla apuntada (cortar)
-        if (Input.GetKeyDown(KeyCode.T) && tablaApuntada && ingredienteEnMano)
-            tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
-
-        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
-        MesaArmado mesaApuntada = DetectarMesaApuntada();
-        Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
-
-        if (Input.GetKeyDown(KeyCode.T) && mesaApuntada && ingredienteEnManoPedido)
-            mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
-
-        // Q: voltear solo el sartén apuntado
-        if (Input.GetKeyDown(KeyCode.Q) && panApuntado)
-            panApuntado.TryFlipFromInteraccion();
-
-        // --- FREIDORA: detectar y usar mientras sostienes papas ---
-        CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
-        FriesCookingState friesEnMano = GetFriesEnMano();
 
         // si cambió la freidora apuntada, oculta hint de la anterior
         if (freidoraApuntada != ultimaFreidoraApuntada)
@@ -106,26 +80,150 @@ public class Interact : MonoBehaviour
         }
 
         // mostrar hint en la freidora actual
-        if (freidoraApuntada)
-            freidoraApuntada.ShowAimHint(true, friesEnMano != null);
+        if (freidoraApuntada) freidoraApuntada.ShowAimHint(true, friesEnMano != null);
 
-        // T: empezar a freír en la freidora apuntada
-        if (Input.GetKeyDown(KeyCode.T) && freidoraApuntada && friesEnMano)
+
+        // ========================================= CONTROLES =========================================
+
+        
+
+        // E: empezar a cocinar en el sartén apuntado (cocinar)
+        if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
         {
-            Debug.Log($"[INTERACT] T -> TryStartCooking FRIES con {friesEnMano.name} en {freidoraApuntada.name}");
-            bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
-            Debug.Log($"[INTERACT] TryStartCooking(FRIES) resultado={ok}");
+            panApuntado.TryStartCooking(carneEnMano);
+            return;
         }
 
+        // Q: voltear solo el sartén apuntado (cocinar)
+        if (Input.GetKeyDown(KeyCode.Q) && panApuntado && carneEnMano == null)
+        {
+            panApuntado.TryFlipFromInteraccion();
+            return;
+        }
 
-        // E/G: agarrar/soltar
+        // E: colocar ingrediente en la tabla apuntada (cortar)
+        if (Input.GetKeyDown(KeyCode.E) && tablaApuntada && ingredienteEnMano)
+        {
+            tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
+            return;
+        }
+
+        // E: colocar ingrediente en la mesa (armar)
+        if (Input.GetKeyDown(KeyCode.E) && mesaApuntada && ingredienteEnManoPedido)
+        {
+            mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
+            return;
+        }
+
+        // E: empezar a freír en la freidora apuntada (freir)
+        if (Input.GetKeyDown(KeyCode.E) && freidoraApuntada && friesEnMano)
+        {
+            bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
+            return;
+        }
+
+        // E/Q: agarrar/soltar
         if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
-
-        if (Input.GetKeyDown(KeyCode.G) && ObjetosEnMano() > 0)
+        if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
             SoltarObjeto();
+
+        if (Input.GetKeyDown(KeyCode.Q) && mesaApuntada != null)
+        {
+            mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales }
+
+        }
+         // E: interactuar con el NPC
+    if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
+    {
+        // Obtener la hamburguesa en la mano del jugador
+        Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
+
+        // Verificar si el jugador tiene una hamburguesa y si coincide con la orden del NPC
+        if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
+        {
+            Order npcOrder = npcApuntado.GetAssignedOrder();
+            if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
+            {
+                // Si la hamburguesa coincide con la orden, entregarla al NPC
+                TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
+
+                // Aquí llamamos a la UI para agregar dinero
+                DineroUI dineroUI = FindObjectOfType<DineroUI>();  // Obtener la referencia a la UI de dinero
+                    npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
+                    if (dineroUI != null)
+                {
+                    dineroUI.AgregarDinero(10);  // Agregar 10 unidades de dinero (puedes modificar la cantidad)
+                }
+
+                Debug.Log("[INTERACT] ¡Hamburguesa entregada correctamente! Dinero agregado.");
+            }
+            else
+            {
+                    npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
+                    // Si la hamburguesa no coincide con la orden, restamos dinero y cambiamos el estado del NPC
+                    DineroUI dineroUI = FindObjectOfType<DineroUI>();
+                if (dineroUI != null)
+                {
+                    dineroUI.QuitarDinero(5);  // Restamos 5 unidades de dinero
+                }
+
+                
+
+                Debug.Log("[INTERACT] La hamburguesa no coincide con la orden del NPC. Dinero restado.");
+            }
+        }
+        else
+        {
+            npcApuntado.OnPlayerInteracted();
+        }
+    }
     }
 
+
+    Hamburguesa ObtenerHamburguesaEnMano()
+    {
+        var slot = SlotMano();
+        if (slot == null || slot.childCount == 0) return null;
+
+        return slot.GetChild(0).GetComponent<Hamburguesa>();
+    }
+
+
+    bool CompararHamburguesaConOrden(Hamburguesa hamburguesa, Order npcOrder)
+    {
+        // Obtener los ingredientes de la hamburguesa y de la orden del NPC
+        List<string> ingredientesHamburguesa = hamburguesa.GetIngredientes();
+        List<string> ingredientesOrden = new List<string>(npcOrder.ingredients);
+
+        // Normalizar los ingredientes (eliminando espacios y convirtiendo a minúsculas)
+        ingredientesHamburguesa = ingredientesHamburguesa.Select(NormalizarNombre).ToList();
+        ingredientesOrden = ingredientesOrden.Select(NormalizarNombre).ToList();
+
+        // Ordenar ambos arrays antes de compararlos
+        ingredientesHamburguesa.Sort();
+        ingredientesOrden.Sort();
+
+        // Mostrar los ingredientes para depuración
+        Debug.Log("[DEBUG] Ingredientes Hamburguesa: " + string.Join(", ", ingredientesHamburguesa));
+        Debug.Log("[DEBUG] Ingredientes Orden: " + string.Join(", ", ingredientesOrden));
+
+        // Comparar los dos arrays
+        return ingredientesHamburguesa.SequenceEqual(ingredientesOrden);
+    }
+
+    // Transferir la hamburguesa al NPC (esto debería ponerla en la mano del NPC)
+    void TransferirHamburguesaAlNpc(NpcFollowPath npcApuntado, Hamburguesa hamburguesa)
+    {
+        // Aquí se puede definir cómo transferir la hamburguesa al NPC
+        // El NPC puede colocarla en una mano vacía, por ejemplo.
+        // Se puede usar un método similar a "SetIngredientes" para actualizar la hamburguesa en el NPC.
+
+        Debug.Log("[INTERACT] La hamburguesa ha sido transferida al NPC.");
+
+        // Poner la hamburguesa en la mano del NPC (asumimos que existe un método en el NPC para esto)
+        npcApuntado.SetHamburguesaEnMano(hamburguesa);
+    }
     // n de objetos en mano 
     int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
 
@@ -350,8 +448,6 @@ public class Interact : MonoBehaviour
     {
         LimpiarHighlight();
 
-        PhotonView pv = objeto.GetComponent<PhotonView>();
-        if (pv != null && !pv.IsMine) pv.RequestOwnership();
 
         var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
         if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
@@ -393,8 +489,6 @@ public class Interact : MonoBehaviour
                 foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
                     Physics.IgnoreCollision(playerCol, c, true);
         }
-
-        if (pv != null) view.RPC(nameof(RPC_AvisarAgarrarObjeto), RpcTarget.Others, pv.ViewID, view.ViewID);
     }
 
 
@@ -405,7 +499,6 @@ public class Interact : MonoBehaviour
         if (!slot || slot.childCount == 0) return;
 
         var objeto = slot.GetChild(0).gameObject;
-        PhotonView pv = objeto.GetComponent<PhotonView>();
         objeto.transform.SetParent(null);
 
         // posición de drop
@@ -449,9 +542,6 @@ public class Interact : MonoBehaviour
                 foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
                     Physics.IgnoreCollision(playerCol, c, false);
         }
-
-        if (pv != null) view.RPC(nameof(RPC_AvisarSoltarObjeto), RpcTarget.Others, pv.ViewID, objeto.transform.position);
-
     }
 
 
@@ -569,44 +659,41 @@ public class Interact : MonoBehaviour
         return name.Trim();
     }
 
-    [PunRPC]
-    void RPC_AvisarAgarrarObjeto(int objetoViewID, int jugadorViewID)
+    NpcFollowPath DetectarNPCApuntado()
     {
-        PhotonView objetoPV = PhotonView.Find(objetoViewID);
-        PhotonView jugadorPV = PhotonView.Find(jugadorViewID);
+        var npcs = Object.FindObjectsByType<NpcFollowPath>(FindObjectsSortMode.None);
+        if (npcs.Length == 0) return null;
 
-        if (objetoPV == null || jugadorPV == null) return;
+        NpcFollowPath mejor = null;
+        float mejorScore = float.MaxValue;
+        Vector2 centro = new(0.5f, 0.5f);
 
-        Transform destino = jugadorPV.GetComponentInChildren<Interact>().SlotMano();
-        if (destino == null) return;
-
-        objetoPV.transform.SetParent(destino);
-        objetoPV.transform.localPosition = Vector3.zero;
-        objetoPV.transform.localRotation = Quaternion.identity;
-
-        var rb = objetoPV.GetComponent<Rigidbody>();
-        if (rb)
+        foreach (var npc in npcs)
         {
-            rb.isKinematic = true;
-            rb.useGravity = false;
+            // If the NPC isn't waiting for the player, skip it
+            if (!npc.IsWaitingForPlayer()) continue;
+
+            var r = npc.GetComponentInChildren<Renderer>();
+            Vector3 pos = r ? r.bounds.center : npc.transform.position;
+
+            var vp = camaraJugador.WorldToViewportPoint(pos);
+            if (vp.z <= 0f) continue;
+
+            float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+            if (dPantalla > radioPantallaPan) continue;
+
+            float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+            if (dist > distanciaPan) continue;
+
+            float score = dPantalla * 10f + dist;
+            if (score < mejorScore)
+            {
+                mejorScore = score;
+                mejor = npc;
+            }
         }
-    }
 
-    [PunRPC]
-    void RPC_AvisarSoltarObjeto(int objetoViewID, Vector3 posicion)
-    {
-        PhotonView objetoPV = PhotonView.Find(objetoViewID);
-        if (objetoPV == null) return;
-
-        objetoPV.transform.SetParent(null);
-        objetoPV.transform.position = posicion;
-
-        var rb = objetoPV.GetComponent<Rigidbody>();
-        if (rb)
-        {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-        }
+        return mejor;
     }
 
 
