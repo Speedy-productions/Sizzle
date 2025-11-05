@@ -90,7 +90,7 @@ namespace Sizzle.Auth
         private System.Collections.IEnumerator PollGoogleTx(string state, Action<bool, string> cb)
         {
             var url = _baseUrl + "/auth/google/tx/" + state;
-            var deadline = Time.realtimeSinceStartup + 90f;
+            var deadline = Time.realtimeSinceStartup + 90f; // 90 segundos máximo
 
             while (Time.realtimeSinceStartup < deadline)
             {
@@ -98,20 +98,22 @@ namespace Sizzle.Auth
                 {
                     yield return req.SendWebRequest();
 #if UNITY_2020_2_OR_NEWER
-                    bool error = req.result != UnityWebRequest.Result.Success;
+            bool error = req.result != UnityWebRequest.Result.Success;
 #else
                     bool error = req.isNetworkError || req.isHttpError;
 #endif
                     if (!error)
                     {
                         var json = req.downloadHandler.text;
+
+                        // buscamos si ya se completó
                         if (json.Contains("\"status\":\"ok\""))
                         {
-                            // guarda token si lo hay
                             try
                             {
-                                var resp = JsonUtility.FromJson<ApiOk>(json);
-                                if (!string.IsNullOrEmpty(resp.token))
+                                // intenta deserializar los datos correctamente
+                                ApiOk resp = JsonUtility.FromJson<ApiOk>(json.Replace("\"status\":\"ok\",", "").Trim());
+                                if (resp != null && resp.user != null && !string.IsNullOrEmpty(resp.token))
                                 {
                                     PlayerPrefs.SetString("jwt_token", resp.token);
                                     PlayerPrefs.SetString("user_name", resp.user.nombre);
@@ -119,10 +121,15 @@ namespace Sizzle.Auth
                                     PlayerPrefs.Save();
                                 }
                             }
-                            catch { }
+                            catch (System.Exception ex)
+                            {
+                                Debug.LogWarning("[GoogleLogin] Error leyendo respuesta JSON: " + ex.Message);
+                            }
+
                             cb(true, null);
                             yield break;
                         }
+
                         if (json.Contains("\"status\":\"error\""))
                         {
                             cb(false, "Google auth error");
@@ -130,10 +137,12 @@ namespace Sizzle.Auth
                         }
                     }
                 }
-                yield return new WaitForSeconds(2f);
+                yield return new WaitForSeconds(2f); // vuelve a consultar cada 2 segundos
             }
+
             cb(false, "Timeout esperando Google");
         }
+
 
     }
 }
