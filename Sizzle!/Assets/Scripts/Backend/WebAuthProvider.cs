@@ -1,10 +1,3 @@
-// -----------------------------------------------
-// WebAuthProvider.cs
-// Resumen :
-// - Cliente HTTP de Unity. Envía JSON sobre HTTPS a /auth/login y /auth/register.
-// - La confidencialidad e integridad la aporta TLS (HTTPS). No envia contraseñas en claro “legibles” en la red.
-// - El servidor valida hash bcrypt y responde { ok, user|error }.
-// -----------------------------------------------
 using System;
 using System.Text;
 using UnityEngine;
@@ -12,7 +5,8 @@ using UnityEngine.Networking;
 
 namespace Sizzle.Auth
 {
-    [Serializable] class ApiOk { public bool ok; public string error; }
+    [Serializable] class ApiUser { public int id; public string nombre; public string email; }
+    [Serializable] class ApiOk { public bool ok; public string error; public string token; public ApiUser user; }
 
     public class WebAuthProvider : IAuthProvider
     {
@@ -45,6 +39,12 @@ namespace Sizzle.Auth
                 req.uploadHandler = new UploadHandlerRaw(payload);
                 req.downloadHandler = new DownloadHandlerBuffer();
                 req.SetRequestHeader("Content-Type", "application/json");
+
+                // Si hay token guardado, lo manda
+                var token = PlayerPrefs.GetString("jwt_token", "");
+                if (!string.IsNullOrEmpty(token))
+                    req.SetRequestHeader("Authorization", "Bearer " + token);
+
                 yield return req.SendWebRequest();
 
 #if UNITY_2020_2_OR_NEWER
@@ -61,7 +61,19 @@ namespace Sizzle.Auth
                 {
                     ApiOk resp = null;
                     try { resp = JsonUtility.FromJson<ApiOk>(req.downloadHandler.text); } catch { }
-                    cb(resp != null && resp.ok, resp?.error);
+                    if (resp != null && resp.ok)
+                    {
+                        if (!string.IsNullOrEmpty(resp.token))
+                        {
+                            PlayerPrefs.SetString("jwt_token", resp.token);
+                            PlayerPrefs.SetString("user_name", resp.user.nombre);
+                            PlayerPrefs.SetString("user_email", resp.user.email);
+                            PlayerPrefs.Save();
+                        }
+                        cb(true, null);
+                    }
+                    else
+                        cb(false, resp?.error ?? "Respuesta inválida");
                 }
             }
         }
@@ -70,9 +82,7 @@ namespace Sizzle.Auth
 
         public void StartGoogleLogin(Action<bool, string> onResult)
         {
-            // genera estado único (puede ser Guid)
             var state = System.Guid.NewGuid().ToString("N");
-            // abre el navegador del sistema: /auth/google/start?state=...
             Application.OpenURL(_baseUrl + "/auth/google/start?state=" + state);
             _runner.StartCoroutine(PollGoogleTx(state, onResult));
         }
@@ -80,7 +90,7 @@ namespace Sizzle.Auth
         private System.Collections.IEnumerator PollGoogleTx(string state, Action<bool, string> cb)
         {
             var url = _baseUrl + "/auth/google/tx/" + state;
-            var deadline = Time.realtimeSinceStartup + 90f; // 90s timeout
+            var deadline = Time.realtimeSinceStartup + 90f;
 
             while (Time.realtimeSinceStartup < deadline)
             {
@@ -88,16 +98,28 @@ namespace Sizzle.Auth
                 {
                     yield return req.SendWebRequest();
 #if UNITY_2020_2_OR_NEWER
-            bool error = req.result != UnityWebRequest.Result.Success;
+                    bool error = req.result != UnityWebRequest.Result.Success;
 #else
                     bool error = req.isNetworkError || req.isHttpError;
 #endif
                     if (!error)
                     {
                         var json = req.downloadHandler.text;
-                        // estructura esperada: { status:'pending'|'ok'|'error', data?, error? }
                         if (json.Contains("\"status\":\"ok\""))
                         {
+                            // guarda token si lo hay
+                            try
+                            {
+                                var resp = JsonUtility.FromJson<ApiOk>(json);
+                                if (!string.IsNullOrEmpty(resp.token))
+                                {
+                                    PlayerPrefs.SetString("jwt_token", resp.token);
+                                    PlayerPrefs.SetString("user_name", resp.user.nombre);
+                                    PlayerPrefs.SetString("user_email", resp.user.email);
+                                    PlayerPrefs.Save();
+                                }
+                            }
+                            catch { }
                             cb(true, null);
                             yield break;
                         }
@@ -108,7 +130,7 @@ namespace Sizzle.Auth
                         }
                     }
                 }
-                yield return new WaitForSeconds(2f); // polling cada 2s
+                yield return new WaitForSeconds(2f);
             }
             cb(false, "Timeout esperando Google");
         }
