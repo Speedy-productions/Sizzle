@@ -13,42 +13,48 @@ public class PlayerSetup : MonoBehaviour
     {
         view = GetComponent<PhotonView>();
 
-        if (view.IsMine)
+        bool isMultiplayer = view != null && PhotonNetwork.IsConnected;
+        bool isLocalPlayer = isMultiplayer ? view.IsMine : true; // En modo aventura, asumimos que siempre es local
+
+        if (isLocalPlayer)
         {
-            // --- Activar cámara y HUD solo para jugador local ---
+            // --- Activar cámara y HUD ---
             if (playerCamera != null) playerCamera.SetActive(true);
             if (hud != null) hud.SetActive(true);
 
-            // Asegurar que la cámara tenga el tag y AudioListener correctos
-            Camera cam = playerCamera != null ? playerCamera.GetComponentInChildren<Camera>() : null;
+            // --- Asegurar la cámara principal ---
+            Camera cam = playerCamera.GetComponentInChildren<Camera>(true);
             if (cam != null)
             {
                 cam.tag = "MainCamera";
                 cam.enabled = true;
 
-                AudioListener listener = cam.GetComponent<AudioListener>();
+                var listener = cam.GetComponent<AudioListener>();
                 if (listener != null) listener.enabled = true;
             }
 
-            // --- Asignar la cámara al HeadLook ---
-            HeadLook headLook = GetComponentInChildren<HeadLook>();
-            if (headLook != null && cam != null)
-            {
-                headLook.cameraTransform = cam.transform;
-            }
-
-            // --- Asignar la cámara al Blade ---
-            Blade blade = GetComponentInChildren<Blade>();
-            if (blade != null && cam != null)
-            {
-                blade.SetCamera(cam);
-            }
+            // --- Activar scripts de control ---
+            EnablePlayerControl(true);
         }
         else
         {
-            // Desactivar cámara y HUD de los jugadores remotos
+            // --- Jugador remoto (solo multijugador) ---
             if (playerCamera != null) playerCamera.SetActive(false);
             if (hud != null) hud.SetActive(false);
+            EnablePlayerControl(false);
         }
+    }
+
+    void EnablePlayerControl(bool enable)
+    {
+        // Activar o desactivar scripts de control
+        var movement = GetComponent<PlayerMovement>();
+        if (movement != null) movement.enabled = enable;
+
+        var camControl = GetComponentInChildren<PlayerCam>(true);
+        if (camControl != null) camControl.enabled = enable;
+
+        var moveCam = GetComponentInChildren<MoveCamera>(true);
+        if (moveCam != null) moveCam.enabled = enable;
     }
 }

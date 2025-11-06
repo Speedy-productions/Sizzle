@@ -53,6 +53,10 @@ MonoBehaviour:
   - RPC_PlaceIngredient
   - RPC_CombineIntoFinalDish
   - RPC_SetCurrentOrder
+  - RPC_AgarrarObjeto
+  - RPC_ColocarIngredienteEnTabla
+  - RPC_SoltarObjeto
+  - RPC_CreateBurger
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
