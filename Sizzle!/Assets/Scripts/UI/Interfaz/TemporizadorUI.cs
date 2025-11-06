@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class TemporizadorUI : MonoBehaviour
 {
@@ -9,6 +10,13 @@ public class TemporizadorUI : MonoBehaviour
 
     [Header("Tiempo")]
     [SerializeField] private float tiempoInicial = 180f; // 3 min en segundos
+
+    [Header("Game Over")]
+    [SerializeField] private GameObject panelGameOver; // Panel que se mostrará al terminar
+    [SerializeField] private AudioSource sonidoGameOver; // Opcional: sonido al perder
+
+    [Header("Referencias")]
+    [SerializeField] private PlayerCam playerCam;
 
     private float tiempoRestante;
     private bool corriendo = true;
@@ -27,6 +35,19 @@ public class TemporizadorUI : MonoBehaviour
 
     void Start()
     {
+        // Asegurarse que existe un EventSystem
+        if (FindAnyObjectByType<EventSystem>() == null)
+        {
+            Debug.LogWarning("No EventSystem found - creating one");
+            var eventSystem = new GameObject("EventSystem");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<StandaloneInputModule>();
+        }
+
+        if (playerCam == null)
+        {
+            playerCam = FindFirstObjectByType<PlayerCam>();
+        }
         tiempoRestante = Mathf.Max(0f, tiempoInicial);
         Pintar();
     }
@@ -40,7 +61,7 @@ public class TemporizadorUI : MonoBehaviour
         {
             tiempoRestante = 0f;
             corriendo = false;
-            // TODO: aquí tu lógica al terminar (GameOver, etc.)
+            MostrarGameOver();
         }
 
         Pintar();
@@ -54,12 +75,67 @@ public class TemporizadorUI : MonoBehaviour
         textoTemporizador.text = $"{minutos:00}:{segundos:00}";
     }
 
+    void MostrarGameOver()
+    {
+        if (panelGameOver != null)
+        {
+            // Asegurar que el panel tiene los componentes necesarios
+            Canvas canvas = panelGameOver.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError("Panel GameOver needs to be child of a Canvas!");
+                return;
+            }
+
+            if (canvas.GetComponent<GraphicRaycaster>() == null)
+            {
+                Debug.LogWarning("Adding GraphicRaycaster to Canvas");
+                canvas.gameObject.AddComponent<GraphicRaycaster>();
+            }
+
+            panelGameOver.SetActive(true);
+            Debug.Log("Game Over panel activated");
+        }
+        
+        if (playerCam != null)
+        {
+            playerCam.DesbloquearCursor();
+            Debug.Log("Cursor desbloqueado");
+        }
+        
+        if (sonidoGameOver != null)
+        {
+            sonidoGameOver.Play();
+        }
+        
+        Time.timeScale = 0f;
+    }
+
     // API pública
     public void Reiniciar(float? nuevoTiempo = null)
     {
         tiempoRestante = Mathf.Max(0f, nuevoTiempo ?? tiempoInicial);
         corriendo = true;
         Pintar();
+    }
+
+    public void ReiniciarJuego()
+    {
+        Debug.Log("Intento de reiniciar juego");
+        
+        if (panelGameOver != null)
+        {
+            panelGameOver.SetActive(false);
+        }
+
+        if (playerCam != null)
+        {
+            playerCam.BloquearCursor();
+        }
+
+        Time.timeScale = 1f;
+        Reiniciar();
+        Debug.Log("Juego reiniciado");
     }
 
     public void Pausar() => corriendo = false;

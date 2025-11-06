@@ -91,7 +91,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+            rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
+
         }
     }
 

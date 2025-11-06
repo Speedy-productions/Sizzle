@@ -149,7 +149,7 @@ public class Interact : MonoBehaviour
                 TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
 
                 // Aquí llamamos a la UI para agregar dinero
-                DineroUI dineroUI = FindObjectOfType<DineroUI>();  // Obtener la referencia a la UI de dinero
+                DineroUI dineroUI = FindFirstObjectByType<DineroUI>();  // Obtener la referencia a la UI de dinero
                     npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
                     if (dineroUI != null)
                 {
@@ -162,7 +162,7 @@ public class Interact : MonoBehaviour
             {
                     npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
                     // Si la hamburguesa no coincide con la orden, restamos dinero y cambiamos el estado del NPC
-                    DineroUI dineroUI = FindObjectOfType<DineroUI>();
+                    DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
                 if (dineroUI != null)
                 {
                     dineroUI.QuitarDinero(5);  // Restamos 5 unidades de dinero

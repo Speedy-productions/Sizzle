@@ -32,4 +32,16 @@ public class PlayerCam : MonoBehaviour
         transform.rotation = Quaternion.Euler(rotacionX, rotacionY, 0);
         orientacion.rotation = Quaternion.Euler(0, rotacionY, 0);
     }
+
+    public void BloquearCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    public void DesbloquearCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 }
