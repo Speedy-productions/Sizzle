@@ -3,10 +3,7 @@ using TMPro;
 
 public class UserInfoUI : MonoBehaviour
 {
-    [Header("Referencia al texto donde se muestra el nombre")]
     public TMP_Text userText;
-
-    [Tooltip("Texto por defecto si no hay nombre guardado")]
     public string fallbackName = "Invitado";
 
     void Reset()
@@ -15,6 +12,20 @@ public class UserInfoUI : MonoBehaviour
     }
 
     void OnEnable()
+    {
+        Refresh();
+        // Se suscribe al evento que se dispara al cambiar de sesión
+        AuthEvents.OnSessionChanged += Refresh;
+    }
+
+    void OnDisable()
+    {
+        // Limpia la suscripción para evitar memory leaks
+        AuthEvents.OnSessionChanged -= Refresh;
+    }
+
+    // Actualiza el texto con el usuario actual
+    public void Refresh()
     {
         string name = PlayerPrefs.GetString("user_name", fallbackName);
         if (userText) userText.text = name;

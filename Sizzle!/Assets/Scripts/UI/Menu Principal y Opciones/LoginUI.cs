@@ -37,6 +37,11 @@ public class LoginUI : MonoBehaviour
 
     public void OnClickLogin()
     {
+        PlayerPrefs.DeleteKey("jwt_token");
+        PlayerPrefs.DeleteKey("user_id");
+        PlayerPrefs.DeleteKey("user_name");
+        PlayerPrefs.DeleteKey("user_email");
+        PlayerPrefs.Save();
         var user = emailInput ? emailInput.text.Trim() : "";
         var pass = passwordInput ? passwordInput.text : "";
 
@@ -52,6 +57,11 @@ public class LoginUI : MonoBehaviour
 
     public void OnClickGoToRegister()
     {
+        PlayerPrefs.DeleteKey("jwt_token");
+        PlayerPrefs.DeleteKey("user_id");
+        PlayerPrefs.DeleteKey("user_name");
+        PlayerPrefs.DeleteKey("user_email");
+        PlayerPrefs.Save();
         //  Limpia al cambiar de menú también
         ClearAll();
 
@@ -61,6 +71,7 @@ public class LoginUI : MonoBehaviour
 
     public void OnClickLoginWithGoogle()
     {
+
         AuthService.StartGoogleLogin((ok, err) =>
         {
             if (!ok)
