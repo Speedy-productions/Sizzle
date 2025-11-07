@@ -4688,7 +4688,7 @@ MonoBehaviour:
   cam: {fileID: 0}
   fillPerClick: 0.25
   decayRate: 1.25
-  cuttingSound: {fileID: 0}
+  cuttingSound: {fileID: 992811278}
 --- !u!4 &1150954021
 Transform:
   m_ObjectHideFlags: 0
@@ -11182,28 +11182,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad7f1cc151edbe343a3c24021d441f0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcFollowPath
-  normalPathPoints:
-  - {fileID: 1602906489}
-  - {fileID: 1539342491}
-  - {fileID: 1471451114}
-  - {fileID: 1827502347}
-  - {fileID: 1554713767}
-  - {fileID: 353582457}
-  - {fileID: 1450025448}
-  happyPathPoints:
-  - {fileID: 1550858609}
-  - {fileID: 927012780}
-  - {fileID: 1783251376}
-  - {fileID: 794266599}
-  moveSpeed: 25
-  rotationSpeed: 7
-  reachDistance: 1
-  waitTimeAtPopup: 1
-  anim: {fileID: 2023293476}
-  NpcModel: {fileID: 2023293477}
-  popupChar: {fileID: 1390412981}
-  popupAtPointIndex: 4
-  handTransform: {fileID: 621308936}
 --- !u!95 &2023293476 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
