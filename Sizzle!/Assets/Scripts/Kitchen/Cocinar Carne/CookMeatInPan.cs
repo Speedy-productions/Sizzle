@@ -111,10 +111,17 @@ public class CookMeatInPan : MonoBehaviour
             if (cookingUI) cookingUI.ResetUI(cookingTime / (cookingTime + burningTime)); // limpia íconos
 
             isCooking = true;
+
+            // ?? Reproducir sonido de cocción al voltear
+            var audio = currentMeat.GetComponent<MeatCookingAudio>();
+            if (audio != null)
+                audio.RestartCookingSound();
+
             return true;
         }
         return false;
     }
+
 
     // Hint “Presiona T…” (se muestra solo si apunta, tiene carne y no hay otra en este sarten)
     public void ShowAimHint(bool aimingPan, bool hasMeatInHand)

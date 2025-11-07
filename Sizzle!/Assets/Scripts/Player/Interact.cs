@@ -151,6 +151,8 @@ public class Interact : MonoBehaviour
                 // Aquí llamamos a la UI para agregar dinero
                 DineroUI dineroUI = FindFirstObjectByType<DineroUI>();  // Obtener la referencia a la UI de dinero
                     npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
+                    npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
+
                     if (dineroUI != null)
                 {
                     dineroUI.AgregarDinero(10);  // Agregar 10 unidades de dinero (puedes modificar la cantidad)
@@ -160,7 +162,10 @@ public class Interact : MonoBehaviour
             }
             else
             {
+
                     npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
+                    npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
+
                     // Si la hamburguesa no coincide con la orden, restamos dinero y cambiamos el estado del NPC
                     DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
                 if (dineroUI != null)
@@ -448,7 +453,17 @@ public class Interact : MonoBehaviour
     {
         LimpiarHighlight();
 
+        var audio = objeto.GetComponent<MeatCookingAudio>();
+        if (audio != null)
+        {
+            audio.StopImmediately();
+        }
 
+        var friesAudio = objeto.GetComponent<FriesCookingAudio>();
+        if (friesAudio != null)
+        {
+            friesAudio.StopImmediately();
+        }
         var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
         if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
         {

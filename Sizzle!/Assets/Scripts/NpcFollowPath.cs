@@ -157,6 +157,9 @@ public class NpcFollowPath : MonoBehaviour
 
     public void OnPlayerInteracted()
     {
+
+        var audio = GetComponent<NpcAudio>();
+        audio?.PlayTalk();
         if (isWaitingForPlayer && !hasShownPopup)
             ShowPopup();
     }
