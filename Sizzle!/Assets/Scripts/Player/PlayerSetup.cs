@@ -18,6 +18,8 @@ public class PlayerSetup : MonoBehaviour
 
         if (isLocalPlayer)
         {
+            DisableAllAudioListeners();
+
             // --- Activar cámara y HUD ---
             if (playerCamera != null) playerCamera.SetActive(true);
             if (hud != null) hud.SetActive(true);
@@ -41,6 +43,14 @@ public class PlayerSetup : MonoBehaviour
             // --- Jugador remoto (solo multijugador) ---
             if (playerCamera != null) playerCamera.SetActive(false);
             if (hud != null) hud.SetActive(false);
+
+            // --- Asegurarse de que no quede ningún AudioListener activo en cámara remota ---
+            Camera remoteCam = playerCamera != null ? playerCamera.GetComponentInChildren<Camera>(true) : null;
+            if (remoteCam != null)
+            {
+                var listener = remoteCam.GetComponent<AudioListener>();
+                if (listener != null) listener.enabled = false;
+            }
             EnablePlayerControl(false);
         }
     }
@@ -57,4 +67,15 @@ public class PlayerSetup : MonoBehaviour
         var moveCam = GetComponentInChildren<MoveCamera>(true);
         if (moveCam != null) moveCam.enabled = enable;
     }
+
+    void DisableAllAudioListeners()
+    {
+        // Busca y desactiva todos los AudioListeners activos en la escena antes de habilitar el local
+        AudioListener[] listeners = FindObjectsOfType<AudioListener>();
+        foreach (var listener in listeners)
+        {
+            listener.enabled = false;
+        }
+    }
+
 }
