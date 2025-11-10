@@ -11,6 +11,8 @@ public class Blade : MonoBehaviour
     [Tooltip("Velocidad a la que se vacía por segundo")]
     public float decayRate = 0.5f;
 
+    [SerializeField] private CuttingSound cuttingSound;
+
     private float progress = 0f;
     private SliceIngredient currentIngredient = null;
     private Image currentFillImage = null;
@@ -93,6 +95,8 @@ public class Blade : MonoBehaviour
         // Solo se permite la mecánica si el ingrediente está colocado en la tabla
         if (!hitIng.IsOnBoard()) return;
 
+        if (cuttingSound != null)
+            cuttingSound.PlayCutSound();
         // Si cambiamos de objetivo, reiniciamos progreso / UI del anterior
         if (currentIngredient != hitIng)
         {
