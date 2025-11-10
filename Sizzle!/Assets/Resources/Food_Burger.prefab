@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -6724094905783407467}
   - component: {fileID: -7355161653267128825}
   - component: {fileID: -5298769318776047193}
+  - component: {fileID: 9139421546541114917}
   m_Layer: 12
   m_Name: Food_Burger
   m_TagString: Food
@@ -220,3 +221,16 @@ MonoBehaviour:
     InterpolateOption: 0
     InterpolateMoveTowardsSpeed: 1
     InterpolateLerpSpeed: 0
+--- !u!114 &9139421546541114917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5898702171912911067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37cf37106243a67458da5a50922ac722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Hamburguesa
+  ingredientes: []
