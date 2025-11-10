@@ -108,7 +108,7 @@ public class MesaArmado : MonoBehaviourPun
             return;
         }
 
-        // 🔹 Recolectamos los nombres de ingredientes
+        // Recolectamos los nombres de ingredientes
         List<string> ingredientNames = new List<string>();
         foreach (var ingredient in placedIngredients)
         {
@@ -116,14 +116,14 @@ public class MesaArmado : MonoBehaviourPun
                 ingredientNames.Add(ing.ingredientName);
         }
 
-        // 🔹 Generamos el pedido local y sincronizamos con todos
+        // Generamos el pedido local y sincronizamos con todos
         Order customOrder = new Order(ingredientNames.ToArray());
         OrderManager.Instance.SetCurrentOrder(customOrder);
 
-        // 🔹 RPC global para crear el producto visual
+        // RPC global para crear el producto visual
         photonView.RPC(nameof(RPC_CreateBurger), RpcTarget.AllBuffered, ingredientNames.ToArray());
 
-        // 🔹 Limpieza local
+        // Limpieza local
         ClearMesa();
     }
 
@@ -139,14 +139,14 @@ public class MesaArmado : MonoBehaviourPun
         Vector3 spawnPos = assemblePoint.position;
         Quaternion spawnRot = Quaternion.identity;
 
-        // 🔹 Usa PhotonNetwork para crearla en red
+        // Usa PhotonNetwork para crearla en red
         GameObject burger = PhotonNetwork.Instantiate(
             currentRecipe.finalProductPrefab.name,
             spawnPos,
             spawnRot
         );
 
-        // 🔹 Configura sus ingredientes
+        // Configura sus ingredientes
         if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
             hamburguesaScript.SetIngredientes(ingredientNames.ToList());
 
