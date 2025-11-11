@@ -11384,7 +11384,7 @@ MonoBehaviour:
   moveSpeed: 20
   rotationSpeed: 5
   reachDistance: 0.5
-  waitTimeAtPopup: 10
+  waitTimeAtPopup: 2
   anim: {fileID: 2023293476}
   NpcModel: {fileID: 2023293477}
   popupChar: {fileID: 1390412981}
