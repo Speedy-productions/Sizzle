@@ -153,24 +153,20 @@ public class CookMeatInPan : MonoBehaviourPun
 
             isCooking = true;
 
-<<<<<<< HEAD
             // sincronizar que el meat está volteado y su visual
             var meatPV = currentMeat.GetComponent<PhotonView>();
             if (meatPV != null)
                 photonView.RPC(nameof(RPC_SyncMeatOnPan), RpcTarget.OthersBuffered, meatPV.ViewID, isFlipped);
-=======
             // ?? Reproducir sonido de cocción al voltear
             var audio = currentMeat.GetComponent<MeatCookingAudio>();
             if (audio != null)
                 audio.RestartCookingSound();
->>>>>>> 1cd96ddcf600f193597d6b1f8ecb31b6674c830b
 
             return true;
         }
         return false;
     }
 
-<<<<<<< HEAD
     // RPC que reparenta la carne en los clientes remotos y asegura física/flags
     [PunRPC]
     void RPC_SyncMeatOnPan(int meatViewID, bool flipped)
@@ -265,8 +261,6 @@ public class CookMeatInPan : MonoBehaviourPun
         meat.SetKinematic(false);
         meat.transform.SetParent(null);
     }
-=======
->>>>>>> 1cd96ddcf600f193597d6b1f8ecb31b6674c830b
 
     // Hint “Presiona T…” (se muestra solo si apunta, tiene carne y no hay otra en este sarten)
     public void ShowAimHint(bool aimingPan, bool hasMeatInHand)

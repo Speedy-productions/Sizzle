@@ -463,16 +463,14 @@ public class Interact : MonoBehaviourPun
     {
         LimpiarHighlight();
 
-<<<<<<< HEAD
+
         PhotonView pv = objeto.GetComponent<PhotonView>();
         if (pv != null && pv.IsMine) pv.RequestOwnership();
-=======
         var audio = objeto.GetComponent<MeatCookingAudio>();
         if (audio != null)
         {
             audio.StopImmediately();
         }
->>>>>>> 1cd96ddcf600f193597d6b1f8ecb31b6674c830b
 
         var friesAudio = objeto.GetComponent<FriesCookingAudio>();
         if (friesAudio != null)
