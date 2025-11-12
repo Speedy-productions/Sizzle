@@ -1,8 +1,9 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using Photon.Pun;
 
-public class Interact : MonoBehaviour
+public class Interact : MonoBehaviourPun
 {
     [Header("Referencias")]
     public Transform manoJugador;     // hueso/objeto de la mano
@@ -41,11 +42,20 @@ public class Interact : MonoBehaviour
     CookMeatInPan ultimoPanApuntado;
     CookFriesInFryer ultimaFreidoraApuntada;
 
+    private PhotonView view;
+
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
 
+    void Start()
+    {
+        view = GetComponentInParent<PhotonView>();
+    }
+
     void Update()
     {
+        if (view != null && !view.IsMine) return;
+        
         NpcFollowPath npcApuntado = DetectarNPCApuntado();
 
         DetectarObjetoPorCapaSinRaycast_ConHighlight();
@@ -453,6 +463,9 @@ public class Interact : MonoBehaviour
     {
         LimpiarHighlight();
 
+
+        PhotonView pv = objeto.GetComponent<PhotonView>();
+        if (pv != null && pv.IsMine) pv.RequestOwnership();
         var audio = objeto.GetComponent<MeatCookingAudio>();
         if (audio != null)
         {
@@ -504,6 +517,11 @@ public class Interact : MonoBehaviour
                 foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
                     Physics.IgnoreCollision(playerCol, c, true);
         }
+        if (pv != null && view != null)
+        {
+            view.RPC(nameof(RPC_AvisarAgarrarObjeto), RpcTarget.OthersBuffered, pv.ViewID, view.ViewID);
+        }
+
     }
 
 
@@ -514,6 +532,7 @@ public class Interact : MonoBehaviour
         if (!slot || slot.childCount == 0) return;
 
         var objeto = slot.GetChild(0).gameObject;
+        PhotonView pv = objeto.GetComponent<PhotonView>();
         objeto.transform.SetParent(null);
 
         // posición de drop
@@ -557,6 +576,9 @@ public class Interact : MonoBehaviour
                 foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
                     Physics.IgnoreCollision(playerCol, c, false);
         }
+        if (pv != null && view != null)
+            view.RPC(nameof(RPC_AvisarSoltarObjeto), RpcTarget.Others, pv.ViewID, objeto.transform.position);
+
     }
 
 
@@ -711,6 +733,45 @@ public class Interact : MonoBehaviour
         return mejor;
     }
 
+    [PunRPC]
+    void RPC_AvisarAgarrarObjeto(int objetoViewID, int jugadorViewID)
+    {
+        PhotonView objetoPV = PhotonView.Find(objetoViewID);
+        PhotonView jugadorPV = PhotonView.Find(jugadorViewID);
+
+        if (objetoPV == null || jugadorPV == null) return;
+
+        Transform destino = jugadorPV.GetComponentInChildren<Interact>().SlotMano();
+        if (destino == null) return;
+
+        objetoPV.transform.SetParent(destino);
+        objetoPV.transform.localPosition = Vector3.zero;
+        objetoPV.transform.localRotation = Quaternion.identity;
+
+        var rb = objetoPV.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+    }
+
+    [PunRPC]
+    void RPC_AvisarSoltarObjeto(int objetoViewID, Vector3 posicion)
+    {
+        PhotonView objetoPV = PhotonView.Find(objetoViewID);
+        if (objetoPV == null) return;
+
+        objetoPV.transform.SetParent(null);
+        objetoPV.transform.position = posicion;
+
+        var rb = objetoPV.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
 
 
     void OnDisable() => LimpiarHighlight();

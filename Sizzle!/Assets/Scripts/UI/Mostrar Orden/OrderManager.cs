@@ -1,12 +1,13 @@
 using UnityEngine;
+using Photon.Pun;
 
-public class OrderManager : MonoBehaviour
+public class OrderManager : MonoBehaviourPun
 {
     public static OrderManager Instance { get; private set; }
 
     public FoodGroup[] foodGroups;
 
-    // === NUEVO: pedido activo que seguirá la mesa/armado ===
+    // Pedido activo que seguirá la mesa/armado
     public Order CurrentOrder { get; private set; }
 
     void Awake()
@@ -15,11 +16,28 @@ public class OrderManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    void Start()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            CurrentOrder = GenerateHamburgerOrder();
+            photonView.RPC(nameof(RPC_SetCurrentOrder), RpcTarget.OthersBuffered, CurrentOrder.ingredients);
+        }
+    }
+
+    [PunRPC]
+    void RPC_SetCurrentOrder(string[] ingredients)
+    {
+        CurrentOrder = new Order(ingredients);
+    }
+
     public void SetCurrentOrder(Order order)
     {
         CurrentOrder = order;
-        // Podrías disparar un evento aquí si lo necesitas
-        // OnOrderChanged?.Invoke(order);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            photonView.RPC(nameof(RPC_SetCurrentOrder), RpcTarget.OthersBuffered, order.ingredients);
+        }
         Debug.Log($"[OrderManager] CurrentOrder seteado: {(order != null ? string.Join(",", order.ingredients) : "NULL")}");
     }
 
@@ -27,12 +45,9 @@ public class OrderManager : MonoBehaviour
     {
         int totalIngredients = 5;
         string[] ingredientNames = new string[totalIngredients];
-
-        // Panes -> ahora primero BASE y al final TAPA
         ingredientNames[0] = "Base";
         ingredientNames[totalIngredients - 1] = "Tapa";
 
-        // Intermedios
         for (int i = 1; i < totalIngredients - 1; i++)
         {
             int ranChoice = Random.Range(0, 4);
@@ -43,5 +58,4 @@ public class OrderManager : MonoBehaviour
 
         return new Order(ingredientNames);
     }
-
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PlayerCam : MonoBehaviour
 {
@@ -12,14 +13,25 @@ public class PlayerCam : MonoBehaviour
     float rotacionX;
     float rotacionY;
 
+    private PhotonView view;
+
     private void Start()
     {
+        view = GetComponentInParent<PhotonView>();
+        if (!view.IsMine)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         Cursor.lockState = CursorLockMode.Locked; // Mantiene el mouse en el centro de la pantalla
         Cursor.visible = false; // Oculta el mouse
     }
 
     private void Update()
     {
+        if (!view.IsMine) return;
+
         // Input del mouse
         float mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * sensX;
         float mouseY = Input.GetAxis("Mouse Y") * Time.deltaTime * sensY;

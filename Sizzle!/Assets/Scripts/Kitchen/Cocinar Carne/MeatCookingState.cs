@@ -1,6 +1,7 @@
 using UnityEngine;
+using Photon.Pun;
 
-public class MeatCookingState : MonoBehaviour
+public class MeatCookingState : MonoBehaviourPunCallbacks
 {
     public enum CookingState { Raw, Cooking, Cooked, Burned }
     public CookingState currentState = CookingState.Raw;
@@ -34,6 +35,7 @@ public class MeatCookingState : MonoBehaviour
 
     void Update()
     {
+        if (!photonView.IsMine) return;
         // Detecta si está en la mano (el padre tiene el tag PlayerHand)
         Transform parent = transform.parent;
         isHeldByPlayer = parent != null && parent.CompareTag("PlayerHand");
@@ -91,13 +93,54 @@ public class MeatCookingState : MonoBehaviour
         for (int i = 0; i < cols.Length; i++) cols[i].isTrigger = asTrigger;
     }
 
+    [PunRPC]
+    void RPC_SetMaterial (int side, string state)
+    {
+        Renderer r = null;
+        if (side == 1 && burger2) r = burger2.GetComponent<Renderer>();
+        if (side == 2 && burger1) r = burger1.GetComponent<Renderer>();
+
+        if (r == null) return;
+
+        if (state == "Cooked")
+        {
+            r.material = side == 1 ? cookedMaterialSide1 : cookedMaterialSide2;
+        } 
+        else if (state == "Burned")
+        {
+            r.material = burnedMaterial;
+        }
+    }
+
+    [PunRPC]
+    void RPC_Flip ()
+    {
+        transform.Rotate(180f, 0f, 0f);
+    }
+
+    [PunRPC]
+    void RPC_SetParent(int viewID)
+    {
+        if (viewID == -1)
+        {
+            transform.SetParent(null);
+        }
+        else
+        {
+            PhotonView targetView = PhotonView.Find(viewID);
+            if (targetView != null)
+            {
+                transform.SetParent(targetView.transform);
+            }
+        }
+    }
+
     // Marca lado 1 como cocido (pinta burger2)
     public void CookSide1()
     {
         if (!isSide1Cooked && !isSide1Burned && burger2 && cookedMaterialSide1)
         {
-            var r = burger2.GetComponent<Renderer>();
-            if (r) r.material = cookedMaterialSide1;
+            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 1, "Cooked");
             isSide1Cooked = true;
         }
     }
@@ -107,8 +150,7 @@ public class MeatCookingState : MonoBehaviour
     {
         if (!isSide2Cooked && !isSide2Burned && burger1 && cookedMaterialSide2)
         {
-            var r = burger1.GetComponent<Renderer>();
-            if (r) r.material = cookedMaterialSide2;
+            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 2, "Cooked");
             isSide2Cooked = true;
         }
     }
@@ -118,8 +160,7 @@ public class MeatCookingState : MonoBehaviour
     {
         if (!isSide1Burned && burger2 && burnedMaterial)
         {
-            var r = burger2.GetComponent<Renderer>();
-            if (r) r.material = burnedMaterial;
+            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 1, "Burned");
             isSide1Burned = true;
         }
     }
@@ -129,10 +170,14 @@ public class MeatCookingState : MonoBehaviour
     {
         if (!isSide2Burned && burger1 && burnedMaterial)
         {
-            var r = burger1.GetComponent<Renderer>();
-            if (r) r.material = burnedMaterial;
+            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 2, "Burned");
             isSide2Burned = true;
         }
+    }
+
+    public void FlipMeat()
+    {
+        photonView.RPC(nameof(RPC_Flip), RpcTarget.All);
     }
 
     // No marca Burned hasta que ambos lados terminaron (cocidos o quemados)
@@ -148,4 +193,35 @@ public class MeatCookingState : MonoBehaviour
         else
             currentState = CookingState.Raw;
     }
+
+    public void ApplyVisualDirectly(bool flipped)
+    {
+        // Ajusta la rotación física para mostrar el lado correcto
+        Vector3 euler = transform.localEulerAngles;
+        bool currentlyFlipped = Mathf.Abs(Mathf.DeltaAngle(euler.x, 0f)) > 90f;
+        if (flipped && !currentlyFlipped)
+            transform.Rotate(180f, 0f, 0f, Space.Self);
+        else if (!flipped && currentlyFlipped)
+            transform.Rotate(180f, 0f, 0f, Space.Self);
+
+        // Aplica materiales según los flags locales (no envía RPC)
+        if (isSide1Burned)
+        {
+            if (burger2) burger2.GetComponent<Renderer>().material = burnedMaterial;
+        }
+        else if (isSide1Cooked)
+        {
+            if (burger2 && cookedMaterialSide1) burger2.GetComponent<Renderer>().material = cookedMaterialSide1;
+        }
+
+        if (isSide2Burned)
+        {
+            if (burger1) burger1.GetComponent<Renderer>().material = burnedMaterial;
+        }
+        else if (isSide2Cooked)
+        {
+            if (burger1 && cookedMaterialSide2) burger1.GetComponent<Renderer>().material = cookedMaterialSide2;
+        }
+    }
+
 }
