@@ -189,14 +189,52 @@ public void ResetAfterComplete(bool destroyChildrenUnderAssemblePoint = false)
     }
 
     public void RemoveIngredient(GameObject obj)
-    {
-        if (obj == null) return;
+{
+    if (obj == null) return;
 
-        if (placedIngredients.Contains(obj))
+    if (placedIngredients.Contains(obj))
+    {
+        placedIngredients.Remove(obj);
+
+        // ✅ Reactivar físicas
+        if (obj.TryGetComponent(out Rigidbody rb))
         {
-            placedIngredients.Remove(obj);
-            Destroy(obj);  // Destruir el objeto de la mesa
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
+
+        // ✅ Quitar parent (liberarlo de la mesa)
+        obj.transform.SetParent(null);
+
+        // ✅ Asegurar que sus colliders vuelvan a estar activos
+        foreach (var c in obj.GetComponentsInChildren<Collider>(true))
+            c.enabled = true;
+
+        // ✅ Levantarlo un poquito para evitar que se quede pegado
+        obj.transform.position += Vector3.up * 0.02f;
+
+        Debug.Log($"[MesaArmado] Ingrediente '{obj.name}' retirado de la mesa (no destruido).");
+
+        // ✅ Recalcular la altura de la pila después de quitarlo
+        RecalculateStackHeight();
     }
+}
+private void RecalculateStackHeight()
+{
+    currentTopY = 0f;
+
+    foreach (var ing in placedIngredients)
+    {
+        if (!ing) continue;
+        float h = GetWorldHeight(ing);
+        currentTopY += h + separationY;
+    }
+
+    UpdateAssemblePointY();
+}
+
+
 
 }

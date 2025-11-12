@@ -124,8 +124,12 @@ public class ArmarPedido : MonoBehaviour
         // Reset visual/altura de la mesa
         if (mesa) mesa.ResetAfterComplete(false);
 
-        // Instanciar producto final
+                // Instanciar producto final
         Object.Instantiate(currentRecipe.finalProductPrefab, spawnPos, Quaternion.identity);
+
+        // ? Sonido al completar el platillo
+        BurgerCompleteSound sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
+        if (sfx != null) sfx.Play();
 
         Debug.Log($"[ArmarPedido] ¡Platillo completado!: {currentRecipe.recipeName}");
     }
