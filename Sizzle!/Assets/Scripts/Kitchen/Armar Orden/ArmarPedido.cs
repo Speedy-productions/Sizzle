@@ -134,20 +134,16 @@ public class ArmarPedido : MonoBehaviourPun
 
         Vector3 spawnPos = placedIngredients[0].transform.position;
 
-        // Asegurar carnes kinematic
         foreach (var ing in placedIngredients)
-        {
-            if (!ing) continue;
-            if (ing.TryGetComponent(out MeatCookingState meat))
             {
-                var rb = ing.GetComponent<Rigidbody>();
-                if (rb != null)
+                if (ing == null) continue;
+
+                PhotonView pv = ing.GetComponent<PhotonView>();
+                if (pv != null && (pv.IsMine || PhotonNetwork.IsMasterClient))
                 {
-                    rb.isKinematic = true;
-                    rb.useGravity = false;
+                    PhotonNetwork.Destroy(ing);
                 }
             }
-        }
 
         // Destruir ingredientes y limpiar tracking
         foreach (var ing in placedIngredients)

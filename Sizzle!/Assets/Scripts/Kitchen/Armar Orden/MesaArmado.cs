@@ -62,43 +62,61 @@ public class MesaArmado : MonoBehaviourPun
 
     // ---------------------- RPC DE SINCRONIZACIÓN ----------------------
     [PunRPC]
-    void RPC_PlaceIngredient(int viewID, float syncTopY)
+void RPC_PlaceIngredient(int viewID, float syncTopY)
+{
+    PhotonView pv = PhotonView.Find(viewID);
+    if (pv == null)
     {
-        PhotonView pv = PhotonView.Find(viewID);
-        if (pv == null)
-        {
-            Debug.LogWarning($"[MesaArmado] No se encontró objeto con ViewID {viewID}");
-            return;
-        }
-
-        GameObject obj = pv.gameObject;
-        PrepareForTable(obj);
-
-        assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * syncTopY;
-        Vector3 topWorld = assemblePoint.position;
-
-        Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(obj.transform);
-        WorldScaleUtils.ReparentKeepWorldScale(obj.transform, stackRoot, Sw);
-
-        obj.transform.rotation = Quaternion.identity;
-        obj.transform.position = topWorld;
-
-        if (!placedIngredients.Contains(obj))
-            placedIngredients.Add(obj);
-
-        currentTopY = syncTopY + GetWorldHeight(obj) + separationY;
-        UpdateAssemblePointY();
-
-        if (armarPedido != null)
-        {
-            armarPedido.OnIngredientPlaced(
-                obj.GetComponent<Ingredient>()?.ingredientName ?? obj.name,
-                placedIngredients,
-                currentRecipe,
-                this
-            );
-        }
+        Debug.LogWarning($"[MesaArmado] No se encontró objeto con ViewID {viewID}");
+        return;
     }
+
+    GameObject obj = pv.gameObject;
+    PrepareForTable(obj);
+
+    assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * syncTopY;
+    Vector3 topWorld = assemblePoint.position;
+
+    // Reparent manteniendo escala mundial
+    Vector3 worldScale = WorldScaleUtils.GetOrInitWorldScaleMemory(obj.transform);
+    WorldScaleUtils.ReparentKeepWorldScale(obj.transform, stackRoot, worldScale);
+
+    // ✅ Colocar a una altura correcta y resetear rotación
+    obj.transform.rotation = Quaternion.identity;
+    obj.transform.position = topWorld;
+
+    // ✅ Asegurar colliders activos
+    foreach (var c in obj.GetComponentsInChildren<Collider>(true))
+    {
+        c.enabled = true;
+        c.isTrigger = false;
+    }
+
+    if (!placedIngredients.Contains(obj))
+        placedIngredients.Add(obj);
+
+    currentTopY = syncTopY + GetWorldHeight(obj) + separationY;
+    UpdateAssemblePointY();
+
+    // 🔽 Pequeña corrección: bajarlo apenas para evitar "flotar"
+    obj.transform.position = new Vector3(
+        obj.transform.position.x,
+        obj.transform.position.y - (GetWorldHeight(obj) * 0.5f),
+        obj.transform.position.z
+    );
+
+    // Notificar a ArmarPedido
+    if (armarPedido != null)
+    {
+        armarPedido.OnIngredientPlaced(
+            obj.GetComponent<Ingredient>()?.ingredientName ?? obj.name,
+            placedIngredients,
+            currentRecipe,
+            this
+        );
+    }
+}
+
 
     public void CreateCustomBurger()
     {
@@ -121,15 +139,18 @@ public class MesaArmado : MonoBehaviourPun
         OrderManager.Instance.SetCurrentOrder(customOrder);
 
         // RPC global para crear el producto visual
-        photonView.RPC(nameof(RPC_CreateBurger), RpcTarget.AllBuffered, ingredientNames.ToArray());
+        photonView.RPC(nameof(RPC_CreateBurger), RpcTarget.AllBuffered, new object[] { string.Join(",", ingredientNames) });
+
 
         // Limpieza local
         ClearMesa();
     }
 
     [PunRPC]
-    void RPC_CreateBurger(string[] ingredientNames)
+    void RPC_CreateBurger(string ingredientsCSV)
     {
+        string[] ingredientNames = ingredientsCSV.Split(',');
+
         if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
         {
             Debug.LogWarning("[MesaArmado] currentRecipe o su prefab final no están asignados.");
@@ -139,19 +160,18 @@ public class MesaArmado : MonoBehaviourPun
         Vector3 spawnPos = assemblePoint.position;
         Quaternion spawnRot = Quaternion.identity;
 
-        // Usa PhotonNetwork para crearla en red
         GameObject burger = PhotonNetwork.Instantiate(
             currentRecipe.finalProductPrefab.name,
             spawnPos,
             spawnRot
         );
 
-        // Configura sus ingredientes
         if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
             hamburguesaScript.SetIngredientes(ingredientNames.ToList());
 
         Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada en red!");
     }
+
 
 
     // Método para limpiar la mesa
@@ -291,6 +311,9 @@ private void RecalculateStackHeight()
     UpdateAssemblePointY();
 }
 
-
+public List<GameObject> GetPlacedIngredients()
+{
+    return placedIngredients;
+}
 
 }

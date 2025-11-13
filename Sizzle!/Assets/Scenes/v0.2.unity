@@ -13738,22 +13738,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad7f1cc151edbe343a3c24021d441f0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcFollowPath
-  normalPathPoints: []
-  happyPathPoints: []
-  moveSpeed: 3
-  rotationSpeed: 5
-  reachDistance: 0.5
-  waitTimeAtPopup: 10
-  anim: {fileID: 0}
-  NpcModel: {fileID: 0}
-  popupChar: {fileID: 0}
-  popupAtPointIndex: 4
-  handTransform: {fileID: 0}
---- !u!95 &2023293476 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
-  m_PrefabInstance: {fileID: 2023293472}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2023293477 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 00b18eeae7d7c174a89b9ae224e2a005, type: 3}
@@ -13874,33 +13858,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NpcFollowPath
-  normalPathPoints:
-  - {fileID: 1602906489}
-  - {fileID: 1539342491}
-  - {fileID: 1471451114}
-  - {fileID: 1827502347}
-  - {fileID: 1554713767}
-  - {fileID: 353582457}
-  - {fileID: 1450025448}
-  happyPathPoints:
-  - {fileID: 1550858609}
-  - {fileID: 927012780}
-  - {fileID: 1783251376}
-  - {fileID: 794266599}
-  moveSpeed: 20
-  rotationSpeed: 5
-  reachDistance: 0.5
-  waitTimeAtPopup: 2
-  anim: {fileID: 2023293476}
-  NpcModel: {fileID: 2023293477}
-  popupChar: {fileID: 1390412981}
-  popupAtPointIndex: 4
-  handTransform: {fileID: 621308936}
---- !u!4 &2091581290 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3998149737200859734, guid: aea5e1d394e82fb41a256538a77bc3a3, type: 3}
-  m_PrefabInstance: {fileID: 1149927463}
   m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
   ObservedComponentsFoldoutOpen: 1
   Group: 0
