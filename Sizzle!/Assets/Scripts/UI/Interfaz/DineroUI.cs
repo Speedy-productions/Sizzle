@@ -6,13 +6,16 @@ public class DineroUI : MonoBehaviour
     public TMP_Text textoDinero;
     public int dineroActual = 0;
 
+
     void Start()
     {
+        if (!UIBoot.Ready) return;
         ActualizarTexto();
     }
 
     public void AgregarDinero(int cantidad)
     {
+
         dineroActual += cantidad;
         ActualizarTexto();
     }

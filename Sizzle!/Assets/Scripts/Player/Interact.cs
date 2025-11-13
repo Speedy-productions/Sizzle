@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using Photon.Pun;
 
 public class Interact : MonoBehaviour
 {
@@ -44,6 +45,7 @@ public class Interact : MonoBehaviour
     GameObject objetoActualHighlight;
     readonly Dictionary<Renderer, Material[]> originales = new();
 
+
     void Update()
     {
         NpcFollowPath npcApuntado = DetectarNPCApuntado();
@@ -56,13 +58,14 @@ public class Interact : MonoBehaviour
         CuttingBoard tablaApuntada = DetectarTablaApuntada();
         SliceIngredient ingredienteEnMano = GetIngredienteEnMano();
 
-        // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
+        // --- MESA DE ARMADO ---
         MesaArmado mesaApuntada = DetectarMesaApuntada();
         Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
 
-        // --- FREIDORA: detectar y usar mientras sostienes papas ---
+        // --- FREIDORA ---
         CookFriesInFryer freidoraApuntada = DetectarFreidoraApuntada();
         FriesCookingState friesEnMano = GetFriesEnMano();
+
 
         if (panApuntado != ultimoPanApuntado)
         {
@@ -71,7 +74,6 @@ public class Interact : MonoBehaviour
         }
         if (panApuntado) panApuntado.ShowAimHint(true, carneEnMano != null);
 
-        // si cambió la freidora apuntada, oculta hint de la anterior
         if (freidoraApuntada != ultimaFreidoraApuntada)
         {
             if (ultimaFreidoraApuntada) ultimaFreidoraApuntada.ShowAimHint(false, false);
@@ -79,163 +81,208 @@ public class Interact : MonoBehaviour
             Debug.Log($"[INTERACT] Freidora apuntada -> {(freidoraApuntada ? freidoraApuntada.name : "NULL")}");
         }
 
-        // mostrar hint en la freidora actual
         if (freidoraApuntada) freidoraApuntada.ShowAimHint(true, friesEnMano != null);
 
 
-        // ========================================= CONTROLES =========================================
+        // =======================================================
+        // CONTROLES
+        // =======================================================
 
-        
-
-        // E: empezar a cocinar en el sartén apuntado (cocinar)
+        // E: empezar a cocinar en el sartén apuntado
         if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
         {
             panApuntado.TryStartCooking(carneEnMano);
             return;
         }
 
-        // Q: voltear solo el sartén apuntado (cocinar)
+        // Q: voltear sartén
         if (Input.GetKeyDown(KeyCode.Q) && panApuntado && carneEnMano == null)
         {
             panApuntado.TryFlipFromInteraccion();
             return;
         }
 
-        // E: colocar ingrediente en la tabla apuntada (cortar)
+        // E: colocar en tabla
         if (Input.GetKeyDown(KeyCode.E) && tablaApuntada && ingredienteEnMano)
         {
             tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
             return;
         }
 
-        // E: colocar ingrediente en la mesa (armar)
+        // E: colocar en mesa de armado
         if (Input.GetKeyDown(KeyCode.E) && mesaApuntada && ingredienteEnManoPedido)
         {
             mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
             return;
         }
 
-        // E: empezar a freír en la freidora apuntada (freir)
+        // E: freidora
         if (Input.GetKeyDown(KeyCode.E) && freidoraApuntada && friesEnMano)
         {
             bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
             return;
         }
 
-        // E/Q: agarrar/soltar
+        // E/Q: agarrar / soltar objetos generales
         if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
+
         if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
             SoltarObjeto();
 
+        // Q: crear hamburguesa custom en mesa de armado
         if (Input.GetKeyDown(KeyCode.Q) && mesaApuntada != null)
         {
-            mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales }
-
+            mesaApuntada.CreateCustomBurger();
         }
-         // E: interactuar con el NPC
-    if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
-    {
-        // Obtener la hamburguesa en la mano del jugador
-        Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
 
-        // Verificar si el jugador tiene una hamburguesa y si coincide con la orden del NPC
-        if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
+        // =======================================================
+        // E: INTERACCIÓN CON NPC (PEDIDO / ENTREGA BURGER)
+        // =======================================================
+
+        if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
         {
-            Order npcOrder = npcApuntado.GetAssignedOrder();
-            if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
+            Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
+
+            if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
             {
-                // Si la hamburguesa coincide con la orden, entregarla al NPC
-                TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
+                Order npcOrder = npcApuntado.GetAssignedOrder();
+                bool esCorrecta = CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder);
 
-                // Aquí llamamos a la UI para agregar dinero
-                DineroUI dineroUI = FindFirstObjectByType<DineroUI>();  // Obtener la referencia a la UI de dinero
-                    npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
-                    npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
+                bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
 
-                    if (dineroUI != null)
+                if (!mp)
                 {
-                    dineroUI.AgregarDinero(10);  // Agregar 10 unidades de dinero (puedes modificar la cantidad)
-                }
+                    // --------- SINGLE PLAYER ---------
+                    if (esCorrecta)
+                    {
+                        TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
 
-                Debug.Log("[INTERACT] ¡Hamburguesa entregada correctamente! Dinero agregado.");
+                        DineroUI dineroUI = Object.FindFirstObjectByType<DineroUI>();
+                        npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
+                        npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
+
+                        if (dineroUI != null)
+                            dineroUI.AgregarDinero(10);
+
+                        Debug.Log("[INTERACT] (SP) Hamburguesa correcta. Dinero agregado.");
+                    }
+                    else
+                    {
+                        npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
+                        npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
+
+                        DineroUI dineroUI = Object.FindFirstObjectByType<DineroUI>();
+                        if (dineroUI != null)
+                            dineroUI.QuitarDinero(5);
+
+                        Debug.Log("[INTERACT] (SP) Hamburguesa incorrecta. Dinero restado.");
+                    }
+                }
+                else
+                {
+                    // --------- MULTIPLAYER ---------
+                    if (esCorrecta)
+                    {
+                        // 🔹 CUALQUIER jugador puede pedir la entrega
+                        TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
+
+                        // El dinero y el audio solo los controla el Master (opcional)
+                        if (PhotonNetwork.IsMasterClient)
+                        {
+                            npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
+
+                            DineroUI dineroUI = Object.FindFirstObjectByType<DineroUI>();
+                            if (dineroUI != null)
+                                dineroUI.AgregarDinero(10);
+                        }
+
+                        Debug.Log("[INTERACT] (MP) Hamburguesa correcta. Entrega solicitada al NPC.");
+                    }
+                    else
+                    {
+                        // Mantengo la lógica de incorrecta igual que tenías
+                        if (PhotonNetwork.IsMasterClient)
+                        {
+                            npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
+
+                            // Cara enojada para TODOS
+                            npcApuntado.photonView.RPC(
+                                nameof(NpcFollowPath.RPC_ShowAngryFace),
+                                RpcTarget.All,
+                                "¿Qué es esta $#*!?"
+                            );
+
+                            DineroUI dineroUI = Object.FindFirstObjectByType<DineroUI>();
+                            if (dineroUI != null)
+                                dineroUI.QuitarDinero(5);
+
+                            Debug.Log("[INTERACT] (MP Master) Hamburguesa incorrecta. Dinero restado.");
+                        }
+                        else
+                        {
+                            Debug.Log("[INTERACT] (MP Client) Hamburguesa incorrecta, el Master se encarga de la penalización.");
+                        }
+                    }
+                }
             }
             else
             {
-
-                    npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
-                    npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
-
-                    // Si la hamburguesa no coincide con la orden, restamos dinero y cambiamos el estado del NPC
-                    DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-                if (dineroUI != null)
-                {
-                    dineroUI.QuitarDinero(5);  // Restamos 5 unidades de dinero
-                }
-
-                
-
-                Debug.Log("[INTERACT] La hamburguesa no coincide con la orden del NPC. Dinero restado.");
+                // No hay hamburguesa válida: solo abrir popup de pedido
+                npcApuntado.OnPlayerInteracted();
             }
         }
-        else
-        {
-            npcApuntado.OnPlayerInteracted();
-        }
-    }
     }
 
+
+    // -------------------------------------------------------------------
+    // HAMBURGUESA / ORDEN
+    // -------------------------------------------------------------------
 
     Hamburguesa ObtenerHamburguesaEnMano()
     {
         var slot = SlotMano();
         if (slot == null || slot.childCount == 0) return null;
-
         return slot.GetChild(0).GetComponent<Hamburguesa>();
     }
 
-
     bool CompararHamburguesaConOrden(Hamburguesa hamburguesa, Order npcOrder)
     {
-        // Obtener los ingredientes de la hamburguesa y de la orden del NPC
         List<string> ingredientesHamburguesa = hamburguesa.GetIngredientes();
         List<string> ingredientesOrden = new List<string>(npcOrder.ingredients);
 
-        // Normalizar los ingredientes (eliminando espacios y convirtiendo a minúsculas)
         ingredientesHamburguesa = ingredientesHamburguesa.Select(NormalizarNombre).ToList();
         ingredientesOrden = ingredientesOrden.Select(NormalizarNombre).ToList();
 
-        // Ordenar ambos arrays antes de compararlos
         ingredientesHamburguesa.Sort();
         ingredientesOrden.Sort();
 
-        // Mostrar los ingredientes para depuración
         Debug.Log("[DEBUG] Ingredientes Hamburguesa: " + string.Join(", ", ingredientesHamburguesa));
         Debug.Log("[DEBUG] Ingredientes Orden: " + string.Join(", ", ingredientesOrden));
 
-        // Comparar los dos arrays
         return ingredientesHamburguesa.SequenceEqual(ingredientesOrden);
     }
 
-    // Transferir la hamburguesa al NPC (esto debería ponerla en la mano del NPC)
     void TransferirHamburguesaAlNpc(NpcFollowPath npcApuntado, Hamburguesa hamburguesa)
     {
-        // Aquí se puede definir cómo transferir la hamburguesa al NPC
-        // El NPC puede colocarla en una mano vacía, por ejemplo.
-        // Se puede usar un método similar a "SetIngredientes" para actualizar la hamburguesa en el NPC.
-
-        Debug.Log("[INTERACT] La hamburguesa ha sido transferida al NPC.");
-
-        // Poner la hamburguesa en la mano del NPC (asumimos que existe un método en el NPC para esto)
+        Debug.Log("[INTERACT] La hamburguesa ha sido transferida al NPC (solicitado).");
         npcApuntado.SetHamburguesaEnMano(hamburguesa);
     }
-    // n de objetos en mano 
+
+
+    // -------------------------------------------------------------------
+    // UTILIDAD: MANO / OBJETOS
+    // -------------------------------------------------------------------
+
     int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
 
-    // slot de mano (usa el puntoDeAgarre si existe)
     Transform SlotMano() => puntoDeAgarre ? puntoDeAgarre : manoJugador;
 
-    // Selección por centro de pantalla + overlay highlight
+
+    // -------------------------------------------------------------------
+    // DETECCIÓN Y HIGHLIGHT (igual que lo tenías)
+    // -------------------------------------------------------------------
+
     void DetectarObjetoPorCapaSinRaycast_ConHighlight()
     {
         if (!camaraJugador) { LimpiarHighlight(); objetoSeleccionado = null; return; }
@@ -251,13 +298,11 @@ public class Interact : MonoBehaviour
             if (slot && go.transform.IsChildOf(slot)) continue;
             if (go == jugador) continue;
 
-
             var mesaPadre = go.GetComponentInParent<MesaArmado>();
             if (mesaPadre && mesaPadre.Contains(go) && !mesaPadre.IsTopIngredient(go))
                 continue;
             candidatos.Add(go);
         }
-
 
         GameObject mejor = null;
         float mejorScore = float.MaxValue;
@@ -290,10 +335,8 @@ public class Interact : MonoBehaviour
         objetoSeleccionado = mejor;
     }
 
-    // Aplica overlay unlit sin tocar los materiales
     void AplicarHighlight(GameObject go)
     {
-        // No resaltar carne si está en el sartén
         var meat = go.GetComponentInParent<MeatCookingState>();
         if (meat && meat.isOnPan) return;
 
@@ -329,7 +372,6 @@ public class Interact : MonoBehaviour
         }
     }
 
-    // Quitar el overlay y restaura los materiales
     public void LimpiarHighlight()
     {
         if (!objetoActualHighlight) return;
@@ -345,7 +387,6 @@ public class Interact : MonoBehaviour
         objetoActualHighlight = null;
     }
 
-    // Sartén apuntado (por centro de pantalla y distancia)
     CookMeatInPan DetectarPanApuntado()
     {
         var pans = Object.FindObjectsByType<CookMeatInPan>(FindObjectsSortMode.None);
@@ -394,10 +435,10 @@ public class Interact : MonoBehaviour
             if (vp.z <= 0f) continue;
 
             float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
-            if (dPantalla > radioPantallaPan) continue;   // usamos mismo radio que sartén
+            if (dPantalla > radioPantallaPan) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
-            if (dist > distanciaPan) continue;            // mismo alcance que sartén
+            if (dist > distanciaPan) continue;
 
             float score = dPantalla * 10f + dist;
             if (score < mejorScore) { mejorScore = score; mejor = fryer; }
@@ -413,7 +454,6 @@ public class Interact : MonoBehaviour
         return slot.GetChild(0).GetComponent<FriesCookingState>();
     }
 
-    // Carne que lleva en la mano (primer hijo del slot)
     MeatCookingState GetCarneEnMano()
     {
         var slot = SlotMano();
@@ -421,7 +461,6 @@ public class Interact : MonoBehaviour
         return slot.GetChild(0).GetComponent<MeatCookingState>();
     }
 
-    // Físicas al agarrar/soltar
     void ConfigurarFisicaObjeto(GameObject objeto, bool enMano)
     {
         var rb = objeto.GetComponent<Rigidbody>();
@@ -429,7 +468,6 @@ public class Interact : MonoBehaviour
 
         if (enMano)
         {
-            // si vamos a ponerlo kinematic, solo zeroeamos si antes era dinámico
             if (!rb.isKinematic)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -442,53 +480,42 @@ public class Interact : MonoBehaviour
         {
             rb.isKinematic = false;
             rb.useGravity = true;
-            // ahora sí podemos zeroear (no es kinematic)
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
     }
-
 
     void AgarrarObjeto(GameObject objeto)
     {
         LimpiarHighlight();
 
         var audio = objeto.GetComponent<MeatCookingAudio>();
-        if (audio != null)
-        {
-            audio.StopImmediately();
-        }
+        if (audio != null) audio.StopImmediately();
 
         var friesAudio = objeto.GetComponent<FriesCookingAudio>();
-        if (friesAudio != null)
-        {
-            friesAudio.StopImmediately();
-        }
+        if (friesAudio != null) friesAudio.StopImmediately();
+
         var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
         if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
         {
             Debug.Log("[INTERACT] No puedes agarrar un ingrediente que no sea el tope de la pila.");
             return;
         }
+
         var destino = SlotMano();
 
-        // Si viene de la mesa, quítalo del stack
         var mesa = objeto.GetComponentInParent<MesaArmado>();
         if (mesa != null) mesa.RemoveIngredient(objeto);
 
-        // Si viene de la tabla, quítalo también
         var tabla = objeto.GetComponentInParent<CuttingBoard>();
         if (tabla != null) tabla.RemoveIngredient();
 
-        // === Mantener escala mundial original ===
         Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
         WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, destino, Sw);
 
-        // Colocar en la mano
         objeto.transform.localPosition = Vector3.zero;
         objeto.transform.localRotation = Quaternion.identity;
 
-        // Físicas y flags
         ConfigurarFisicaObjeto(objeto, true);
 
         var meat = objeto.GetComponent<MeatCookingState>();
@@ -506,8 +533,6 @@ public class Interact : MonoBehaviour
         }
     }
 
-
-
     void SoltarObjeto()
     {
         var slot = SlotMano();
@@ -516,28 +541,24 @@ public class Interact : MonoBehaviour
         var objeto = slot.GetChild(0).gameObject;
         objeto.transform.SetParent(null);
 
-        // posición de drop
         objeto.transform.position = camaraJugador.transform.position + camaraJugador.transform.forward * distanciaSoltar;
 
         var rb = objeto.GetComponent<Rigidbody>();
         if (rb)
         {
-            rb.isKinematic = false;        // dinámico
-            rb.useGravity = true;          // gravedad ON
-            rb.linearVelocity = Vector3.zero;    // limpia antes del impulso
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            // impulso natural
             Vector3 impulso = camaraJugador.transform.forward * fuerzaLanzamiento + Vector3.up * fuerzaVertical;
             rb.AddForce(impulso, ForceMode.VelocityChange);
             rb.AddTorque(Random.insideUnitSphere * torqueLanzamiento, ForceMode.VelocityChange);
         }
 
-        // asegura colliders sólidos
         foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
             c.isTrigger = false;
 
-        // por si vienen de mesa/freidora: quita flags especiales
         if (objeto.TryGetComponent(out MeatCookingState meat))
         {
             meat.LockOnTable(false);
@@ -545,11 +566,10 @@ public class Interact : MonoBehaviour
         }
         if (objeto.TryGetComponent(out FriesCookingState fries))
         {
-            fries.isInFryer = false;              // fuera de freidora
-            fries.SetCollidersAsTrigger(false);   // colliders sólidos
+            fries.isInFryer = false;
+            fries.SetCollidersAsTrigger(false);
         }
 
-        // restaurar colisiones con el jugador
         if (jugador)
         {
             var playerCol = jugador.GetComponent<Collider>();
@@ -558,8 +578,6 @@ public class Interact : MonoBehaviour
                     Physics.IgnoreCollision(playerCol, c, false);
         }
     }
-
-
 
     CuttingBoard DetectarTablaApuntada()
     {
@@ -579,7 +597,7 @@ public class Interact : MonoBehaviour
             if (vp.z <= 0f) continue;
 
             float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
-            if (dPantalla > radioPantallaPan) continue; // mismo radio del sartén
+            if (dPantalla > radioPantallaPan) continue;
 
             float dist = Vector3.Distance(camaraJugador.transform.position, pos);
             if (dist > distanciaPan) continue;
@@ -635,41 +653,33 @@ public class Interact : MonoBehaviour
 
         var go = slot.GetChild(0).gameObject;
 
-        // 1) Si ya trae Ingredient, úsalo
         var ing = go.GetComponent<Ingredient>();
         if (ing != null) return ing;
 
-        // 2) Si es carne, crear/asegurar Ingredient con meatName y requireCookedMeat = true
         var meat = go.GetComponent<MeatCookingState>();
         if (meat != null)
         {
             var tmp = go.AddComponent<Ingredient>();
-            tmp.ingredientName = meat.meatName; // ej: "Carne"
+            tmp.ingredientName = meat.meatName;
             tmp.requireCookedMeat = true;
             return tmp;
         }
 
-        // 3) Si es SliceIngredient, crear/asegurar Ingredient con el nombre del slice
         var slice = go.GetComponent<SliceIngredient>();
         if (slice != null)
         {
             var tmp = go.AddComponent<Ingredient>();
-            // Normalizamos a nombre "base" por si tus prefabs usan LechugaSliced, TomateSliced, etc.
             tmp.ingredientName = NormalizarNombre(slice.ingredientName);
             tmp.requireCookedMeat = false;
             return tmp;
         }
 
-        // 4) No válido para la mesa
         return null;
     }
 
-    // Helper local (puedes moverlo donde prefieras)
     string NormalizarNombre(string name)
     {
         if (string.IsNullOrEmpty(name)) return name;
-
-        // quita sufijos típicos de corte
         name = name.Replace("Sliced", "").Replace("Slice", "").Replace("Cortado", "");
         return name.Trim();
     }
@@ -685,7 +695,6 @@ public class Interact : MonoBehaviour
 
         foreach (var npc in npcs)
         {
-            // If the NPC isn't waiting for the player, skip it
             if (!npc.IsWaitingForPlayer()) continue;
 
             var r = npc.GetComponentInChildren<Renderer>();
@@ -710,8 +719,6 @@ public class Interact : MonoBehaviour
 
         return mejor;
     }
-
-
 
     void OnDisable() => LimpiarHighlight();
 }

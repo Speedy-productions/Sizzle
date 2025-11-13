@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PlayerMovement : MonoBehaviour
 {
+    PhotonView pv;
+
     [Header("Movement")]
     public float moveSpeed;
 
@@ -30,36 +31,49 @@ public class PlayerMovement : MonoBehaviour
 
     Rigidbody rb;
 
+    private void Awake()
+    {
+        pv = GetComponent<PhotonView>();
+    }
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
+        if (!pv.IsMine)
+        {
+            // desactivar scripts de la cámara en otros jugadores
+            GetComponentInChildren<Camera>().enabled = false;
+            GetComponentInChildren<AudioListener>().enabled = false;
+        }
     }
 
     private void Update()
     {
-        // Check if grounded
-        grounded = Physics.SphereCast(transform.position, 0.3f, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f, whatIsGround);
+        if (!pv.IsMine) return;
+
+        grounded = Physics.SphereCast(transform.position, 0.3f, Vector3.down, 
+            out slopeHit, playerHeight * 0.5f + 0.3f, whatIsGround);
 
         MyInput();
-        
-        // Handle linearDamping
+
         if (grounded)
             rb.linearDamping = groundDrag;
         else
             rb.linearDamping = 0;
 
-        // Animations
         Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         anim.SetFloat("Speed", flatVel.magnitude);
 
         Quaternion targetRotation = Quaternion.Euler(0, orientation.eulerAngles.y, 0);
         playerModel.rotation = Quaternion.Slerp(playerModel.rotation, targetRotation, Time.deltaTime * 10f);
-
     }
 
     private void FixedUpdate()
     {
+        if (!pv.IsMine) return;
+
         if (grounded && Mathf.Approximately(horizontalInput, 0f) && Mathf.Approximately(verticalInput, 0f))
         {
             Vector3 v = rb.linearVelocity;
@@ -67,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
             v.z = 0f;
             rb.linearVelocity = v;
             return;
-        }   
+        }
 
         MovePlayer();
         SpeedControl();
@@ -81,7 +95,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        // Calculate move direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         if (OnSlope() && grounded)
@@ -92,14 +105,13 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
-
         }
     }
 
     private void SpeedControl()
     {
         Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        // Limit linearVelocity if needed
+
         if (flatVel.magnitude > moveSpeed)
         {
             Vector3 limitedVel = flatVel.normalized * moveSpeed;
@@ -116,5 +128,4 @@ public class PlayerMovement : MonoBehaviour
         }
         return false;
     }
-
 }

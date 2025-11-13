@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Photon.Pun;
 
 [System.Serializable]
 public class FoodGroup
@@ -15,16 +16,16 @@ public class BubbleGroup
     public Sprite[] variants;
 }
 
-public class PopupChar : MonoBehaviour
+public class PopupChar : MonoBehaviourPun
 {
     [Header("Prefabs y Sprites")]
-    public Popup popupPrefab;           // Prefab para popups
-    public FoodGroup[] foodGroups;      // sprites por ingrediente
-    public BubbleGroup[] bubbleGroups;  // sprites de burbujas
+    public Popup popupPrefab;
+    public FoodGroup[] foodGroups;
+    public BubbleGroup[] bubbleGroups;
 
-    [Header("Caras del NPC (faces-states)")]
-    public Sprite smileyFace;           // "smileyface"
-    public Sprite angryFace;            // "angryface"
+    [Header("Caras del NPC")]
+    public Sprite smileyFace;
+    public Sprite angryFace;
 
     [Header("Configuración")]
     public float switchInterval = 1f;
@@ -32,89 +33,174 @@ public class PopupChar : MonoBehaviour
 
     [HideInInspector] public NpcFollowPath npcFollowPath;
 
-    private Popup currentPopup; // popup de ingredientes/burbujas (pedido)
-    private Popup facePopup;    // popup independiente para la cara + mensaje
+    private Popup currentPopup;
+    private Popup facePopup;
+
     private bool notifyCoroutineRunning = false;
 
-    private void Start()
-    {
-        if (OrderManager.Instance == null)
-        {
-            Debug.LogError("OrderManager no inicializado antes de PopupChar");
-        }
-    }
+    // ORDEN FIJA DEL NPC (se sincroniza en multiplayer)
+    private Order npcOrder;
 
-    // Genera y asigna pedido al NPC
-    private Order GenerateNpcOrder()
+
+    // ============================================================
+    //  GENERACIÓN / SINCRONIZACIÓN DE ORDEN
+    // ============================================================
+
+    private Order GenerateNpcOrderLocal()
     {
-        Order newOrder = OrderManager.Instance.GenerateHamburgerOrder();
-        if (newOrder != null && npcFollowPath != null)
+        // Si ya hay una orden previa en npcFollowPath ? usarla
+        if (npcFollowPath != null && npcFollowPath.GetAssignedOrder() != null)
+        {
+            npcOrder = npcFollowPath.GetAssignedOrder();
+            if (OrderManager.Instance != null)
+                OrderManager.Instance.SetCurrentOrder(npcOrder);
+            return npcOrder;
+        }
+
+        // Crear nueva orden
+        Order newOrder =
+            OrderManager.Instance != null ?
+            OrderManager.Instance.GenerateHamburgerOrder() :
+            null;
+
+        npcOrder = newOrder;
+
+        if (npcFollowPath != null && newOrder != null)
             npcFollowPath.AssignNpcOrder(newOrder);
+
+        if (OrderManager.Instance != null)
+            OrderManager.Instance.SetCurrentOrder(newOrder);
+
         return newOrder;
     }
 
-    // ===================== Pedido (ingredientes + bubble aleatorio) =====================
+
+    // ============================================================
+    //  MOSTRAR POPUP PRINCIPAL
+    // ============================================================
+
     public void ShowPopup()
     {
-        if (popupPrefab == null)
-        {
-            Debug.LogError("Popup prefab no asignado");
-            return;
-        }
+        if (popupPrefab == null) return;
 
         if (currentPopup != null)
-        {
-            Debug.LogWarning("Popup ya activo. Ignorando ShowPopup() duplicado.");
-            return;
-        }
+            Destroy(currentPopup.gameObject);
 
-        currentPopup = Instantiate(popupPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
-
-        // Generar y fijar el pedido que este NPC quiere
-        GenerateNpcOrder();
-
-        StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
+        currentPopup = Instantiate(
+            popupPrefab,
+            transform.position + Vector3.up * 2f,
+            Quaternion.identity
+        );
 
         Destroy(currentPopup.gameObject, popupDuration);
+
+        bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
+
+        if (!mp)
+        {
+            // SINGLE PLAYER
+            GenerateNpcOrderLocal();
+            StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
+        }
+        else
+        {
+            // MULTIPLAYER
+            if (PhotonNetwork.IsMasterClient)
+            {
+                // Host genera la orden
+                Order o = GenerateNpcOrderLocal();
+
+                if (o != null)
+                {
+                    photonView.RPC(nameof(RPC_ReceiveOrder),
+                        RpcTarget.Others,
+                        o.ingredients);
+                }
+
+                StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
+            }
+            else
+            {
+                // Clientes esperan al RPC_ReceiveOrder para iniciar popup
+            }
+        }
+
         if (!notifyCoroutineRunning)
             StartCoroutine(NotifyNpcAfterPopup());
     }
+
+    [PunRPC]
+    private void RPC_ReceiveOrder(string[] ingredients)
+    {
+        // Crear orden local en cliente
+        npcOrder = new Order(ingredients);
+
+        // Guardarla en npcFollowPath
+        if (npcFollowPath != null)
+            npcFollowPath.AssignNpcOrder(npcOrder);
+
+        // Actualizar OrderManager en cliente
+        if (OrderManager.Instance != null)
+            OrderManager.Instance.SetCurrentOrder(npcOrder);
+
+        // Si no existe popup, instanciarlo
+        if (currentPopup == null && popupPrefab != null)
+        {
+            currentPopup = Instantiate(
+                popupPrefab,
+                transform.position + Vector3.up * 2f,
+                Quaternion.identity
+            );
+
+            Destroy(currentPopup.gameObject, popupDuration);
+        }
+
+        StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
+    }
+
+
+    // ============================================================
+    //  NOTIFICAR CUANDO TERMINA EL POPUP
+    // ============================================================
 
     private IEnumerator NotifyNpcAfterPopup()
     {
         notifyCoroutineRunning = true;
         yield return new WaitForSeconds(popupDuration);
+
         npcFollowPath?.OnPopupClosed();
         notifyCoroutineRunning = false;
     }
 
+
+    // ============================================================
+    //  ALTERNAR SPRITES (PEDIDO)
+    // ============================================================
+
     private IEnumerator AlternateSpritesLimitedTime(float duration)
     {
-        if (currentPopup == null) yield break;
+        if (currentPopup == null)
+            yield break;
 
-        float endTime = Time.time + duration;
+        float end = Time.time + duration;
 
-        while (Time.time < endTime)
+        // asegurar que npcOrder está seteada
+        if (npcOrder == null && npcFollowPath != null)
+            npcOrder = npcFollowPath.GetAssignedOrder();
+
+        while (Time.time < end)
         {
-            Order currentNpcOrder = npcFollowPath != null ? npcFollowPath.GetAssignedOrder() : null;
-            if (currentNpcOrder == null)
+            if (npcOrder == null) yield break;
+
+            Sprite bubble = GetRandomBubbleAnyGroup();
+
+            foreach (var ingName in npcOrder.ingredients)
             {
-                Debug.LogError("No se generó una orden");
-                break;
-            }
+                if (Time.time >= end) break;
 
-            OrderManager.Instance.SetCurrentOrder(currentNpcOrder);
+                Sprite food = GetSpriteByName(ingName);
+                currentPopup.Show(transform, food, bubble, null);
 
-            // bubble aleatorio para mostrar el pedido
-            Sprite nextBubbleSprite = GetRandomBubbleAnyGroup();
-
-            foreach (string ingredientName in currentNpcOrder.ingredients)
-            {
-                if (Time.time >= endTime) break;
-
-                Sprite foodSprite = GetSpriteByName(ingredientName);
-                // Nota: no mostramos texto aquí
-                currentPopup.Show(transform, foodSprite, nextBubbleSprite, null);
                 yield return new WaitForSeconds(switchInterval);
             }
         }
@@ -122,53 +208,41 @@ public class PopupChar : MonoBehaviour
         currentPopup = null;
     }
 
-    private Sprite GetSpriteByName(string name)
+
+    // ============================================================
+    //  CARAS (Feliz / Enojado)
+    // ============================================================
+
+    public void MostrarCaraFeliz(string msg = "¡Bien hecho!")
     {
-        if (foodGroups == null) return null;
-
-        foreach (FoodGroup group in foodGroups)
-        {
-            if (group.name != name) continue;
-            if (group.variants != null && group.variants.Length > 0)
-            {
-                int idx = Random.Range(0, group.variants.Length);
-                return group.variants[idx];
-            }
-        }
-
-        Debug.LogWarning($"No se encontró algún ingrediente con el nombre: '{name}'");
-        return null;
+        Sprite bubble = GetBubbleByGroup("Calmado");
+        MostrarCara(smileyFace, bubble, msg, 32f);
     }
 
-    // ===================== Resultado (cara + bubble + texto) =====================
-    public void MostrarCaraFeliz(string mensaje = "¡Bien hecho!")
+    public void MostrarCaraMolesta(string msg = "¿Qué es esta $#*!?")
     {
-        Sprite bubble = GetBubbleByGroup("Calmado"); // Usa los bubbles de "Calmado"
-        MostrarCara(smileyFace, bubble, mensaje, 32f);     // tamaño por defecto 32
+        Sprite bubble = GetBubbleByGroup("Grosero");
+        MostrarCara(angryFace, bubble, msg, 26f);
     }
 
-    public void MostrarCaraMolesta(string mensaje = "¿Qué es esta $#*!?")
+    private void MostrarCara(Sprite face, Sprite bubble, string texto, float size)
     {
-        Sprite bubble = GetBubbleByGroup("Grosero"); // Usa los bubbles de "Grosero"
-        MostrarCara(angryFace, bubble, mensaje, 26f);      // ?? tamaño 26 para insulto
-    }
+        if (popupPrefab == null || face == null) return;
 
-    private void MostrarCara(Sprite faceSprite, Sprite bubbleSprite, string mensaje, float fontSize)
-    {
-        if (popupPrefab == null || faceSprite == null) return;
-
-        // Si ya había una cara mostrándose, reemplazarla
         if (facePopup != null)
             Destroy(facePopup.gameObject);
 
-        facePopup = Instantiate(popupPrefab, transform.position + Vector3.up * 2.5f, Quaternion.identity);
+        facePopup = Instantiate(
+            popupPrefab,
+            transform.position + Vector3.up * 2.5f,
+            Quaternion.identity
+        );
 
-        // Sólo cara + bubble + texto (sin food)
-        facePopup.Show(transform, null, bubbleSprite, faceSprite, mensaje, fontSize);
-        StartCoroutine(OcultarCara());
+        facePopup.Show(transform, null, bubble, face, texto, size);
+        StartCoroutine(HideFace());
     }
 
-    private IEnumerator OcultarCara()
+    private IEnumerator HideFace()
     {
         yield return new WaitForSeconds(4f);
         if (facePopup != null)
@@ -178,43 +252,40 @@ public class PopupChar : MonoBehaviour
         }
     }
 
-    // ===================== Helpers de bubbles =====================
+
+    // ============================================================
+    //  HELPERS
+    // ============================================================
+
+    private Sprite GetSpriteByName(string name)
+    {
+        foreach (var g in foodGroups)
+        {
+            if (!g.name.Equals(name)) continue;
+            if (g.variants.Length > 0)
+                return g.variants[Random.Range(0, g.variants.Length)];
+        }
+        return null;
+    }
+
     private Sprite GetRandomBubbleAnyGroup()
     {
-        if (bubbleGroups == null || bubbleGroups.Length == 0) return null;
+        if (bubbleGroups.Length == 0) return null;
 
         var g = bubbleGroups[Random.Range(0, bubbleGroups.Length)];
-        if (g.variants != null && g.variants.Length > 0)
-            return g.variants[Random.Range(0, g.variants.Length)];
-        return null;
+        if (g.variants.Length == 0) return null;
+
+        return g.variants[Random.Range(0, g.variants.Length)];
     }
 
     private Sprite GetBubbleByGroup(string groupName)
     {
-        if (bubbleGroups == null || bubbleGroups.Length == 0)
+        foreach (var g in bubbleGroups)
         {
-            Debug.LogWarning("[PopupChar] No hay grupos de burbujas configurados.");
-            return null;
+            if (!g.name.Equals(groupName)) continue;
+            if (g.variants.Length > 0)
+                return g.variants[Random.Range(0, g.variants.Length)];
         }
-
-        foreach (var group in bubbleGroups)
-        {
-            if (group.name.Equals(groupName, System.StringComparison.OrdinalIgnoreCase))
-            {
-                if (group.variants != null && group.variants.Length > 0)
-                {
-                    return group.variants[Random.Range(0, group.variants.Length)];
-                }
-            }
-        }
-
-        Debug.LogWarning($"[PopupChar] No se encontró un grupo de burbujas con el nombre '{groupName}'.");
         return null;
-    }
-
-    // Mantengo este método porque otros scripts pueden llamarlo (logs)
-    public void CambiarEstadoNpcGrosero()
-    {
-        Debug.Log("[NPC] El NPC está molesto porque la hamburguesa no coincide con la orden.");
     }
 }

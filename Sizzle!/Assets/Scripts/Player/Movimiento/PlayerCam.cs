@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class PlayerCam : MonoBehaviour
 {
+    PhotonView pv;
+
     public float sensX;
     public float sensY;
 
@@ -12,22 +13,33 @@ public class PlayerCam : MonoBehaviour
     float rotacionX;
     float rotacionY;
 
+    private void Awake()
+    {
+        pv = GetComponentInParent<PhotonView>();
+    }
+
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked; // Mantiene el mouse en el centro de la pantalla
-        Cursor.visible = false; // Oculta el mouse
+        if (!pv.IsMine)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        BloquearCursor();
     }
 
     private void Update()
     {
-        // Input del mouse
+        if (!pv.IsMine) return;
+
         float mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * sensX;
         float mouseY = Input.GetAxis("Mouse Y") * Time.deltaTime * sensY;
 
         rotacionY += mouseX;
-
         rotacionX -= mouseY;
-        rotacionX = Mathf.Clamp(rotacionX, -75f, 90f); // Limitaciones en los ejes Y y Z
+
+        rotacionX = Mathf.Clamp(rotacionX, -75f, 90f);
 
         transform.rotation = Quaternion.Euler(rotacionX, rotacionY, 0);
         orientacion.rotation = Quaternion.Euler(0, rotacionY, 0);

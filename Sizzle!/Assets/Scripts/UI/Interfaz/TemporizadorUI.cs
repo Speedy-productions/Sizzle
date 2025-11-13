@@ -6,60 +6,57 @@ using UnityEngine.EventSystems;
 public class TemporizadorUI : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private TMP_Text textoTemporizador; // arrástralo o se auto-busca
+    public TMP_Text textoTemporizador; 
 
     [Header("Tiempo")]
-    [SerializeField] private float tiempoInicial = 180f; // 3 min en segundos
+    public float tiempoInicial = 180f;
 
     [Header("Game Over")]
-    [SerializeField] private GameObject panelGameOver; // Panel que se mostrará al terminar
-    [SerializeField] private AudioSource sonidoGameOver; // Opcional: sonido al perder
+    public GameObject panelGameOver;
+    public AudioSource sonidoGameOver;
 
     [Header("Referencias")]
-    [SerializeField] private PlayerCam playerCam;
+    public PlayerCam playerCam;
 
-    private float tiempoRestante;
-    private bool corriendo = true;
+    float tiempoRestante;
+    bool corriendo = true;
 
     void Awake()
     {
-        // Autodescubrimiento si no está asignado
-        if (textoTemporizador == null)
-        {
-            // primero en este GO, si no, en hijos
-            textoTemporizador = GetComponent<TMP_Text>();
-            if (textoTemporizador == null)
-                textoTemporizador = GetComponentInChildren<TMP_Text>(true);
-        }
+        // NO accedas aquí a TMP, solo prepara variables simples
     }
+
 
     void Start()
     {
-        // Asegurarse que existe un EventSystem
-        if (FindAnyObjectByType<EventSystem>() == null)
-        {
-            Debug.LogWarning("No EventSystem found - creating one");
-            var eventSystem = new GameObject("EventSystem");
-            eventSystem.AddComponent<EventSystem>();
-            eventSystem.AddComponent<StandaloneInputModule>();
-        }
+        // → MOVER AQUÍ TODA LA LÓGICA UI
+        if (textoTemporizador == null)
+            textoTemporizador = GetComponent<TMP_Text>();
 
         if (playerCam == null)
-        {
             playerCam = FindFirstObjectByType<PlayerCam>();
+
+        if (FindAnyObjectByType<EventSystem>() == null)
+        {
+            var go = new GameObject("EventSystem");
+            go.AddComponent<EventSystem>();
+            go.AddComponent<StandaloneInputModule>();
         }
-        tiempoRestante = Mathf.Max(0f, tiempoInicial);
+
+        tiempoRestante = Mathf.Max(0, tiempoInicial);
         Pintar();
     }
 
     void Update()
     {
+        if (!UIBoot.Ready) return;
         if (!corriendo) return;
 
         tiempoRestante -= Time.deltaTime;
-        if (tiempoRestante <= 0f)
+
+        if (tiempoRestante <= 0)
         {
-            tiempoRestante = 0f;
+            tiempoRestante = 0;
             corriendo = false;
             MostrarGameOver();
         }
@@ -69,73 +66,44 @@ public class TemporizadorUI : MonoBehaviour
 
     void Pintar()
     {
-        if (!textoTemporizador) return; // evita NullReference si sigue sin asignar
-        int minutos = Mathf.FloorToInt(tiempoRestante / 60f);
-        int segundos = Mathf.FloorToInt(tiempoRestante % 60f);
-        textoTemporizador.text = $"{minutos:00}:{segundos:00}";
+        if (!textoTemporizador) return;
+
+        int min = Mathf.FloorToInt(tiempoRestante / 60);
+        int seg = Mathf.FloorToInt(tiempoRestante % 60);
+        textoTemporizador.text = $"{min:00}:{seg:00}";
     }
 
     void MostrarGameOver()
     {
-        if (panelGameOver != null)
-        {
-            // Asegurar que el panel tiene los componentes necesarios
-            Canvas canvas = panelGameOver.GetComponentInParent<Canvas>();
-            if (canvas == null)
-            {
-                Debug.LogError("Panel GameOver needs to be child of a Canvas!");
-                return;
-            }
-
-            if (canvas.GetComponent<GraphicRaycaster>() == null)
-            {
-                Debug.LogWarning("Adding GraphicRaycaster to Canvas");
-                canvas.gameObject.AddComponent<GraphicRaycaster>();
-            }
-
+        if (panelGameOver)
             panelGameOver.SetActive(true);
-            Debug.Log("Game Over panel activated");
-        }
-        
-        if (playerCam != null)
-        {
+
+        if (playerCam)
             playerCam.DesbloquearCursor();
-            Debug.Log("Cursor desbloqueado");
-        }
-        
-        if (sonidoGameOver != null)
-        {
+
+        if (sonidoGameOver)
             sonidoGameOver.Play();
-        }
-        
-        Time.timeScale = 0f;
+
+        Time.timeScale = 0;
     }
 
-    // API pública
     public void Reiniciar(float? nuevoTiempo = null)
     {
-        tiempoRestante = Mathf.Max(0f, nuevoTiempo ?? tiempoInicial);
+        tiempoRestante = Mathf.Max(0, nuevoTiempo ?? tiempoInicial);
         corriendo = true;
+        Time.timeScale = 1;
         Pintar();
     }
 
     public void ReiniciarJuego()
     {
-        Debug.Log("Intento de reiniciar juego");
-        
-        if (panelGameOver != null)
-        {
+        if (panelGameOver)
             panelGameOver.SetActive(false);
-        }
 
-        if (playerCam != null)
-        {
+        if (playerCam)
             playerCam.BloquearCursor();
-        }
 
-        Time.timeScale = 1f;
         Reiniciar();
-        Debug.Log("Juego reiniciado");
     }
 
     public void Pausar() => corriendo = false;

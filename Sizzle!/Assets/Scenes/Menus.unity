@@ -623,7 +623,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3660,16 +3660,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1597448324}
-        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
-        m_MethodName: ShowMenu
+      - m_Target: {fileID: 1597448322}
+        m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
+        m_MethodName: LoadScene
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: MenuMultijugador
+          m_StringArgument: Multiplayer
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &686807586
@@ -7502,6 +7502,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f28e2758e684e004999bb45a27a8b4dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameVersion: 1.0.0
+  maxPlayersPerRoom: 6
+  roomName: KitchenRoom
 --- !u!4 &1597448323
 Transform:
   m_ObjectHideFlags: 0
@@ -7853,7 +7856,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1731406297
 RectTransform:
   m_ObjectHideFlags: 0

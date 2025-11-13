@@ -1,4 +1,5 @@
 using UnityEngine;
+using Photon.Pun;
 
 public class HeadLook : MonoBehaviour
 {
@@ -8,8 +9,15 @@ public class HeadLook : MonoBehaviour
     public float maxDown = 45f;
     public float smoothSpeed = 8f;
 
+    PhotonView pv;
+
     Quaternion headInitialLocalRot;
     float initialCameraPitch;
+
+    void Awake()
+    {
+        pv = GetComponentInParent<PhotonView>();
+    }
 
     void Start()
     {
@@ -24,15 +32,22 @@ public class HeadLook : MonoBehaviour
         initialCameraPitch = NormalizeAngle(cameraTransform.eulerAngles.x);
     }
 
-    void LateUpdate() // sobreescribir la animacion que actualiza el hueso antes
+    void LateUpdate()
     {
+        if (!pv.IsMine) return;
+
         float camPitch = NormalizeAngle(cameraTransform.eulerAngles.x);
         float delta = camPitch - initialCameraPitch;
-        // Limitar los angulos en los que puede mirar el personaje
+
         delta = Mathf.Clamp(delta, -maxDown, maxUp);
 
         Quaternion targetLocal = headInitialLocalRot * Quaternion.Euler(delta, 0f, 0f);
-        headBone.localRotation = Quaternion.Slerp(headBone.localRotation, targetLocal, Time.deltaTime * smoothSpeed);
+
+        headBone.localRotation = Quaternion.Slerp(
+            headBone.localRotation,
+            targetLocal,
+            Time.deltaTime * smoothSpeed
+        );
     }
 
     float NormalizeAngle(float a)
@@ -40,5 +55,4 @@ public class HeadLook : MonoBehaviour
         if (a > 180f) a -= 360f;
         return a;
     }
-
 }
