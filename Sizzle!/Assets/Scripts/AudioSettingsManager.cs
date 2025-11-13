@@ -24,25 +24,26 @@ public class AudioSettingsManager : MonoBehaviour
     public static float MusicVolume => I ? I.volumenMusicaPct / 100f : 1f;
 
     private void Awake()
-    {
-        if (I != null && I != this) { Destroy(gameObject); return; }
-        I = this;
-        DontDestroyOnLoad(gameObject);
+{
+    if (I != null && I != this) { Destroy(gameObject); return; }
+    I = this;
+    DontDestroyOnLoad(gameObject);
 
-        // Cargar desde PlayerPrefs, default 100
-        volumenSonidosPct = PlayerPrefs.GetInt(PREF_SONIDOS, 100);
-        volumenMusicaPct = PlayerPrefs.GetInt(PREF_MUSICA, 100);
+    // Cargar desde PlayerPrefs, default 100
+    volumenSonidosPct = PlayerPrefs.GetInt(PREF_SONIDOS, 100);
+    volumenMusicaPct = PlayerPrefs.GetInt(PREF_MUSICA, 100);
 
-        // Redondear a múltiplos de 10 por si vienen raros
-        volumenSonidosPct = Mathf.RoundToInt(volumenSonidosPct / 10f) * 10;
-        volumenMusicaPct = Mathf.RoundToInt(volumenMusicaPct / 10f) * 10;
+    volumenSonidosPct = Mathf.RoundToInt(volumenSonidosPct / 10f) * 10;
+    volumenMusicaPct = Mathf.RoundToInt(volumenMusicaPct / 10f) * 10;
 
-        ActualizarTextos();
-        AplicarVolumenGlobal();
+    ActualizarTextos();
+    AplicarVolumenGlobal();
 
-        OnSfxVolumeChanged?.Invoke(SfxVolume);
-        OnMusicVolumeChanged?.Invoke(MusicVolume);
-    }
+    // ?? NUEVO: notificar volumen actual a todos los listeners
+    OnSfxVolumeChanged?.Invoke(SfxVolume);
+    OnMusicVolumeChanged?.Invoke(MusicVolume);
+}
+
 
     // ===== Cambiar volumen en pasos de 10 =====
     public void CambiarSonidos(float delta)
@@ -82,8 +83,12 @@ public class AudioSettingsManager : MonoBehaviour
     }
 
     private void AplicarVolumenGlobal()
-    {
-        if (UIAudioManager.I)
-            UIAudioManager.I.SetVolume(SfxVolume);
-    }
+{
+    if (UIAudioManager.I)
+        UIAudioManager.I.SetVolume(SfxVolume);
+
+    // ?? NUEVO: aplicar volumen también al resto del juego
+    OnSfxVolumeChanged?.Invoke(SfxVolume);
+}
+
 }

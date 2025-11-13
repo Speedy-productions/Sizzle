@@ -147,30 +147,46 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
     }
 
     [PunRPC]
-    void RPC_CreateBurger(string ingredientsCSV)
+void RPC_CreateBurger(string ingredientsCSV)
+{
+    string[] ingredientNames = ingredientsCSV.Split(',');
+
+    if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
     {
-        string[] ingredientNames = ingredientsCSV.Split(',');
-
-        if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
-        {
-            Debug.LogWarning("[MesaArmado] currentRecipe o su prefab final no están asignados.");
-            return;
-        }
-
-        Vector3 spawnPos = assemblePoint.position;
-        Quaternion spawnRot = Quaternion.identity;
-
-        GameObject burger = PhotonNetwork.Instantiate(
-            currentRecipe.finalProductPrefab.name,
-            spawnPos,
-            spawnRot
-        );
-
-        if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
-            hamburguesaScript.SetIngredientes(ingredientNames.ToList());
-
-        Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada en red!");
+        Debug.LogWarning("[MesaArmado] currentRecipe o su prefab final no están asignados.");
+        return;
     }
+
+    Vector3 spawnPos = assemblePoint.position;
+    Quaternion spawnRot = Quaternion.identity;
+
+    GameObject burger = PhotonNetwork.Instantiate(
+        currentRecipe.finalProductPrefab.name,
+        spawnPos,
+        spawnRot
+    );
+
+    // Configurar ingredientes
+    if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
+        hamburguesaScript.SetIngredientes(ingredientNames.ToList());
+        var sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
+        if (sfx != null) sfx.Play();
+    // 🔊 Aplicar volumen global a los sonidos del prefab
+    foreach (var audioComp in burger.GetComponentsInChildren<AudioSource>(true))
+    {
+        audioComp.volume = AudioSettingsManager.SfxVolume;
+    }
+
+    // 🔊 Reproducir sonido de ensamblado si el prefab tiene AudioSource principal
+    if (burger.TryGetComponent(out AudioSource audio) && audio.clip != null)
+    {
+        audio.volume = AudioSettingsManager.SfxVolume;
+        audio.Play();
+    }
+
+    Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada en red!");
+}
+
 
 
 
