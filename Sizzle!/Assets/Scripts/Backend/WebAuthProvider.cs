@@ -30,7 +30,7 @@ namespace Sizzle.Auth
 
         // REGISTRO NORMAL
         public void Register(string username, string email, string password, Action<bool, string> onResult)
-            => _runner.StartCoroutine(PostJson("/auth/register",
+            => _runner.StartCoroutine(PostJson("/user/registrar",
                  $"{{\"username\":\"{Esc(username)}\",\"email\":\"{Esc(email)}\",\"password\":\"{Esc(password)}\"}}",
                  onResult));
 
