@@ -57,6 +57,15 @@ MonoBehaviour:
   - RPC_ColocarIngredienteEnTabla
   - RPC_SoltarObjeto
   - RPC_CreateBurger
+  - RPC_RequestPopup
+  - RPC_SetHamburguesaEnMano_Master
+  - RPC_ShowAngryFace
+  - RPC_ShowHappyFace
+  - RPC_StartPopup
+  - RPC_HideUI
+  - RPC_RequestFlip
+  - RPC_SyncMeatFlip
+  - RPC_UpdateCookUI
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
