@@ -147,30 +147,35 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
     }
 
     [PunRPC]
-    void RPC_CreateBurger(string ingredientsCSV)
+void RPC_CreateBurger(string ingredientsCSV)
+{
+    string[] ingredientNames = ingredientsCSV.Split(',');
+
+    if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
     {
-        string[] ingredientNames = ingredientsCSV.Split(',');
-
-        if (currentRecipe == null || currentRecipe.finalProductPrefab == null)
-        {
-            Debug.LogWarning("[MesaArmado] currentRecipe o su prefab final no están asignados.");
-            return;
-        }
-
-        Vector3 spawnPos = assemblePoint.position;
-        Quaternion spawnRot = Quaternion.identity;
-
-        GameObject burger = PhotonNetwork.Instantiate(
-            currentRecipe.finalProductPrefab.name,
-            spawnPos,
-            spawnRot
-        );
-
-        if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
-            hamburguesaScript.SetIngredientes(ingredientNames.ToList());
-
-        Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada en red!");
+        Debug.LogWarning("[MesaArmado] currentRecipe o su prefab final no están asignados.");
+        return;
     }
+
+    Vector3 spawnPos = assemblePoint.position;
+    Quaternion spawnRot = Quaternion.identity;
+
+    GameObject burger = PhotonNetwork.Instantiate(
+        currentRecipe.finalProductPrefab.name,
+        spawnPos,
+        spawnRot
+    );
+
+    if (burger.TryGetComponent(out Hamburguesa hamburguesaScript))
+        hamburguesaScript.SetIngredientes(ingredientNames.ToList());
+
+    // 🔊 Reproduce el SFX de "platillo armado" en todos (este RPC corre en todos)
+    var sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
+    if (sfx != null) sfx.Play();
+
+    Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada en red!");
+}
+
 
 
 
