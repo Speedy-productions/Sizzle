@@ -16,7 +16,7 @@ MonoBehaviour:
     AppIdRealtime: 788ca7dd-161c-4b81-9e08-ba24cfcdedb0
     AppIdFusion: 
     AppIdChat: 
-    AppIdVoice: 
+    AppIdVoice: 9c646cc4-9964-4d0a-b08e-55009b146ee8
     AppVersion: 
     UseNameServer: 1
     FixedRegion: 
@@ -66,6 +66,9 @@ MonoBehaviour:
   - RPC_RequestFlip
   - RPC_SyncMeatFlip
   - RPC_UpdateCookUI
+  - CantHearYou
+  - ChangeColour
+  - HeresWhy
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
