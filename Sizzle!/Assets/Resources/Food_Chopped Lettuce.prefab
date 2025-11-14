@@ -15,8 +15,8 @@ GameObject:
   - component: {fileID: -7745522058467400437}
   - component: {fileID: 2946612080205560270}
   - component: {fileID: -1034941140769218642}
-  - component: {fileID: 5449091681049469478}
-  - component: {fileID: 1134944630062952206}
+  - component: {fileID: -3771291818761257190}
+  - component: {fileID: 8369936581485196054}
   m_Layer: 12
   m_Name: Food_Chopped Lettuce
   m_TagString: Ingredient
@@ -179,7 +179,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: LechugaSliced
   requireCookedMeat: 0
---- !u!114 &5449091681049469478
+--- !u!114 &-3771291818761257190
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -195,14 +195,14 @@ MonoBehaviour:
   Group: 0
   prefixField: -1
   Synchronization: 3
-  OwnershipTransfer: 2
+  OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 1134944630062952206}
+  - {fileID: 8369936581485196054}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &1134944630062952206
+--- !u!114 &8369936581485196054
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -211,27 +211,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7041683020158330340}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformView
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
+  m_UseLocal: 1
