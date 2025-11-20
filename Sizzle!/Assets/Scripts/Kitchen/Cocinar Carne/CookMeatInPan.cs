@@ -23,63 +23,93 @@ public class CookMeatInPan : MonoBehaviourPun
     {
         if (!currentMeat) return;
 
-        // ---- IMPORTANTE: ejecutar la lógica de cocción en el cliente que posee la meat ----
-        // (es decir, quien tiene autoridad sobre el objeto meat)
-        if (currentMeat.GetComponent<PhotonView>() != null)
+        PhotonView meatPV = currentMeat.GetComponent<PhotonView>();
+        if (!meatPV) return;
+
+        bool iAmOwner = meatPV.IsMine;
+
+        // --- EL OWNER cocina ---
+        if (iAmOwner)
         {
-            if (!currentMeat.GetComponent<PhotonView>().IsMine)
-                return; // si no eres el dueño de la carne, no proceses la cocción (solo verás visuales)
+            ProcessCookingTick();
         }
 
-        // Tick de cocción del lado activo (igual que antes)
-        if (isCooking)
+        // --- TODOS deben ver la UI si hay carne cocinando ---
+        if (isCooking && cookingUI)
         {
-            currentCookingTime += Time.deltaTime;
+            cookingUI.SetVisible(true);
 
             float total = cookingTime + burningTime;
             float t = Mathf.Clamp01(currentCookingTime / total);
             float frac = cookingTime / total;
 
-            if (cookingUI) cookingUI.SetProgress(t, frac);
-
-            if (currentCookingTime >= total)
-            {
-                if (!isFlipped && !currentMeat.isSide1Burned) currentMeat.BurnSide1();
-                else if (isFlipped && !currentMeat.isSide2Burned) currentMeat.BurnSide2();
-
-                isCooking = false;
-                SetMeatToBurnedOrCookedState();
-
-                // sincronizar estado visual final para remotos
-                if (photonView.IsMine)
-                    photonView.RPC(nameof(RPC_UpdateVisualState), RpcTarget.OthersBuffered,
-                                   currentMeat.GetComponent<PhotonView>().ViewID,
-                                   (int)currentMeat.currentState, isFlipped);
-            }
-            else if (currentCookingTime >= cookingTime)
-            {
-                if (!isFlipped && !currentMeat.isSide1Cooked && !currentMeat.isSide1Burned) currentMeat.CookSide1();
-                else if (isFlipped && !currentMeat.isSide2Cooked && !currentMeat.isSide2Burned) currentMeat.CookSide2();
-
-                // sincronizar estado intermedio para remotos
-                if (photonView.IsMine)
-                    photonView.RPC(nameof(RPC_UpdateVisualState), RpcTarget.OthersBuffered,
-                                   currentMeat.GetComponent<PhotonView>().ViewID,
-                                   (int)currentMeat.currentState, isFlipped);
-            }
+            cookingUI.SetProgress(t, frac);
         }
 
-        // Si la carne ya no es hija del pan, cortar
-        if (currentMeat && currentMeat.transform.parent != panCenter) StopCookingAndHideUI();
+        // Si la carne se quita del sartén
+        if (currentMeat && currentMeat.transform.parent != panCenter)
+        {
+            StopCookingAndHideUI();
+        }
     }
 
-    // Empezar a cocinar (desde Interaccion) — aquí pedimos ownership del Meat
+    // ----------------------------------------------------------
+    // PROCESO DE COCCIÓN SOLO PARA EL OWNER DE LA CARNE
+    // ----------------------------------------------------------
+
+    void ProcessCookingTick()
+    {
+        if (!isCooking) return;
+
+        currentCookingTime += Time.deltaTime;
+
+        float total = cookingTime + burningTime;
+
+        // --- Estado final (quemado) ---
+        if (currentCookingTime >= total)
+        {
+            if (!isFlipped && !currentMeat.isSide1Burned)
+                currentMeat.BurnSide1();
+            else if (isFlipped && !currentMeat.isSide2Burned)
+                currentMeat.BurnSide2();
+
+            isCooking = false;
+            SetMeatToBurnedOrCookedState();
+
+            photonView.RPC(nameof(RPC_UpdateVisualState), RpcTarget.OthersBuffered,
+                currentMeat.GetComponent<PhotonView>().ViewID,
+                (int)currentMeat.currentState,
+                isFlipped);
+
+            return;
+        }
+
+        // --- Estado de cocción (listo sin quemar) ---
+        if (currentCookingTime >= cookingTime)
+        {
+            if (!isFlipped && !currentMeat.isSide1Cooked && !currentMeat.isSide1Burned)
+                currentMeat.CookSide1();
+            else if (isFlipped && !currentMeat.isSide2Cooked && !currentMeat.isSide2Burned)
+                currentMeat.CookSide2();
+
+            photonView.RPC(nameof(RPC_UpdateVisualState), RpcTarget.OthersBuffered,
+                currentMeat.GetComponent<PhotonView>().ViewID,
+                (int)currentMeat.currentState,
+                isFlipped);
+        }
+    }
+
+    // ----------------------------------------------------------
+    // INICIAR COCCIÓN
+    // ----------------------------------------------------------
+
     public bool TryStartCooking(MeatCookingState meat)
     {
         if (!meat || isCooking) return false;
 
         bool side1Finished = meat.isSide1Cooked || meat.isSide1Burned;
         bool side2Finished = meat.isSide2Cooked || meat.isSide2Burned;
+
         if (side1Finished && side2Finished)
         {
             ShowAimHint(false, false);
@@ -88,28 +118,22 @@ public class CookMeatInPan : MonoBehaviourPun
 
         currentMeat = meat;
 
-        // ---  SINCRONIZACIÓN DE COLOCACIÓN DE LA CARNE ---
         PhotonView meatPV = meat.GetComponent<PhotonView>();
-        PhotonView panPV = GetComponent<PhotonView>(); // este script está en el sartén
+        PhotonView panPV = GetComponent<PhotonView>();
 
-        if (meatPV != null && panPV != null)
-        {
-            // Se manda a todos para que todos vean la carne sobre el sartén
-            panPV.RPC(nameof(RPC_SetMeatOnPan), RpcTarget.AllBuffered, meatPV.ViewID);
-        }
-        else
-        {
-            // Fallback local si por alguna razón no hay PhotonView
-            meat.transform.SetParent(panCenter);
-            meat.transform.SetPositionAndRotation(panCenter.position, panCenter.rotation);
-        }
-        // ----------------------------------------------------
+        // --- LO MÁS IMPORTANTE ---
+        // Asegurar que quien cocina es el OWNER de la carne
+        if (meatPV != null && !meatPV.IsMine)
+            meatPV.RequestOwnership();
 
-        // Si ya estaba listo el lado 1, voltea para cocinar el 2
+        // Reposicionar carne en TODOS
+        panPV.RPC(nameof(RPC_SetMeatOnPan), RpcTarget.AllBuffered, meatPV.ViewID);
+
+        // Volteo automático si ya cocinó el primer lado
         if (side1Finished && !side2Finished)
         {
-            currentMeat.transform.rotation = panCenter.rotation;
-            currentMeat.transform.Rotate(180f, 0f, 0f, Space.Self);
+            meat.transform.rotation = panCenter.rotation;
+            meat.transform.Rotate(180f, 0f, 0f, Space.Self);
             isFlipped = true;
         }
         else
@@ -117,13 +141,15 @@ public class CookMeatInPan : MonoBehaviourPun
             isFlipped = false;
         }
 
-        currentMeat.SetOnPan(true);
-        currentMeat.SetCollidersAsTrigger(true);
-        currentMeat.SetKinematic(true);
+        meat.SetOnPan(true);
+        meat.SetCollidersAsTrigger(true);
+        meat.SetKinematic(true);
 
+        // Empezar cocción
         isCooking = true;
         currentCookingTime = 0f;
 
+        // UI solo local (no por RPC)
         if (cookingUI)
         {
             cookingUI.SetVisible(true);
@@ -131,54 +157,57 @@ public class CookMeatInPan : MonoBehaviourPun
         }
 
         ShowAimHint(false, false);
-        currentMeat.currentState = MeatCookingState.CookingState.Cooking;
+        meat.currentState = MeatCookingState.CookingState.Cooking;
 
         return true;
     }
 
+    // ----------------------------------------------------------
+    // VOLTEAR
+    // ----------------------------------------------------------
 
-    // Voltear solo por Interaccion en el sartén apuntado
     public bool TryFlipFromInteraccion()
     {
         if (!currentMeat) return false;
 
+        PhotonView meatPV = currentMeat.GetComponent<PhotonView>();
+        if (meatPV != null && !meatPV.IsMine)
+            meatPV.RequestOwnership();
+
         if (!isFlipped && (currentMeat.isSide1Cooked || currentMeat.isSide1Burned))
         {
-            // Aqui usamos la función de Meat para flip (ya hace RPC si corresponde)
             currentMeat.FlipMeat();
             isFlipped = true;
 
             currentCookingTime = 0f;
-            if (cookingUI) cookingUI.ResetUI(cookingTime / (cookingTime + burningTime));
-
             isCooking = true;
 
-            // sincronizar que el meat está volteado y su visual
-            var meatPV = currentMeat.GetComponent<PhotonView>();
-            if (meatPV != null)
-                photonView.RPC(nameof(RPC_SyncMeatOnPan), RpcTarget.OthersBuffered, meatPV.ViewID, isFlipped);
-            // ?? Reproducir sonido de cocción al voltear
-            var audio = currentMeat.GetComponent<MeatCookingAudio>();
-            if (audio != null)
-                audio.RestartCookingSound();
+            if (cookingUI)
+                cookingUI.ResetUI(cookingTime / (cookingTime + burningTime));
+
+            // Sync visual
+            photonView.RPC(nameof(RPC_SyncMeatOnPan), RpcTarget.OthersBuffered, meatPV.ViewID, isFlipped);
 
             return true;
         }
+
         return false;
     }
 
-    // RPC que reparenta la carne en los clientes remotos y asegura física/flags
+    // ----------------------------------------------------------
+    // RPCs
+    // ----------------------------------------------------------
+
     [PunRPC]
     void RPC_SyncMeatOnPan(int meatViewID, bool flipped)
     {
         PhotonView meatPV = PhotonView.Find(meatViewID);
-        if (meatPV == null) return;
+        if (!meatPV) return;
 
         var meat = meatPV.GetComponent<MeatCookingState>();
-        if (meat == null) return;
+        if (!meat) return;
 
-        // REMOVER de cualquier mano remota y poner en panCenter
-        meat.transform.SetParent(panCenter, worldPositionStays: false);
+        meat.transform.SetParent(panCenter, false);
         meat.transform.SetPositionAndRotation(panCenter.position, panCenter.rotation);
 
         if (flipped)
@@ -189,43 +218,39 @@ public class CookMeatInPan : MonoBehaviourPun
         meat.SetKinematic(true);
     }
 
-    // RPC para actualizar solo la parte visual (estado y flipped)
-    [PunRPC]
-    void RPC_UpdateVisualState(int meatViewID, int newState, bool flipped)
-    {
-        PhotonView meatPV = PhotonView.Find(meatViewID);
-        if (meatPV == null) return;
-
-        var meat = meatPV.GetComponent<MeatCookingState>();
-        if (meat == null) return;
-
-        meat.currentState = (MeatCookingState.CookingState)newState;
-        // Aplicar visual local sin volver a enviar RPC (evitar loops)
-        meat.ApplyVisualDirectly(flipped);
-    }
-
     [PunRPC]
     void RPC_SetMeatOnPan(int meatViewID)
     {
         PhotonView meatPV = PhotonView.Find(meatViewID);
-        if (meatPV == null) return;
+        if (!meatPV) return;
 
-        var pan = GetComponent<CookMeatInPan>();
-        if (pan == null) return;
+        meatPV.transform.SetParent(panCenter);
+        meatPV.transform.SetPositionAndRotation(panCenter.position, panCenter.rotation);
 
-        // Se establece como hijo del centro del sartén
-        meatPV.transform.SetParent(pan.panCenter);
-        meatPV.transform.SetPositionAndRotation(pan.panCenter.position, pan.panCenter.rotation);
-
-        // Desactivar física mientras está cocinándose
-        Rigidbody rb = meatPV.GetComponent<Rigidbody>();
-        if (rb != null)
+        var rb = meatPV.GetComponent<Rigidbody>();
+        if (rb)
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
     }
 
+    [PunRPC]
+    void RPC_UpdateVisualState(int meatViewID, int newState, bool flipped)
+    {
+        PhotonView meatPV = PhotonView.Find(meatViewID);
+        if (!meatPV) return;
+
+        var meat = meatPV.GetComponent<MeatCookingState>();
+        if (!meat) return;
+
+        meat.currentState = (MeatCookingState.CookingState)newState;
+        meat.ApplyVisualDirectly(flipped);
+    }
+
+    // ----------------------------------------------------------
+    // PARAR COCCIÓN
+    // ----------------------------------------------------------
 
     void StopCookingAndHideUI()
     {
@@ -237,9 +262,8 @@ public class CookMeatInPan : MonoBehaviourPun
 
         if (currentMeat)
         {
-            // avisar a remotos que se quitó la carne (opcional)
-            var meatPV = currentMeat.GetComponent<PhotonView>();
-            if (meatPV != null)
+            PhotonView meatPV = currentMeat.GetComponent<PhotonView>();
+            if (meatPV)
                 photonView.RPC(nameof(RPC_ClearMeatFromPan), RpcTarget.OthersBuffered, meatPV.ViewID);
 
             currentMeat.SetOnPan(false);
@@ -253,50 +277,49 @@ public class CookMeatInPan : MonoBehaviourPun
     void RPC_ClearMeatFromPan(int meatViewID)
     {
         PhotonView meatPV = PhotonView.Find(meatViewID);
-        if (meatPV == null) return;
+        if (!meatPV) return;
+
         var meat = meatPV.GetComponent<MeatCookingState>();
-        if (meat == null) return;
+        if (!meat) return;
 
         meat.SetOnPan(false);
         meat.SetKinematic(false);
         meat.transform.SetParent(null);
     }
 
-    // Hint “Presiona T…” (se muestra solo si apunta, tiene carne y no hay otra en este sarten)
+    // ----------------------------------------------------------
+    // HINT E ICONOS
+    // ----------------------------------------------------------
+
     public void ShowAimHint(bool aimingPan, bool hasMeatInHand)
     {
         bool show = false;
 
         if (aimingPan && hasMeatInHand && !isCooking && !currentMeat)
         {
-            var inter = Object.FindFirstObjectByType<Interact>();
-            var carne = inter ? inter.GetComponentInChildren<MeatCookingState>() : null;
-            if (!carne || carne.currentState == MeatCookingState.CookingState.Raw || carne.currentState == MeatCookingState.CookingState.Cooking)
-                show = true;
+            show = true;
         }
 
-        if (cookingCanvas) cookingCanvas.SetActive(show);
+        if (cookingCanvas)
+            cookingCanvas.SetActive(show);
     }
 
-    // Estado global al terminar cada lado
     void SetMeatToBurnedOrCookedState()
     {
-        bool side1Finished = currentMeat.isSide1Cooked || currentMeat.isSide1Burned;
-        bool side2Finished = currentMeat.isSide2Cooked || currentMeat.isSide2Burned;
+        bool s1 = currentMeat.isSide1Cooked || currentMeat.isSide1Burned;
+        bool s2 = currentMeat.isSide2Cooked || currentMeat.isSide2Burned;
 
-        if (side1Finished && side2Finished)
-            currentMeat.currentState = (currentMeat.isSide1Burned || currentMeat.isSide2Burned)
+        if (s1 && s2)
+            currentMeat.currentState =
+                (currentMeat.isSide1Burned || currentMeat.isSide2Burned)
                 ? MeatCookingState.CookingState.Burned
                 : MeatCookingState.CookingState.Cooked;
-        else if (side1Finished || side2Finished)
+        else if (s1 || s2)
             currentMeat.currentState = MeatCookingState.CookingState.Cooking;
         else
             currentMeat.currentState = MeatCookingState.CookingState.Raw;
     }
 
-    
-
-    // Estado inicial del componente
     void ResetCookingSystem()
     {
         isCooking = false;
