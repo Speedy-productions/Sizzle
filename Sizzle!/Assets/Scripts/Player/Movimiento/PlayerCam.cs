@@ -23,9 +23,6 @@ public class PlayerCam : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-
-        Cursor.lockState = CursorLockMode.Locked; // Mantiene el mouse en el centro de la pantalla
-        Cursor.visible = false; // Oculta el mouse
     }
 
     private void Update()
@@ -43,6 +40,15 @@ public class PlayerCam : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(rotacionX, rotacionY, 0);
         orientacion.rotation = Quaternion.Euler(0, rotacionY, 0);
+
+        if (!PauseMenu.GameIsPaused)
+        {
+            BloquearCursor();
+        }
+        else
+        {
+            DesbloquearCursor();
+        }
     }
 
     public void BloquearCursor()
