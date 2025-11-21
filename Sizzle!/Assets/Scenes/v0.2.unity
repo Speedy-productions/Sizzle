@@ -334,6 +334,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 0}
 --- !u!65 &64246153
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -673,10 +674,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPlayers
   playerPrefab: {fileID: 5564841943189410345, guid: e41da602abe91f84fbc6d05545376072, type: 3}
-  mixX: 180
+  mixX: 178.4
   maxX: 240
   minZ: 126.04
-  maxZ: 156
+  maxZ: 140.5
 --- !u!4 &162313752
 Transform:
   m_ObjectHideFlags: 0
@@ -1063,9 +1064,6 @@ PrefabInstance:
       addedObject: {fileID: 241723171}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 241723170}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 241723173}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -1179,39 +1177,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &241723170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 241723159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &241723171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1230,8 +1195,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 241723170}
+  ObservedComponents: []
   sceneViewId: 12
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -1834,7 +1798,8 @@ PrefabInstance:
       propertyPath: 'ObservedComponents.Array.data[0]'
       value: 
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5881704409564738624, guid: 3ceba1a35cd285b47bdee174c7d3f256, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1900,7 +1865,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 209
+      value: 240
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1908,7 +1873,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 141
+      value: 126.04
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1955,6 +1920,14 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 33
       objectReference: {fileID: 0}
+    - target: {fileID: 928296257408040739, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: ObservedComponents.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 928296257408040739, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: 'ObservedComponents.Array.data[0]'
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1172786808051399077, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: sceneViewId
       value: 6
@@ -1993,7 +1966,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4705330457810310032, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: ObservedComponents.Array.size
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4705330457810310032, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: 'ObservedComponents.Array.data[0]'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5681579028320037730, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -2059,7 +2036,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Food_Potato (2)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -4603565369703822398, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+    - {fileID: 928296257408040739, guid: c68bd0879681d2241845579839f5c99d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2431,7 +2410,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tapa (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5363518137203710438, guid: ee88003b3ca14f84db2ed8dbe3c155bc, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2920,6 +2900,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 0}
 --- !u!65 &527441492
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3094,48 +3075,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
       insertIndex: -1
       addedObject: {fileID: 550065362}
-    - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 550065361}
   m_SourcePrefab: {fileID: 100100000, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
 --- !u!1 &550065360 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
   m_PrefabInstance: {fileID: 550065359}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &550065361
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 550065360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &550065362
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3155,7 +3100,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 550065361}
+  - {fileID: 0}
   sceneViewId: 29
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -3308,9 +3253,6 @@ PrefabInstance:
       addedObject: {fileID: 589784650}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 589784649}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 589784652}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -3424,39 +3366,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &589784649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 589784638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &589784650
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3476,7 +3385,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 589784649}
+  - {fileID: 0}
   sceneViewId: 27
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -4658,6 +4567,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 0}
 --- !u!65 &899013830
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5096,9 +5006,6 @@ PrefabInstance:
       addedObject: {fileID: 984098784}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 984098783}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 984098786}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -5212,39 +5119,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &984098783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 984098772}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &984098784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5264,7 +5138,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 984098783}
+  - {fileID: 0}
   sceneViewId: 14
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -6703,48 +6577,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1195423465}
-    - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1195423464}
   m_SourcePrefab: {fileID: 100100000, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
 --- !u!1 &1195423463 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
   m_PrefabInstance: {fileID: 1195423462}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1195423464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1195423463}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1195423465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6763,8 +6601,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 1195423464}
+  ObservedComponents: []
   sceneViewId: 32
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -6875,7 +6712,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tapa
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5363518137203710438, guid: ee88003b3ca14f84db2ed8dbe3c155bc, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -7262,7 +7100,8 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 7
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -3152725136157683260, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -7419,9 +7258,6 @@ PrefabInstance:
       addedObject: {fileID: 1256485805}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1256485804}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1256485807}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -7535,39 +7371,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &1256485804
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1256485793}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1256485805
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7587,7 +7390,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 1256485804}
+  - {fileID: 0}
   sceneViewId: 17
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -7850,48 +7653,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1321386262}
-    - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1321386261}
   m_SourcePrefab: {fileID: 100100000, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
 --- !u!1 &1321386260 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
   m_PrefabInstance: {fileID: 1321386259}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1321386261
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1321386260}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1321386262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7910,8 +7677,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 1321386261}
+  ObservedComponents: []
   sceneViewId: 31
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -8223,9 +7989,6 @@ PrefabInstance:
       addedObject: {fileID: 1391129180}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1391129179}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1391129182}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -8339,39 +8102,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &1391129179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1391129168}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1391129180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8391,7 +8121,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 1391129179}
+  - {fileID: 0}
   sceneViewId: 16
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -8754,7 +8484,8 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 10
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2552503652369384863, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -9035,7 +8766,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -106476269341889594, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
       propertyPath: ObservedComponents.Array.size
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -106476269341889594, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
+      propertyPath: 'ObservedComponents.Array.data[0]'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3839690610660534287, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9129,7 +8864,8 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 8
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2552503652369384863, guid: 85938f0c69ec2764089c4ae07951faf6, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -9213,7 +8949,8 @@ PrefabInstance:
       propertyPath: 'ObservedComponents.Array.data[0]'
       value: 
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5881704409564738624, guid: 3ceba1a35cd285b47bdee174c7d3f256, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -9728,6 +9465,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1487448945
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10330,9 +10068,6 @@ PrefabInstance:
       addedObject: {fileID: 1535983764}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1535983763}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1535983766}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -10446,39 +10181,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &1535983763
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1535983752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1535983764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10497,8 +10199,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 1535983763}
+  ObservedComponents: []
   sceneViewId: 15
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -11332,48 +11033,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1660692979}
-    - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1660692978}
   m_SourcePrefab: {fileID: 100100000, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
 --- !u!1 &1660692977 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
   m_PrefabInstance: {fileID: 1660692976}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1660692978
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1660692977}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &1660692979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11393,7 +11058,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 1660692978}
+  - {fileID: 0}
   sceneViewId: 30
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -11464,7 +11129,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5421800583932710023, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
       propertyPath: ObservedComponents.Array.size
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -5421800583932710023, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
+      propertyPath: 'ObservedComponents.Array.data[0]'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2102562038839519944, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
       propertyPath: m_IsActive
@@ -11554,7 +11223,8 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -3152725136157683260, guid: e65e0f5a23047e147be6dc32db77c4f1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -11650,6 +11320,10 @@ PrefabInstance:
       propertyPath: ObservedComponents.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4705330457810310032, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+      propertyPath: 'ObservedComponents.Array.data[0]'
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5681579028320037730, guid: c68bd0879681d2241845579839f5c99d, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.003
@@ -11714,7 +11388,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Food_Potato (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 928296257408040739, guid: c68bd0879681d2241845579839f5c99d, type: 3}
+    - {fileID: -4603565369703822398, guid: c68bd0879681d2241845579839f5c99d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -11955,6 +11631,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 0}
 --- !u!65 &1771564354
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12772,6 +12449,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
+  finalBurgerPrefabOffline: {fileID: 0}
 --- !u!65 &1835606483
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13556,48 +13234,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2019283871}
-    - targetCorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2019283870}
   m_SourcePrefab: {fileID: 100100000, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
 --- !u!1 &2019283869 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3658423163786105314, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
   m_PrefabInstance: {fileID: 2019283868}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2019283870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2019283869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &2019283871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13616,8 +13258,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 1
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 2019283870}
+  ObservedComponents: []
   sceneViewId: 13
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -13991,9 +13632,6 @@ PrefabInstance:
       addedObject: {fileID: 2096774784}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2096774783}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 2096774786}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b19df13b3dff6ce46bbbeceec895e4c8, type: 3}
       insertIndex: -1
@@ -14107,39 +13745,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Ingredient
   ingredientName: Carne
   requireCookedMeat: 1
---- !u!114 &2096774783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2096774772}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efc6b1d64977384eb3405357896c656, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformViewClassic
-  m_PositionModel:
-    SynchronizeEnabled: 1
-    TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 3
-    InterpolateOption: 2
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
-    ExtrapolateOption: 0
-    ExtrapolateSpeed: 1
-    ExtrapolateIncludingRoundTripTime: 1
-    ExtrapolateNumberOfStoredPositions: 1
-  m_RotationModel:
-    SynchronizeEnabled: 1
-    InterpolateOption: 1
-    InterpolateRotateTowardsSpeed: 180
-    InterpolateLerpSpeed: 5
-  m_ScaleModel:
-    SynchronizeEnabled: 0
-    InterpolateOption: 0
-    InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 0
 --- !u!114 &2096774784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14159,7 +13764,7 @@ MonoBehaviour:
   OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 2096774783}
+  - {fileID: 0}
   sceneViewId: 28
   InstantiationId: 0
   isRuntimeInstantiated: 0
