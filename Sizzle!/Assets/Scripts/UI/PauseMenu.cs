@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -35,13 +36,22 @@ public class PauseMenu : MonoBehaviour
     private void Pause()
     {
         pauseMenuUI.SetActive(true);
-        Time.timeScale = 0f;
+        if (PhotonNetwork.OfflineMode) Time.timeScale = 0f;
         GameIsPaused = true;
     }
 
     public void LoadMenu()
     {
         Debug.Log("Loading Menu...");
-        SceneManager.LoadScene("Menus");
+        if (PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.LeaveRoom();
+            SceneManager.LoadScene("Menus");
+            PhotonNetwork.Disconnect();
+        }
+        else
+        {
+            SceneManager.LoadScene("Menus");
+        }
     }
 }
