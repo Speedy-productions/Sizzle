@@ -19,10 +19,21 @@ public class SliceIngredient : MonoBehaviourPun
     public void SetOnBoard(bool on)
     {
         isOnBoard = on;
+
+        // ===============================
+        // ?? FIX: UI SOLO PARA EL DUEÑO
+        // ===============================
         if (progressFill != null)
         {
-            progressFill.gameObject.SetActive(on);
-            if (on) progressFill.fillAmount = 0f;
+            if (photonView.IsMine)
+            {
+                progressFill.gameObject.SetActive(on);
+                if (on) progressFill.fillAmount = 0f;
+            }
+            else
+            {
+                progressFill.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -32,38 +43,40 @@ public class SliceIngredient : MonoBehaviourPun
     {
         if (!photonView.IsMine)
         {
-            Debug.LogWarning($"[SliceIngredient] No soy el dueño de {name}, no puedo cortar.");
+            Debug.LogWarning($"[SliceIngredient] No soy dueño de {name}, no corto.");
             return;
         }
 
-        Debug.Log($"[SliceIngredient] Cortando ingrediente: {name}");
+        Debug.Log($"[SliceIngredient] Cortando {name}");
 
-        // Avisar a la tabla para limpiar referencia
         CuttingBoard cb = GetComponentInParent<CuttingBoard>();
         if (cb != null) cb.RemoveIngredient();
 
-        // Instanciar en red el prefab cortado
         GameObject cortado = PhotonNetwork.Instantiate(
-            ingSlicedPrefab.name,  // usa el nombre del prefab registrado en Resources
+            ingSlicedPrefab.name,
             transform.position,
             ingSlicedPrefab.transform.rotation
         );
 
-        // Ajustar escala manualmente (Photon no sincroniza localScale)
+        // ======================================
+        // ?? FIX: Ownership del nuevo objeto
+        // ======================================
+        PhotonView pvNew = cortado.GetComponent<PhotonView>();
+        if (pvNew != null)
+            pvNew.RequestOwnership();
+
         cortado.transform.localScale = ingSlicedPrefab.transform.localScale;
 
-        // Si tiene Rigidbody o Collider, asegúrate de mantenerlos correctos
         Rigidbody rb = cortado.GetComponent<Rigidbody>();
         if (rb == null) rb = cortado.AddComponent<Rigidbody>();
+
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        // Ocultar barra si la tiene
         var sliced = cortado.GetComponent<SliceIngredient>();
         if (sliced != null && sliced.progressFill != null)
             sliced.progressFill.gameObject.SetActive(false);
 
-        // Destruir el original en red
         PhotonNetwork.Destroy(gameObject);
     }
 

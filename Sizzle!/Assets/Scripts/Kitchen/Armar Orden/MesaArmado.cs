@@ -14,6 +14,9 @@ public class MesaArmado : MonoBehaviourPun
     public ArmarPedido armarPedido;  // Sistema que valida y combina los ingredientes
     public RecipeSO currentRecipe;  // Prefab final de la hamburguesa (si aplica)
 
+    [Header("Prefabs hamburguesa")]
+public GameObject finalBurgerPrefabOffline;
+
     // Estado interno
     private List<GameObject> placedIngredients = new List<GameObject>();  // Ingredientes colocados en la mesa
     private Vector3 baseAssembleLocalPos;  // Posición base de ensamblaje
@@ -119,69 +122,70 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
 
 
     public void CreateCustomBurger()
+{
+    if (placedIngredients.Count == 0)
     {
-        if (placedIngredients.Count == 0)
-        {
-            Debug.LogError("[MesaArmado] No hay ingredientes en la mesa.");
-            return;
-        }
-
-        // Recolectamos los nombres de ingredientes
-        List<string> ingredientNames = new List<string>();
-        foreach (var ingredient in placedIngredients)
-        {
-            if (ingredient.TryGetComponent(out Ingredient ing))
-                ingredientNames.Add(ing.ingredientName);
-        }
-
-        // Puedes seguir usando esto si quieres que el OrderManager sepa cuál fue el armado
-        Order customOrder = new Order(ingredientNames.ToArray());
-        OrderManager.Instance.SetCurrentOrder(customOrder);
-
-        Vector3 spawnPos = assemblePoint.position;
-        Quaternion spawnRot = Quaternion.identity;
-
-        GameObject burger = null;
-
-        // 🟢 MULTIJUGADOR: que SOLO este cliente instancie en red
-        if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
-        {
-            burger = PhotonNetwork.Instantiate(
-                currentRecipe.finalProductPrefab.name,
-                spawnPos,
-                spawnRot
-            );
-
-            // Pasar ingredientes por RPC usando el ViewID de la hamburguesa
-            PhotonView burgerPV = burger.GetComponent<PhotonView>();
-            if (burgerPV != null)
-            {
-                string csv = string.Join(",", ingredientNames);
-                photonView.RPC(nameof(RPC_InitBurgerIngredients), RpcTarget.AllBuffered, burgerPV.ViewID, csv);
-            }
-        }
-        else
-        {
-            // 🟡 AVENTURA / OFFLINE: instanciar normal
-            burger = Instantiate(
-                currentRecipe.finalProductPrefab,
-                spawnPos,
-                spawnRot
-            );
-
-            if (burger.TryGetComponent(out Hamburguesa hamb))
-                hamb.SetIngredientes(ingredientNames);
-        }
-
-        // 🔊 Sonido de platillo listo (lo puedes dejar como estaba)
-        var sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
-        if (sfx != null) sfx.Play();
-
-        Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada!");
-
-        // Limpieza local
-        ClearMesa();
+        Debug.LogError("[MesaArmado] No hay ingredientes en la mesa.");
+        return;
     }
+
+    // Recolectamos los nombres de ingredientes
+    List<string> ingredientNames = new List<string>();
+    foreach (var ingredient in placedIngredients)
+    {
+        if (ingredient.TryGetComponent(out Ingredient ing))
+            ingredientNames.Add(ing.ingredientName);
+    }
+
+    Order customOrder = new Order(ingredientNames.ToArray());
+    OrderManager.Instance.SetCurrentOrder(customOrder);
+
+    Vector3 spawnPos = assemblePoint.position;
+    Quaternion spawnRot = Quaternion.identity;
+
+    GameObject burger = null;
+
+    // ✅ MULTIJUGADOR: usamos el prefab con PhotonView
+    if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
+    {
+        burger = PhotonNetwork.Instantiate(
+            currentRecipe.finalProductPrefab.name,
+            spawnPos,
+            spawnRot
+        );
+
+        PhotonView burgerPV = burger.GetComponent<PhotonView>();
+        if (burgerPV != null)
+        {
+            string csv = string.Join(",", ingredientNames);
+            photonView.RPC(nameof(RPC_InitBurgerIngredients),
+                RpcTarget.AllBuffered,
+                burgerPV.ViewID,
+                csv);
+        }
+    }
+    else
+    {
+        // ✅ SINGLEPLAYER: usamos el prefab SIN PhotonView
+        GameObject prefabToUse = finalBurgerPrefabOffline != null
+            ? finalBurgerPrefabOffline
+            : currentRecipe.finalProductPrefab; // por si te olvidas de asignarlo
+
+        burger = Instantiate(prefabToUse, spawnPos, spawnRot);
+
+        if (burger.TryGetComponent(out Hamburguesa hamb))
+            hamb.SetIngredientes(ingredientNames);
+    }
+
+    var sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
+    if (sfx != null) sfx.Play();
+
+    Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada!");
+
+    // Limpieza local
+    ClearMesa();
+}
+
 
     // 🔁 NUEVO: en lugar de instanciar dentro del RPC, solo inicializamos la hamburguesa ya creada
     [PunRPC]

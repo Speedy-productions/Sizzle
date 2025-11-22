@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class CuttingBoard : MonoBehaviourPun
 {
-    [Tooltip("Empty transform donde se colocará el ingrediente (hijo de la tabla).")]
     public Transform posicionIngrediente;
 
     private SliceIngredient currentIngredient;
@@ -15,12 +14,10 @@ public class CuttingBoard : MonoBehaviourPun
         PhotonView ingredientePV = ingrediente.GetComponent<PhotonView>();
         if (ingredientePV != null && photonView != null)
         {
-            // Enviamos a todos los jugadores la acción de colocar el ingrediente
             photonView.RPC(nameof(RPC_PlaceIngredient), RpcTarget.AllBuffered, ingredientePV.ViewID);
         }
         else
         {
-            // fallback local
             PlaceIngredientLocal(ingrediente);
         }
     }
@@ -54,19 +51,14 @@ public class CuttingBoard : MonoBehaviourPun
 
         ingrediente.SetOnBoard(true);
 
-        Debug.Log($"Ingrediente colocado en la tabla ({ingrediente.name}).");
+        Debug.Log($"Ingrediente colocado ({ingrediente.name})");
     }
 
-
-
-    // Llamar cuando el ingrediente se quite o se corte
     public void RemoveIngredient()
     {
         if (currentIngredient == null) return;
 
-        // desmarcar y quitar parent
         currentIngredient.SetOnBoard(false);
-        // no forzamos reposicionar; lo hará quien lo agarre
         currentIngredient.transform.SetParent(null);
         currentIngredient = null;
     }
@@ -74,6 +66,5 @@ public class CuttingBoard : MonoBehaviourPun
     public bool HasIngredient() => currentIngredient != null;
     public SliceIngredient GetIngredient() => currentIngredient;
 
-    // (Opcional) visual hint
-    public void ShowAimHint(bool show, bool _) { /* implementar si tienes UI para la tabla */ }
+    public void ShowAimHint(bool show, bool _) { }
 }
