@@ -96,53 +96,53 @@ public class Interact : MonoBehaviourPun
         // ========================================= CONTROLES =========================================
 
         // E: empezar a cocinar en el sartén apuntado (cocinar)
-        if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && panApuntado && carneEnMano)
         {
             panApuntado.TryStartCooking(carneEnMano);
             return;
         }
 
         // Q: voltear solo el sartén apuntado (cocinar)
-        if (Input.GetKeyDown(KeyCode.Q) && panApuntado && carneEnMano == null)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && panApuntado && carneEnMano == null)
         {
             panApuntado.TryFlipFromInteraccion();
             return;
         }
 
         // E: colocar ingrediente en la tabla apuntada (cortar)
-        if (Input.GetKeyDown(KeyCode.E) && tablaApuntada && ingredienteEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && tablaApuntada && ingredienteEnMano)
         {
             tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
             return;
         }
 
         // E: colocar ingrediente en la mesa (armar)
-        if (Input.GetKeyDown(KeyCode.E) && mesaApuntada && ingredienteEnManoPedido)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && mesaApuntada && ingredienteEnManoPedido)
         {
             mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
             return;
         }
 
         // E: empezar a freír en la freidora apuntada (freir)
-        if (Input.GetKeyDown(KeyCode.E) && freidoraApuntada && friesEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && freidoraApuntada && friesEnMano)
         {
             bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
             return;
         }
 
         // E/Q: agarrar/soltar
-        if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
-        if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && ObjetosEnMano() > 0)
             SoltarObjeto();
 
-        if (Input.GetKeyDown(KeyCode.Q) && mesaApuntada != null)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && mesaApuntada != null)
         {
             mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales
         }
 
         // E: interactuar con el NPC
-        if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && npcApuntado)
         {
             Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
 
