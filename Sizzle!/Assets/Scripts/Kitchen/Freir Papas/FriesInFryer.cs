@@ -1,6 +1,7 @@
 using UnityEngine;
+using Photon.Pun;
 
-public class CookFriesInFryer : MonoBehaviour
+public class CookFriesInFryer : MonoBehaviourPun
 {
     [Header("Config")]
     [SerializeField] Transform basketCenter;
@@ -14,7 +15,6 @@ public class CookFriesInFryer : MonoBehaviour
     [Header("Referencias")]
     public GameObject[] decorativeFries;
 
-
     [Header("Materiales")]
     public Material rawMaterial;
     public Material cookedMaterial;
@@ -25,7 +25,10 @@ public class CookFriesInFryer : MonoBehaviour
     private float timeAcc = 0f;
 
     private bool hasPlayerFries = false;
-   
+
+    // flags para no enviar RPCs duplicados
+    private bool cookedBroadcasted = false;
+    private bool burnedBroadcasted = false;
 
     private Interact inter;
 
@@ -38,6 +41,7 @@ public class CookFriesInFryer : MonoBehaviour
 
     void Update()
     {
+        // Sin papas asignadas, nada que hacer
         if (!currentFries)
             return;
 
@@ -48,23 +52,33 @@ public class CookFriesInFryer : MonoBehaviour
             float total = cookingTime + burningTime;
             float t = Mathf.Clamp01(timeAcc / total);
             float frac = cookingTime / total;
+
+            // La UI se mueve en todos los clientes
             if (cookingUI) cookingUI.SetProgress(t, frac);
 
-            if (timeAcc >= total)
+            // Sincronizar estado COOKED / BURNED por RPC una sola vez
+            if (timeAcc >= total && !burnedBroadcasted)
             {
-                Debug.Log($"[FRYER] {name} -> Tiempo total alcanzado. Marcando BURNED a {currentFries.name}");
-                currentFries.MarkBurned();
-                SetDecorativeFriesToBurned();
+                burnedBroadcasted = true;
+                cookedBroadcasted = true;
+
+                if (PhotonNetwork.IsConnected && photonView != null)
+                    photonView.RPC(nameof(RPC_OnFriesBurned), RpcTarget.AllBuffered);
+                else
+                    OnFriesBurnedLocal();
             }
-            else if (timeAcc >= cookingTime && currentFries.currentState != FriesCookingState.CookingState.Cooked)
+            else if (timeAcc >= cookingTime && !cookedBroadcasted)
             {
-                Debug.Log($"[FRYER] {name} -> Alcanzó tiempo de COOKED para {currentFries.name}");
-                currentFries.MarkCooked();
-                SetDecorativeFriesToCooked();
+                cookedBroadcasted = true;
+
+                if (PhotonNetwork.IsConnected && photonView != null)
+                    photonView.RPC(nameof(RPC_OnFriesCooked), RpcTarget.AllBuffered);
+                else
+                    OnFriesCookedLocal();
             }
         }
 
-        // Detecta si sacaron las papas de la cesta
+        // Detecta si sacaron las papas de la cesta (esto es verdad en TODOS porque el reparent se hace por RPC)
         if (currentFries && currentFries.transform.parent != basketCenter)
         {
             Debug.Log($"[FRYER] {name} -> currentFries ya no tiene parent basketCenter. StopAll()");
@@ -72,13 +86,16 @@ public class CookFriesInFryer : MonoBehaviour
         }
     }
 
+    // --------------------------------------------------------------------------------
+    // ENTRADA PÚBLICA DESDE Interact
+    // --------------------------------------------------------------------------------
     public bool TryStartCooking(FriesCookingState fries)
     {
         Debug.Log($"[FRYER] TryStartCooking() llamado con: {(fries ? fries.name : "NULL")}");
 
-        if (!fries || isCooking)
+        if (!fries || isCooking || currentFries != null)
         {
-            Debug.Log($"[FRYER] TryStartCooking() -> Abort. fries={(fries != null)}, isCooking={isCooking}");
+            Debug.Log($"[FRYER] TryStartCooking() -> Abort. fries={(fries != null)}, isCooking={isCooking}, currentFries={(currentFries != null)}");
             return false;
         }
 
@@ -89,9 +106,31 @@ public class CookFriesInFryer : MonoBehaviour
             return false;
         }
 
+        PhotonView friesPV = fries.GetComponent<PhotonView>();
+
+        // MULTIJUGADOR: mandar RPC para todos
+        if (PhotonNetwork.IsConnected && friesPV != null)
+        {
+            photonView.RPC(nameof(RPC_StartCooking), RpcTarget.AllBuffered, friesPV.ViewID);
+        }
+        else
+        {
+            // SINGLEPLAYER u objeto sin PhotonView
+            StartCookingLocal(fries);
+        }
+
+        Debug.Log($"[FRYER] Cocción iniciada (solicitada) para {fries.name} en {name}");
+        return true;
+    }
+
+    // Lógica local de inicio de cocción (usada por singleplayer y RPC)
+    void StartCookingLocal(FriesCookingState fries)
+    {
+        if (!fries) return;
+
         currentFries = fries;
 
-        // Logear info del objeto
+        // Info debug
         string tagInfo = currentFries.tag;
         int layerInfo = currentFries.gameObject.layer;
         Debug.Log($"[FRYER] Aceptado {currentFries.name} (tag={tagInfo}, layer={layerInfo}, estado={currentFries.currentState})");
@@ -117,12 +156,14 @@ public class CookFriesInFryer : MonoBehaviour
             Sp.z != 0f ? Sw.z / Sp.z : t.localScale.z
         );
 
-        // (deja el Debug.Log que ya tienes debajo)
-
+        // Marcar estado físico y lógico
         currentFries.SetInFryer(true);
+        currentFries.currentState = FriesCookingState.CookingState.Cooking;
 
         isCooking = true;
         timeAcc = 0f;
+        cookedBroadcasted = false;
+        burnedBroadcasted = false;
 
         if (cookingUI)
         {
@@ -130,19 +171,88 @@ public class CookFriesInFryer : MonoBehaviour
             cookingUI.ResetUI(cookingTime / (cookingTime + burningTime));
         }
 
+        // Mientras haya papas dentro, no queremos hint de "mete papas"
         ShowAimHint(false, false);
-        currentFries.currentState = FriesCookingState.CookingState.Cooking;
 
         AddPlayerFriesToFryer();
 
-        Debug.Log($"[FRYER] Cocción iniciada para {currentFries.name} en {name}");
-        return true;
+        Debug.Log($"[FRYER] Cocción iniciada LOCAL para {currentFries.name} en {name}");
     }
+
+    // --------------------------------------------------------------------------------
+    // RPCs
+    // --------------------------------------------------------------------------------
+
+    [PunRPC]
+    void RPC_StartCooking(int friesViewID)
+    {
+        PhotonView friesPV = PhotonView.Find(friesViewID);
+        if (!friesPV)
+        {
+            Debug.LogWarning($"[FRYER] RPC_StartCooking -> No se encontró PhotonView con ID {friesViewID}");
+            return;
+        }
+
+        FriesCookingState fries = friesPV.GetComponent<FriesCookingState>();
+        if (!fries)
+        {
+            Debug.LogWarning($"[FRYER] RPC_StartCooking -> El objeto con ViewID {friesViewID} no tiene FriesCookingState");
+            return;
+        }
+
+        StartCookingLocal(fries);
+    }
+
+    [PunRPC]
+    void RPC_OnFriesCooked()
+    {
+        OnFriesCookedLocal();
+        cookedBroadcasted = true;
+    }
+
+    [PunRPC]
+    void RPC_OnFriesBurned()
+    {
+        OnFriesBurnedLocal();
+        burnedBroadcasted = true;
+        cookedBroadcasted = true;
+    }
+
+    // --------------------------------------------------------------------------------
+    // Eventos locales de cambio de estado (invocados desde RPC o singleplayer)
+    // --------------------------------------------------------------------------------
+
+    void OnFriesCookedLocal()
+    {
+        if (currentFries)
+        {
+            Debug.Log($"[FRYER] {name} -> Marcando COOKED a {currentFries.name} (local/RPC)");
+            currentFries.MarkCooked();
+        }
+        SetDecorativeFriesToCooked();
+    }
+
+    void OnFriesBurnedLocal()
+    {
+        if (currentFries)
+        {
+            Debug.Log($"[FRYER] {name} -> Marcando BURNED a {currentFries.name} (local/RPC)");
+            currentFries.MarkBurned();
+        }
+        SetDecorativeFriesToBurned();
+    }
+
+    // --------------------------------------------------------------------------------
+    // UI / HINT
+    // --------------------------------------------------------------------------------
 
     void StopCookingUIOnly()
     {
         isCooking = false;
         timeAcc = 0f;
+        cookedBroadcasted = false;
+        burnedBroadcasted = false;
+
         if (cookingUI) cookingUI.SetVisible(false);
         Debug.Log($"[FRYER] StopCookingUIOnly() en {name}");
     }
@@ -151,7 +261,12 @@ public class CookFriesInFryer : MonoBehaviour
     {
         bool show = false;
 
-        if (aimingFryer && hasFriesInHand && !isCooking && !currentFries)
+        // Si ya hay papas dentro o se está cocinando, NO mostrar hint
+        if (isCooking || currentFries != null)
+        {
+            show = false;
+        }
+        else if (aimingFryer && hasFriesInHand)
         {
             var inter = Object.FindAnyObjectByType<Interact>();
             var fries = inter ? inter.GetComponentInChildren<FriesCookingState>() : null;
@@ -166,6 +281,10 @@ public class CookFriesInFryer : MonoBehaviour
         if (fryerCanvasHint) fryerCanvasHint.SetActive(show);
         Debug.Log($"[FRYER] ShowAimHint() -> SetActive({show})");
     }
+
+    // --------------------------------------------------------------------------------
+    // RESET / STOP
+    // --------------------------------------------------------------------------------
 
     void StopAll()
     {
@@ -187,6 +306,8 @@ public class CookFriesInFryer : MonoBehaviour
         isCooking = false;
         timeAcc = 0f;
         currentFries = null;
+        cookedBroadcasted = false;
+        burnedBroadcasted = false;
 
         if (fryerCanvasHint) fryerCanvasHint.SetActive(false);
         if (cookingUI)
@@ -198,7 +319,9 @@ public class CookFriesInFryer : MonoBehaviour
         Debug.Log($"[FRYER] ResetSystem() en {name}");
     }
 
+    // --------------------------------------------------------------------------------
     #region Papas Decorativas (logs incluidos)
+    // --------------------------------------------------------------------------------
 
     public void AddPlayerFriesToFryer()
     {
@@ -211,7 +334,7 @@ public class CookFriesInFryer : MonoBehaviour
         SetDecorativeFriesToCooking();
         isCooking = true;
         hasPlayerFries = true;
-      
+
         if (cookingUI) cookingUI.SetVisible(true);
 
         Debug.Log($"[FRYER] Decorativas -> Cooking (activadas) en {name}");
@@ -220,9 +343,8 @@ public class CookFriesInFryer : MonoBehaviour
     public void RemovePlayerFriesFromFryer()
     {
         SetDecorativeFriesToRaw();
-        isCooking = false;
         hasPlayerFries = false;
-        
+
         if (cookingUI) cookingUI.SetVisible(false);
 
         Debug.Log($"[FRYER] Decorativas -> Raw (desactivadas) en {name}");
@@ -235,7 +357,7 @@ public class CookFriesInFryer : MonoBehaviour
             if (fry != null)
             {
                 Renderer fryRenderer = fry.GetComponent<Renderer>();
-                if (fryRenderer)
+                if (fryRenderer && rawMaterial)
                 {
                     fryRenderer.material = rawMaterial;
                 }
