@@ -28,7 +28,7 @@ TagManager:
   - whatIsGround
   - groundMask
   - isPickable
-  - 
+  - PlayerNoCollide
   - 
   - 
   - 
