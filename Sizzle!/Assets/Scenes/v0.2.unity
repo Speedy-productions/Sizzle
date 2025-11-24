@@ -334,7 +334,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &64246153
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1903,7 +1903,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3875505132416736428, guid: e41da602abe91f84fbc6d05545376072, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2900,7 +2901,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &527441492
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4567,7 +4568,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &899013830
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6941,6 +6942,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1230795640}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1230795642}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &1230795638 stripped
 GameObject:
@@ -6996,6 +7000,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &1230795642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230795638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 23
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &1231360990
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11631,7 +11657,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1771564354
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12449,7 +12475,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1835606483
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13344,6 +13370,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2021608170}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2021608172}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &2021608168 stripped
 GameObject:
@@ -13399,6 +13428,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &2021608172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2021608168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 10
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &2058574690
 GameObject:
   m_ObjectHideFlags: 0
