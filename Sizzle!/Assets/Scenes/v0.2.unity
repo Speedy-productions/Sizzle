@@ -413,7 +413,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &64246153
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2213,6 +2213,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TV (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -2524,7 +2528,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3875505132416736428, guid: e41da602abe91f84fbc6d05545376072, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3600,7 +3605,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &527441492
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6364,7 +6369,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &899013830
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7825,6 +7830,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TV (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -8833,6 +8842,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1230795640}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1230795642}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &1230795638 stripped
 GameObject:
@@ -8888,6 +8900,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
+--- !u!114 &1230795642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1230795638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 23
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1001 &1231360990
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11337,6 +11371,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TV (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -13688,6 +13726,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TV (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -15285,6 +15327,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TV (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -15380,7 +15426,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1771564354
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16198,7 +16244,7 @@ MonoBehaviour:
   separationY: 0
   armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  finalBurgerPrefabOffline: {fileID: 0}
+  finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1835606483
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16507,6 +16553,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
       propertyPath: m_Name
       value: TV
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0673c622efa74514b82746a4698ac153, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -17135,6 +17185,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2021608170}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2021608172}
   m_SourcePrefab: {fileID: 100100000, guid: fdd761fcb01854c44bd3fb1a1adf79db, type: 3}
 --- !u!1 &2021608168 stripped
 GameObject:
@@ -17190,138 +17243,28 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.7, y: 0.58, z: 0.83}
   m_Center: {x: -0.5143071, y: 0.046449818, z: 0}
---- !u!1 &2038198527
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2038198528}
-  - component: {fileID: 2038198531}
-  - component: {fileID: 2038198530}
-  - component: {fileID: 2038198529}
-  m_Layer: 0
-  m_Name: Borrartodo
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &2038198528
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038198527}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1391488144}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 912.1435, y: -322.06885}
-  m_SizeDelta: {x: 80.2387, y: 67.3817}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2038198529
+--- !u!114 &2021608172
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038198527}
+  m_GameObject: {fileID: 2021608168}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 2038198530}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1391488147}
-        m_TargetAssemblyTypeName: SuministrosUI, Assembly-CSharp
-        m_MethodName: VaciarCarrito
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &2038198530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038198527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &2038198531
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2038198527}
-  m_CullTransparentMesh: 1
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 10
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &2058574690
 GameObject:
   m_ObjectHideFlags: 0

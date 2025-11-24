@@ -96,53 +96,53 @@ public class Interact : MonoBehaviourPun
         // ========================================= CONTROLES =========================================
 
         // E: empezar a cocinar en el sartén apuntado (cocinar)
-        if (Input.GetKeyDown(KeyCode.E) && panApuntado && carneEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && panApuntado && carneEnMano)
         {
             panApuntado.TryStartCooking(carneEnMano);
             return;
         }
 
         // Q: voltear solo el sartén apuntado (cocinar)
-        if (Input.GetKeyDown(KeyCode.Q) && panApuntado && carneEnMano == null)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && panApuntado && carneEnMano == null)
         {
             panApuntado.TryFlipFromInteraccion();
             return;
         }
 
         // E: colocar ingrediente en la tabla apuntada (cortar)
-        if (Input.GetKeyDown(KeyCode.E) && tablaApuntada && ingredienteEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && tablaApuntada && ingredienteEnMano)
         {
             tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
             return;
         }
 
         // E: colocar ingrediente en la mesa (armar)
-        if (Input.GetKeyDown(KeyCode.E) && mesaApuntada && ingredienteEnManoPedido)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && mesaApuntada && ingredienteEnManoPedido)
         {
             mesaApuntada.TryPlaceIngredientFromHand(ingredienteEnManoPedido);
             return;
         }
 
         // E: empezar a freír en la freidora apuntada (freir)
-        if (Input.GetKeyDown(KeyCode.E) && freidoraApuntada && friesEnMano)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && freidoraApuntada && friesEnMano)
         {
             bool ok = freidoraApuntada.TryStartCooking(friesEnMano);
             return;
         }
 
         // E/Q: agarrar/soltar
-        if (Input.GetKeyDown(KeyCode.E) && objetoSeleccionado && ObjetosEnMano() == 0)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && objetoSeleccionado && ObjetosEnMano() == 0)
             AgarrarObjeto(objetoSeleccionado);
-        if (Input.GetKeyDown(KeyCode.Q) && ObjetosEnMano() > 0)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && ObjetosEnMano() > 0)
             SoltarObjeto();
 
-        if (Input.GetKeyDown(KeyCode.Q) && mesaApuntada != null)
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && mesaApuntada != null)
         {
             mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales
         }
 
         // E: interactuar con el NPC
-        if (Input.GetKeyDown(KeyCode.E) && npcApuntado)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && npcApuntado)
         {
             Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
 
@@ -436,80 +436,101 @@ public class Interact : MonoBehaviourPun
     // ====================== AGARRAR / SOLTAR ==========================
 
     void AgarrarObjeto(GameObject objeto)
+{
+    LimpiarHighlight();
+
+    PhotonView pv = objeto.GetComponent<PhotonView>();
+
+    // ============================================================
+    // 🔥 FIX: si la carne estaba en el sartén → detener cocción global
+    // ============================================================
+    MeatCookingState meatState = objeto.GetComponent<MeatCookingState>();
+    if (meatState != null)
     {
-        LimpiarHighlight();
+        CookMeatInPan pan = FindObjectsByType<CookMeatInPan>(FindObjectsSortMode.None)
+            .FirstOrDefault(p => p.IsCookingThis(meatState));
 
-        PhotonView pv = objeto.GetComponent<PhotonView>();
-        if (pv != null && !pv.IsMine)
-            pv.RequestOwnership();
-
-        var audio = objeto.GetComponent<MeatCookingAudio>();
-        if (audio != null) audio.StopImmediately();
-
-        var friesAudio = objeto.GetComponent<FriesCookingAudio>();
-        if (friesAudio != null) friesAudio.StopImmediately();
-
-        var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
-        if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
+        if (pan != null)
         {
-            Debug.Log("[INTERACT] No puedes agarrar un ingrediente que no sea el tope de la pila.");
-            return;
-        }
-
-        var mesa = objeto.GetComponentInParent<MesaArmado>();
-        if (mesa != null) mesa.RemoveIngredient(objeto);
-
-        var tabla = objeto.GetComponentInParent<CuttingBoard>();
-        if (tabla != null) tabla.RemoveIngredient();
-
-        // ⚠ Carne: si estaba en sartén, dejamos de tratarla como 'OnPan' SOLO en el jugador que la agarra
-        var meat = objeto.GetComponent<MeatCookingState>();
-        if (meat != null)
-        {
-            meat.LockOnTable(false);
-            meat.SetOnPan(false);   // ahora es "en mano" / "suelta", no en sartén
-        }
-
-        // 🔥 FIX UNIVERSAL: congelar físicas inmediatamente en el cliente local
-        Rigidbody rbUniversal = objeto.GetComponent<Rigidbody>();
-        if (rbUniversal)
-        {
-            rbUniversal.isKinematic = true;
-            rbUniversal.useGravity = false;
-            rbUniversal.linearVelocity = Vector3.zero;
-            rbUniversal.angularVelocity = Vector3.zero;
-        }
-
-        // Ignorar colisión con el jugador local
-        if (jugador)
-        {
-            var playerCol = jugador.GetComponent<Collider>();
-            if (playerCol)
-                foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
-                    Physics.IgnoreCollision(playerCol, c, true);
-        }
-
-        // La parte de reparent & físicas la hace el RPC para TODOS (incluido este cliente)
-        if (pv != null && view != null)
-        {
-            view.RPC(nameof(RPC_AvisarAgarrarObjeto), RpcTarget.AllBuffered, pv.ViewID, view.ViewID);
-        }
-        else
-        {
-            // Single player / sin Photon
-            Transform destino = SlotMano();
-            if (!destino) return;
-
-            Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
-            WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, destino, Sw);
-            objeto.transform.localPosition = Vector3.zero;
-            objeto.transform.localRotation = Quaternion.identity;
-            ConfigurarFisicaObjeto(objeto, true);
-
-            foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
-                c.isTrigger = true;
+            pan.ForceStopCooking();   // detener cocción sin soltar la carne
         }
     }
+
+    // ============================================================
+    // Ownership antes de hacer nada físico
+    // ============================================================
+    if (pv != null && !pv.IsMine)
+        pv.RequestOwnership();
+
+    var audio = objeto.GetComponent<MeatCookingAudio>();
+    if (audio != null) audio.StopImmediately();
+
+    var friesAudio = objeto.GetComponent<FriesCookingAudio>();
+    if (friesAudio != null) friesAudio.StopImmediately();
+
+    var mesaTopCheck = objeto.GetComponentInParent<MesaArmado>();
+    if (mesaTopCheck && mesaTopCheck.Contains(objeto) && !mesaTopCheck.IsTopIngredient(objeto))
+    {
+        Debug.Log("[INTERACT] No puedes agarrar un ingrediente que no sea el tope de la pila.");
+        return;
+    }
+
+    var mesa = objeto.GetComponentInParent<MesaArmado>();
+    if (mesa != null) mesa.RemoveIngredient(objeto);
+
+    var tabla = objeto.GetComponentInParent<CuttingBoard>();
+    if (tabla != null) tabla.RemoveIngredient();
+
+    // ⚠ Carne: ya no está en sartén
+    if (meatState != null)
+    {
+        meatState.LockOnTable(false);
+        meatState.SetOnPan(false);
+    }
+
+    // 🔥 Congelar físicas inmediatamente localmente
+    Rigidbody rbUniversal = objeto.GetComponent<Rigidbody>();
+    if (rbUniversal)
+    {
+        rbUniversal.isKinematic = true;
+        rbUniversal.useGravity = false;
+        rbUniversal.linearVelocity = Vector3.zero;
+        rbUniversal.angularVelocity = Vector3.zero;
+    }
+
+    // Ignorar colisión con el jugador local
+    if (jugador)
+    {
+        var playerCol = jugador.GetComponent<Collider>();
+        if (playerCol)
+            foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
+                Physics.IgnoreCollision(playerCol, c, true);
+    }
+
+    // ============================================================
+    // Reparent global mediante RPC (todos verán lo mismo)
+    // ============================================================
+    if (pv != null && view != null)
+    {
+        view.RPC(nameof(RPC_AvisarAgarrarObjeto), RpcTarget.AllBuffered, pv.ViewID, view.ViewID);
+    }
+    else
+    {
+        // Single player
+        Transform destino = SlotMano();
+        if (!destino) return;
+
+        Vector3 Sw = WorldScaleUtils.GetOrInitWorldScaleMemory(objeto.transform);
+        WorldScaleUtils.ReparentKeepWorldScale(objeto.transform, destino, Sw);
+        objeto.transform.localPosition = Vector3.zero;
+        objeto.transform.localRotation = Quaternion.identity;
+        ConfigurarFisicaObjeto(objeto, true);
+
+        foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
+            c.isTrigger = true;
+    }
+}
+
 
     void SoltarObjeto()
     {

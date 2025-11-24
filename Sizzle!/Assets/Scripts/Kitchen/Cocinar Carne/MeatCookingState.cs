@@ -37,12 +37,15 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
 
     void Update()
     {
+        // Solo el dueño actual de la carne mantiene coherencia de flags → estado
         if (!photonView.IsMine) return;
 
         Transform parent = transform.parent;
         isHeldByPlayer = parent != null && parent.CompareTag("PlayerHand");
 
         SetKinematic(isHeldByPlayer || isOnPan);
+
+        // Estado global derivado de los flags
         UpdateCookingState();
     }
 
@@ -61,19 +64,16 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
         if (lockedOnTable && !k) return;
         if (!rb) return;
 
-        // 🔥 FIX IMPORTANTE:
-        // Si alguien (por RPC) intenta poner la carne dinámica (k = false)
-        // PERO actualmente está parentada a una mano (PlayerHand),
-        // NO lo permitimos para evitar que se "caiga" en el cliente remoto.
+        // FIX: si está parentado a una mano (PlayerHand) no dejamos que
+        // un RPC remoto lo haga dinámico (para que no se caiga en ese cliente)
         if (!k)
         {
             Transform parent = transform.parent;
             if (parent != null && parent.CompareTag("PlayerHand"))
             {
-                // Aseguramos flags coherentes
                 isHeldByPlayer = true;
                 isOnPan = false;
-                return; // ignorar este SetKinematic(false) mientras esté en la mano
+                return;
             }
         }
 
@@ -110,9 +110,8 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
     }
 
     // ---------------------------------------------------------
-    // RPC: Materiales
+    // RPC: Materiales (compatibilidad)
     // ---------------------------------------------------------
-
     [PunRPC]
     void RPC_SetMaterial(int side, string state)
     {
@@ -134,7 +133,7 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
     }
 
     // ---------------------------------------------------------
-    // RPC: Flip real (rotación física)
+    // RPC: Flip real (ya casi no lo usamos, pero lo dejamos)
     // ---------------------------------------------------------
     [PunRPC]
     void RPC_Flip()
@@ -150,7 +149,6 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
     // ---------------------------------------------------------
     // RPC: Reparent (cuando agarras o pones en la mano/mesa)
     // ---------------------------------------------------------
-
     [PunRPC]
     void RPC_SetParent(int viewID)
     {
@@ -166,53 +164,75 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
     }
 
     // ---------------------------------------------------------
-    // Lógica de cocción: estados y materiales
+    // LÓGICA DE COCCIÓN (solo dueño modifica flags y estado)
     // ---------------------------------------------------------
 
     public void CookSide1()
     {
+        if (!photonView.IsMine) return;
+
         if (!isSide1Cooked && !isSide1Burned)
         {
-            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 1, "Cooked");
             isSide1Cooked = true;
+
+            UpdateCookingState();
+            ApplyVisualDirectly(false);
+            SyncCookingStateToOthersBuffered();
         }
     }
 
     public void CookSide2()
     {
+        if (!photonView.IsMine) return;
+
         if (!isSide2Cooked && !isSide2Burned)
         {
-            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 2, "Cooked");
             isSide2Cooked = true;
+
+            UpdateCookingState();
+            ApplyVisualDirectly(false);
+            SyncCookingStateToOthersBuffered();
         }
     }
 
     public void BurnSide1()
     {
+        if (!photonView.IsMine) return;
+
         if (!isSide1Burned)
         {
-            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 1, "Burned");
             isSide1Burned = true;
+
+            UpdateCookingState();
+            ApplyVisualDirectly(false);
+            SyncCookingStateToOthersBuffered();
         }
     }
 
     public void BurnSide2()
     {
+        if (!photonView.IsMine) return;
+
         if (!isSide2Burned)
         {
-            photonView.RPC(nameof(RPC_SetMaterial), RpcTarget.All, 2, "Burned");
             isSide2Burned = true;
+
+            UpdateCookingState();
+            ApplyVisualDirectly(false);
+            SyncCookingStateToOthersBuffered();
         }
     }
 
-    // Side state → global cooking state
+    // Estado global derivado de los flags
     void UpdateCookingState()
     {
         bool s1 = isSide1Cooked || isSide1Burned;
         bool s2 = isSide2Cooked || isSide2Burned;
 
         if (s1 && s2)
-            currentState = (isSide1Burned || isSide2Burned) ? CookingState.Burned : CookingState.Cooked;
+            currentState = (isSide1Burned || isSide2Burned)
+                ? CookingState.Burned
+                : CookingState.Cooked;
         else if (s1 || s2)
             currentState = CookingState.Cooking;
         else
@@ -220,31 +240,71 @@ public class MeatCookingState : MonoBehaviourPunCallbacks
     }
 
     // ---------------------------------------------------------
-    // APLICAR VISUAL (SOLO MATERIALES — SIN ROTAR)
+    // SINCRONIZAR ESTADO COMPLETO A LOS DEMÁS
     // ---------------------------------------------------------
 
+    public void SyncCookingStateToOthersBuffered()
+    {
+        if (!PhotonNetwork.IsConnected || !photonView) return;
+
+        photonView.RPC(nameof(RPC_SyncCookingState), RpcTarget.OthersBuffered,
+            isSide1Cooked, isSide2Cooked, isSide1Burned, isSide2Burned, (int)currentState);
+    }
+
+    [PunRPC]
+    void RPC_SyncCookingState(
+        bool s1Cooked,
+        bool s2Cooked,
+        bool s1Burned,
+        bool s2Burned,
+        int stateInt)
+    {
+        isSide1Cooked = s1Cooked;
+        isSide2Cooked = s2Cooked;
+        isSide1Burned = s1Burned;
+        isSide2Burned = s2Burned;
+        currentState = (CookingState)stateInt;
+
+        ApplyVisualDirectly(false);
+    }
+
+    // ---------------------------------------------------------
+    // APLICAR VISUAL (SOLO MATERIALES — SIN ROTAR)
+    // ---------------------------------------------------------
     public void ApplyVisualDirectly(bool flipped)
     {
-        // ⛔ YA NO TOCAMOS LA ROTACIÓN AQUÍ
-        // (la rotación se maneja SOLO en CookMeatInPan)
+        // Lado 1 → burger2
+        if (burger2)
+        {
+            var r2 = burger2.GetComponent<Renderer>();
+            if (r2)
+            {
+                if (isSide1Burned && burnedMaterial)
+                {
+                    r2.material = burnedMaterial;
+                }
+                else if (isSide1Cooked && cookedMaterialSide1)
+                {
+                    r2.material = cookedMaterialSide1;
+                }
+            }
+        }
 
-        // Aplica materiales según los flags locales (no RPC)
-        if (isSide1Burned)
+        // Lado 2 → burger1
+        if (burger1)
         {
-            if (burger2) burger2.GetComponent<Renderer>().material = burnedMaterial;
-        }
-        else if (isSide1Cooked)
-        {
-            if (burger2 && cookedMaterialSide1) burger2.GetComponent<Renderer>().material = cookedMaterialSide1;
-        }
-
-        if (isSide2Burned)
-        {
-            if (burger1) burger1.GetComponent<Renderer>().material = burnedMaterial;
-        }
-        else if (isSide2Cooked)
-        {
-            if (burger1 && cookedMaterialSide2) burger1.GetComponent<Renderer>().material = cookedMaterialSide2;
+            var r1 = burger1.GetComponent<Renderer>();
+            if (r1)
+            {
+                if (isSide2Burned && burnedMaterial)
+                {
+                    r1.material = burnedMaterial;
+                }
+                else if (isSide2Cooked && cookedMaterialSide2)
+                {
+                    r1.material = cookedMaterialSide2;
+                }
+            }
         }
     }
 }

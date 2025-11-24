@@ -24,7 +24,7 @@ public class PopupChar : MonoBehaviour
 
     [Header("Caras del NPC (faces-states)")]
     public Sprite smileyFace;           // "smileyface"
-    public Sprite angryFace;            // "angryface"
+    public Sprite angryFace;           // "angryface"
 
     [Header("Configuración")]
     public float switchInterval = 1f;
@@ -44,15 +44,6 @@ public class PopupChar : MonoBehaviour
         }
     }
 
-    // Genera y asigna pedido al NPC
-    private Order GenerateNpcOrder()
-    {
-        Order newOrder = OrderManager.Instance.GenerateHamburgerOrder();
-        if (newOrder != null && npcFollowPath != null)
-            npcFollowPath.AssignNpcOrder(newOrder);
-        return newOrder;
-    }
-
     // ===================== Pedido (ingredientes + bubble aleatorio) =====================
     public void ShowPopup()
     {
@@ -68,10 +59,15 @@ public class PopupChar : MonoBehaviour
             return;
         }
 
-        currentPopup = Instantiate(popupPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+        // Aquí YA NO generamos la orden. La orden la tiene el NpcFollowPath.
+        Order currentOrder = npcFollowPath != null ? npcFollowPath.GetAssignedOrder() : null;
+        if (currentOrder == null)
+        {
+            Debug.LogError("[PopupChar] NPC no tiene una orden asignada al llamar ShowPopup().");
+            return;
+        }
 
-        // Generar y fijar el pedido que este NPC quiere
-        GenerateNpcOrder();
+        currentPopup = Instantiate(popupPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
 
         StartCoroutine(AlternateSpritesLimitedTime(popupDuration));
 
@@ -99,13 +95,11 @@ public class PopupChar : MonoBehaviour
             Order currentNpcOrder = npcFollowPath != null ? npcFollowPath.GetAssignedOrder() : null;
             if (currentNpcOrder == null)
             {
-                Debug.LogError("No se generó una orden");
+                Debug.LogError("[PopupChar] No se encontró la orden del NPC al alternar sprites.");
                 break;
             }
 
-            OrderManager.Instance.SetCurrentOrder(currentNpcOrder);
-
-            // bubble aleatorio para mostrar el pedido
+            // Burbujita (emocional / random) para mostrar el pedido
             Sprite nextBubbleSprite = GetRandomBubbleAnyGroup();
 
             foreach (string ingredientName in currentNpcOrder.ingredients)
@@ -113,7 +107,6 @@ public class PopupChar : MonoBehaviour
                 if (Time.time >= endTime) break;
 
                 Sprite foodSprite = GetSpriteByName(ingredientName);
-                // Nota: no mostramos texto aquí
                 currentPopup.Show(transform, foodSprite, nextBubbleSprite, null);
                 yield return new WaitForSeconds(switchInterval);
             }
@@ -144,20 +137,19 @@ public class PopupChar : MonoBehaviour
     public void MostrarCaraFeliz(string mensaje = "¡Bien hecho!")
     {
         Sprite bubble = GetBubbleByGroup("Calmado"); // Usa los bubbles de "Calmado"
-        MostrarCara(smileyFace, bubble, mensaje, 32f);     // tamaño por defecto 32
+        MostrarCara(smileyFace, bubble, mensaje, 32f);
     }
 
     public void MostrarCaraMolesta(string mensaje = "¿Qué es esta $#*!?")
     {
         Sprite bubble = GetBubbleByGroup("Grosero"); // Usa los bubbles de "Grosero"
-        MostrarCara(angryFace, bubble, mensaje, 26f);      // ?? tamaño 26 para insulto
+        MostrarCara(angryFace, bubble, mensaje, 26f);
     }
 
     private void MostrarCara(Sprite faceSprite, Sprite bubbleSprite, string mensaje, float fontSize)
     {
         if (popupPrefab == null || faceSprite == null) return;
 
-        // Si ya había una cara mostrándose, reemplazarla
         if (facePopup != null)
             Destroy(facePopup.gameObject);
 
@@ -212,7 +204,6 @@ public class PopupChar : MonoBehaviour
         return null;
     }
 
-    // Mantengo este método porque otros scripts pueden llamarlo (logs)
     public void CambiarEstadoNpcGrosero()
     {
         Debug.Log("[NPC] El NPC está molesto porque la hamburguesa no coincide con la orden.");

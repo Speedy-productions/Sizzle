@@ -47,7 +47,7 @@ public class Blade : MonoBehaviour
     {
         if (cam == null) return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q))
         {
             HandleClick();
         }
