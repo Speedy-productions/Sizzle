@@ -87,6 +87,9 @@ MonoBehaviour:
   - RPC_FlipOnPan
   - RPC_SetFlipState
   - RPC_DoFlip
+  - RPC_SetNpcOrder
+  - RPC_StartPopupWithOrder
+  - RPC_AttachHamburgerToNPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
