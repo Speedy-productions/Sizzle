@@ -1,7 +1,7 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
+using Photon.Voice.PUN;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -43,15 +43,27 @@ public class PauseMenu : MonoBehaviour
     public void LoadMenu()
     {
         Debug.Log("Loading Menu...");
-        if (PhotonNetwork.IsConnected)
+        if (PunVoiceClient.Instance != null)
+        {
+            GameObject vozGO = PunVoiceClient.Instance.gameObject;
+            PunVoiceClient.Instance.Disconnect();
+            Destroy(vozGO);
+        }
+
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
         {
             PhotonNetwork.LeaveRoom();
-            SceneManager.LoadScene("Menus");
-            PhotonNetwork.Disconnect();
         }
-        else
-        {
-            SceneManager.LoadScene("Menus");
-        }
+
+        PhotonNetwork.Disconnect();
+        SceneManager.LoadScene("Menus");
+
     }
+
+    private void OnDisable()
+    {
+        GameIsPaused = false;
+        Time.timeScale = 1f;
+    }
+
 }
