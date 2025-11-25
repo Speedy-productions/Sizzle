@@ -29,6 +29,12 @@ public class PlayerCam : MonoBehaviour
     {
         if (!view.IsMine) return;
 
+        if (PauseMenu.GameIsPaused)
+        {
+            DesbloquearCursor();
+            return;
+        }
+
         // Input del mouse
         float mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * sensX;
         float mouseY = Input.GetAxis("Mouse Y") * Time.deltaTime * sensY;

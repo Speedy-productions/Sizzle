@@ -88,6 +88,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!view.IsMine) return;
 
+        if (PauseMenu.GameIsPaused)
+        {
+            rb.linearVelocity = Vector3.zero;
+            return;
+        }
+
         if (grounded && Mathf.Approximately(horizontalInput, 0f) && Mathf.Approximately(verticalInput, 0f))
         {
             Vector3 v = rb.linearVelocity;
