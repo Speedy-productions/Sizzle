@@ -3385,6 +3385,77 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.2366798, y: 16.680391, z: 109.13803}
   m_Center: {x: -0.118340336, y: 2.5000467, z: 40.426384}
+--- !u!1 &513054565
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 513054567}
+  - component: {fileID: 513054566}
+  - component: {fileID: 513054568}
+  m_Layer: 0
+  m_Name: UISyncPlayers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &513054566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513054565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4cc53c9707817045b8f56d6931b43a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManagerTiempo
+  tiempoInicial: 240
+  tiempoRestante: 0
+  corriendo: 1
+--- !u!4 &513054567
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513054565}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 436.85825, y: 0.00002, z: 507.65277}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &513054568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513054565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents:
+  - {fileID: 513054566}
+  sceneViewId: 18
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!4 &515971901 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4147398367438719832, guid: c9a16e3c99bf30f469f05ff9e7b73886, type: 3}
@@ -10853,7 +10924,6 @@ RectTransform:
   - {fileID: 1366564424}
   - {fileID: 575366499}
   - {fileID: 86816264}
-  - {fileID: 2038198528}
   - {fileID: 1636977632}
   - {fileID: 1461590980}
   - {fileID: 1299707437}
@@ -18289,3 +18359,4 @@ SceneRoots:
   - {fileID: 1606859654}
   - {fileID: 374183437}
   - {fileID: 72979349}
+  - {fileID: 513054567}

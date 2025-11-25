@@ -820,7 +820,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporizadorUI
   textoTemporizador: {fileID: 1713574992025480906}
-  tiempoInicial: 180
   panelGameOver: {fileID: 0}
   sonidoGameOver: {fileID: 0}
   playerCam: {fileID: 0}
