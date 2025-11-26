@@ -9,7 +9,6 @@ public class CookMeatInPan : MonoBehaviourPun
     [SerializeField] public float burningTime = 5f;
 
     [Header("UI")]
-    [SerializeField] GameObject cookingCanvas;
     [SerializeField] CookingProgressUI cookingUI;
 
     MeatCookingState currentMeat;
@@ -437,9 +436,6 @@ public bool IsCookingThis(MeatCookingState meat)
     public void ShowAimHint(bool aimingPan, bool hasMeatInHand)
     {
         bool show = aimingPan && hasMeatInHand && !isCooking && !currentMeat;
-
-        if (cookingCanvas)
-            cookingCanvas.SetActive(show);
     }
 
     // ================================================================
@@ -475,7 +471,5 @@ public bool IsCookingThis(MeatCookingState meat)
             cookingUI.SetVisible(false);
             cookingUI.ResetUI(cookingTime / (cookingTime + burningTime));
         }
-        if (cookingCanvas)
-            cookingCanvas.SetActive(false);
     }
 }

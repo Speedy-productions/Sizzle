@@ -211,7 +211,8 @@ public class Interact : MonoBehaviourPun
         npcApuntado.SetHamburguesaEnMano(hamburguesa);
     }
 
-    int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
+    [HideInInspector]
+    public int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
 
     Transform SlotMano() => puntoDeAgarre ? puntoDeAgarre : manoJugador;
 
