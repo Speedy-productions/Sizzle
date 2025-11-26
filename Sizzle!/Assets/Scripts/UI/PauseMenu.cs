@@ -9,6 +9,21 @@ public class PauseMenu : MonoBehaviour
 
     public GameObject pauseMenuUI;
 
+void Start()
+{
+    if (PhotonNetwork.OfflineMode)
+    {
+        var voice = FindFirstObjectByType<PunVoiceClient>();
+
+        if (voice != null)
+        {
+            if (voice.Client != null && voice.Client.IsConnected)
+                voice.Disconnect();
+
+            Destroy(voice.gameObject);
+        }
+    }
+}
 
     // Update is called once per frame
     void Update()
@@ -41,34 +56,33 @@ public class PauseMenu : MonoBehaviour
     }
 
     public void LoadMenu()
+{
+    Debug.Log("Loading Menu...");
+
+    var voice = FindFirstObjectByType<PunVoiceClient>();
+    if (voice != null)
     {
-        Debug.Log("Loading Menu...");
-        if (PhotonNetwork.IsConnected)
+        if (voice.Client != null && voice.Client.IsConnected)
         {
-            if (PunVoiceClient.Instance != null)
-            {
-                if (PunVoiceClient.Instance.Client.IsConnected)
-                {
-                    GameObject vozGO = PunVoiceClient.Instance.gameObject;
-                    PunVoiceClient.Instance.Disconnect();
-                    Destroy(vozGO);
-                }
-            }
-
-            if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
-            {
-                PhotonNetwork.LeaveRoom();
-            }
-
-            PhotonNetwork.Disconnect();
-            SceneManager.LoadScene("Menus");
-        }else
-        {
-            SceneManager.LoadScene("Menus");
+            voice.Disconnect();
         }
 
-
+        Destroy(voice.gameObject);
     }
+
+    if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    if (PhotonNetwork.IsConnected)
+    {
+        PhotonNetwork.Disconnect();
+    }
+
+    SceneManager.LoadScene("Menus");
+}
+
 
     private void OnDisable()
     {

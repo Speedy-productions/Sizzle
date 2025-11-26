@@ -1,34 +1,36 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class SpawnPlayers : MonoBehaviour
+public class SpawnPlayers : MonoBehaviourPunCallbacks
 {
-    
     public GameObject playerPrefab;
 
-
-    public float mixX;
+    public float minX;
     public float maxX;
     public float minZ;
     public float maxZ;
 
-    private void Start()
+    // Este callback se llama cuando YA estás dentro de una room
+    public override void OnJoinedRoom()
     {
-        
-        if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
+        // Si estás en offline mode, no hagas nada (singleplayer)
+        if (PhotonNetwork.OfflineMode)
+            return;
+
+        // Buscar el player de singleplayer en la escena y destruirlo
+        GameObject existingPlayer = GameObject.Find("Player");
+        if (existingPlayer != null)
         {
-            GameObject existingPlayer = GameObject.Find("Player");
-            if (existingPlayer)
-            {
-                existingPlayer.SetActive(false);
-            }
-
-            Vector3 randomPosition = new Vector3(Random.Range(mixX, maxX), transform.position.y, Random.Range(minZ, maxZ));
-            PhotonNetwork.Instantiate(playerPrefab.name, randomPosition, Quaternion.identity);
+            Destroy(existingPlayer);   // mejor que SetActive(false) para que no estorbe
         }
+
+        // Spawnear el player de multijugador
+        Vector3 randomPosition = new Vector3(
+            Random.Range(minX, maxX),
+            transform.position.y,
+            Random.Range(minZ, maxZ)
+        );
+
+        PhotonNetwork.Instantiate(playerPrefab.name, randomPosition, Quaternion.identity);
     }
-
-
 }

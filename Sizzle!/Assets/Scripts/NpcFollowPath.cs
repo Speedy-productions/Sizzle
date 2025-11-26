@@ -44,6 +44,7 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
     private int currentPoint = 0;
     private List<Transform> activePath;
 
+    // ORDEN PROPIA DE ESTE NPC
     private Order npcAssignedOrder = null;
     private bool orderCompleted = false;
 
@@ -56,7 +57,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
     // Sync de "esperando jugador"
     private bool syncWaiting;
 
-
     // -------------------------------------------------------------------
     // API externa
     // -------------------------------------------------------------------
@@ -64,7 +64,7 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
     public bool IsWaitingForPlayer()
     {
         // host / single player usan su propio estado
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient)
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             return npcState == NpcState.WaitingForPlayer && !orderCompleted;
 
         // clientes usan valor sincronizado
@@ -79,6 +79,12 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
 
     public Order GetAssignedOrder() => npcAssignedOrder;
 
+    // RPC: setear orden remotamente cuando otro jugador la genera
+    [PunRPC]
+    void RPC_SetNpcOrder(string[] ingredients)
+    {
+        npcAssignedOrder = new Order(ingredients);
+    }
 
     // -------------------------------------------------------------------
     // Unity
@@ -94,7 +100,7 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         if (popupChar != null)
             popupChar.npcFollowPath = this;
 
-        // En multiplayer, solo el Master usa física
+        // En multiplayer, solo el Master usa fï¿½sica
         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
         {
             if (!PhotonNetwork.IsMasterClient)
@@ -104,7 +110,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         netPos = transform.position;
         netRot = npcModel.rotation;
     }
-
 
     private void FixedUpdate()
     {
@@ -122,7 +127,7 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            // Interpolación en clientes
+            // Interpolaciï¿½n en clientes
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 netPos,
@@ -138,7 +143,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
             anim.SetFloat("Speed", netSpeed);
         }
     }
-
 
     // -------------------------------------------------------------------
     // STATE MACHINE
@@ -197,7 +201,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         syncWaiting = (npcState == NpcState.WaitingForPlayer && !orderCompleted);
     }
 
-
     private void TickWalking(float dt)
     {
         if (activePath == null || activePath.Count == 0) return;
@@ -239,7 +242,8 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         if (Vector3.Distance(flatA, flatB) < reachDistance)
         {
             // Solo el Master decide cambios de estado
-            if (PhotonNetwork.IsConnected && !PhotonNetwork.IsMasterClient)
+            bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
+            if (mp && !PhotonNetwork.IsMasterClient)
                 return;
 
             if (!usingHappyPath && currentPoint == popupAtPointIndex)
@@ -247,6 +251,8 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
                 npcState = NpcState.WaitingForPlayer;
                 anim.SetFloat("Speed", 0f);
                 netSpeed = 0f;
+
+                // Aquï¿½ NO generamos la orden aï¿½n, eso lo hace el jugador que interactï¿½e primero.
             }
             else
             {
@@ -254,7 +260,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
             }
         }
     }
-
 
     private void AdvancePoint()
     {
@@ -274,9 +279,8 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-
     // -------------------------------------------------------------------
-    // POPUP & INTERACCIÓN
+    // POPUP & INTERACCIï¿½N
     // -------------------------------------------------------------------
 
     public void OnPlayerInteracted()
@@ -286,37 +290,52 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         if (!IsWaitingForPlayer())
             return;
 
-        // Single player
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.OfflineMode)
+        bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
+
+        // --- AVENTURA / OFFLINE ---
+        if (!mp)
         {
+            if (npcAssignedOrder == null && OrderManager.Instance != null)
+            {
+                npcAssignedOrder = OrderManager.Instance.GenerateHamburgerOrder();
+            }
+
             popupChar?.ShowPopup();
             npcState = NpcState.ShowingPopup;
             stateTimer = popupChar != null ? popupChar.popupDuration : waitTimeAfterPopup;
             return;
         }
 
-        // Multiplayer
-        if (PhotonNetwork.IsMasterClient)
+        // --- MULTIJUGADOR ---
+        // Cualquier jugador que interactï¿½e primero genera la orden (si no existe)
+        if (npcAssignedOrder == null && OrderManager.Instance != null)
         {
-            photonView.RPC(nameof(RPC_StartPopup), RpcTarget.All);
+            npcAssignedOrder = OrderManager.Instance.GenerateHamburgerOrder();
         }
-        else
+
+        if (npcAssignedOrder == null)
         {
-            photonView.RPC(nameof(RPC_RequestPopup), RpcTarget.MasterClient);
+            Debug.LogError("[NpcFollowPath] No se pudo generar la orden del NPC al interactuar.");
+            return;
         }
+
+        // Este jugador (cliente o host) dispara el popup y la orden para TODOS
+        photonView.RPC(
+            nameof(RPC_StartPopupWithOrder),
+            RpcTarget.AllBuffered,
+            npcAssignedOrder.ingredients
+        );
     }
 
     [PunRPC]
-    private void RPC_RequestPopup()
+    private void RPC_StartPopupWithOrder(string[] ingredients)
     {
-        if (!PhotonNetwork.IsMasterClient) return;
-        photonView.RPC(nameof(RPC_StartPopup), RpcTarget.All);
-    }
+        // Fijar la orden en todos los clientes
+        npcAssignedOrder = new Order(ingredients);
 
-    [PunRPC]
-    private void RPC_StartPopup()
-    {
+        // Mostrar popup localmente
         popupChar?.ShowPopup();
+
         npcState = NpcState.ShowingPopup;
         stateTimer = popupChar != null ? popupChar.popupDuration : waitTimeAfterPopup;
     }
@@ -330,79 +349,109 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-
     // -------------------------------------------------------------------
     // ENTREGA DE HAMBURGUESA
     // -------------------------------------------------------------------
 
-    // Se llama SIEMPRE desde Interact.TransferirHamburguesaAlNpc
-    public void SetHamburguesaEnMano(Hamburguesa hamb)
+   public void SetHamburguesaEnMano(Hamburguesa hamb)
+{
+    if (hamb == null) return;
+
+    bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
+
+    // ------------------------------
+    // ðŸŸ¢ SINGLE PLAYER (NO PHOTON)
+    // ------------------------------
+    if (!mp)
     {
-        if (hamb == null) return;
-
-        bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
-        bool isMaster = PhotonNetwork.IsMasterClient;
-
-        if (mp && !isMaster)
-        {
-            // Cliente no host:
-            // 1) pedir al Master que ejecute la lógica real
-            PhotonView hambPV = hamb.GetComponent<PhotonView>();
-            if (hambPV != null)
-            {
-                photonView.RPC(
-                    nameof(RPC_SetHamburguesaEnMano_Master),
-                    RpcTarget.MasterClient,
-                    hambPV.ViewID
-                );
-            }
-            else
-            {
-                Debug.LogWarning("[NpcFollowPath] Hamburguesa sin PhotonView, no se puede sincronizar por RPC. Solo se moverá local en este cliente.");
-            }
-
-            // 2) mover localmente la hamburguesa para que este jugador la vea en la mano del NPC
-            AttachHamburguesaLocal(hamb);
-            // NO cambiamos estado ni mostramos caras aquí, eso lo decide el host
-            return;
-        }
-
-        // --------- SINGLE PLAYER o MASTER ---------
+        // mover la hamburguesa localmente al NPC
         AttachHamburguesaLocal(hamb);
-        orderCompleted = true;
 
+        orderCompleted = true;
         npcState = NpcState.WaitingBeforeHappyPath;
         stateTimer = 4f;
 
-        if (!mp)
-        {
-            popupChar?.MostrarCaraFeliz("¡Bien hecho!");
-        }
-        else
-        {
-            photonView.RPC(nameof(RPC_ShowHappyFace), RpcTarget.All, "¡Bien hecho!");
-        }
+        popupChar?.MostrarCaraFeliz("Â¡Bien hecho!");
+        return;
     }
+
+    // ------------------------------
+    // ðŸ”µ MULTIJUGADOR
+    // ------------------------------
+    PhotonView hambPV = hamb.GetComponent<PhotonView>();
+    if (!hambPV)
+    {
+        Debug.LogError("[NPC] Hamburguesa sin PhotonView en MULTIPLAYER.");
+        return;
+    }
+
+    // Cliente â†’ pedir al host procesar
+    if (!PhotonNetwork.IsMasterClient)
+    {
+        photonView.RPC(nameof(RPC_SetHamburguesaEnMano_Master), RpcTarget.MasterClient, hambPV.ViewID);
+        return;
+    }
+
+    // Host / Master â†’ aplicar de una vez
+    AssignHamburgerToNpcForAll(hambPV.ViewID);
+}
+
+
 
     [PunRPC]
-    private void RPC_SetHamburguesaEnMano_Master(int hamburgerViewID)
+private void RPC_SetHamburguesaEnMano_Master(int hamburgerViewID)
+{
+    if (!PhotonNetwork.IsMasterClient) return;
+    AssignHamburgerToNpcForAll(hamburgerViewID);
+}
+
+private void AssignHamburgerToNpcForAll(int hamburgerViewID)
+{
+    photonView.RPC(nameof(RPC_AttachHamburgerToNPC), RpcTarget.AllBuffered, hamburgerViewID);
+
+    orderCompleted = true;
+    npcState = NpcState.WaitingBeforeHappyPath;
+    stateTimer = 4f;
+
+    photonView.RPC(nameof(RPC_ShowHappyFace), RpcTarget.All, "ï¿½Bien hecho!");
+}
+
+
+[PunRPC]
+private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
+{
+    PhotonView hambPV = PhotonView.Find(hamburgerViewID);
+    if (!hambPV) return;
+
+    Transform hambT = hambPV.transform;
+
+    // 1) Quitarlo de la mano del jugador
+    hambT.SetParent(null);
+
+    // 2) Reparentarlo al NPC
+    if (handTransform != null)
     {
-        if (!PhotonNetwork.IsMasterClient) return;
-
-        PhotonView pv = PhotonView.Find(hamburgerViewID);
-        if (pv == null) return;
-
-        Hamburguesa hamb = pv.GetComponent<Hamburguesa>();
-        if (hamb == null) return;
-
-        AttachHamburguesaLocal(hamb);
-        orderCompleted = true;
-
-        npcState = NpcState.WaitingBeforeHappyPath;
-        stateTimer = 4f;
-
-        photonView.RPC(nameof(RPC_ShowHappyFace), RpcTarget.All, "¡Bien hecho!");
+        hambT.SetParent(handTransform);
+        hambT.localPosition = Vector3.zero;
+        hambT.localRotation = Quaternion.identity;
     }
+
+    // 3) Fï¿½sicas correctas
+    Rigidbody rb = hambT.GetComponent<Rigidbody>();
+    if (rb)
+    {
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
+
+    // 4) Colliders correctos
+    foreach (Collider c in hambT.GetComponentsInChildren<Collider>())
+        c.isTrigger = true;
+}
+
+
 
     private void AttachHamburguesaLocal(Hamburguesa hamb)
     {
@@ -425,7 +474,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
     {
         popupChar?.MostrarCaraMolesta(msg);
     }
-
 
     // -------------------------------------------------------------------
     // MASTER SWITCH
@@ -468,7 +516,6 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
 
         return bestIndex;
     }
-
 
     // -------------------------------------------------------------------
     // PHOTON SYNC

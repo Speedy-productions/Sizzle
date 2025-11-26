@@ -1,90 +1,106 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPun
 {
     [Header("Movement")]
-    public float moveSpeed;
-
-    public float groundDrag;
+    public float moveSpeed = 5f;
+    public float groundDrag = 4f;
 
     [Header("Ground Check")]
-    public float playerHeight;
+    public float playerHeight = 2f;
     public LayerMask whatIsGround;
     bool grounded;
 
     [Header("Slope Handling")]
     public float maxSlopeAngle = 30f;
-    private RaycastHit slopeHit;
+    RaycastHit slopeHit;
 
+    [Header("References")]
     public Transform playerModel;
     public Transform orientation;
-
     public Animator anim;
 
     private PhotonView view;
-    Interact interactScript;
-    HeadLook headLookScript;
+    private Interact interactScript;
+    private HeadLook headLookScript;
+
+    Rigidbody rb;
 
     float horizontalInput;
     float verticalInput;
 
     Vector3 moveDirection;
 
-    Rigidbody rb;
-
-    private void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
         view = GetComponent<PhotonView>();
 
-        if (interactScript == null)
-        {
-            interactScript = GetComponent<Interact>();
-        }
-        if (headLookScript == null)
-        {
-            headLookScript = GetComponent<HeadLook>();
-        }
+        interactScript = GetComponent<Interact>();
+        headLookScript = GetComponent<HeadLook>();
 
+        // ================================================================
+        //     JUGADOR REMOTO (NO LOCAL)
+        // ================================================================
         if (!view.IsMine)
         {
-            if (interactScript != null) interactScript.enabled = false;
-            if (headLookScript != null) headLookScript.enabled = false;
+            // 🔸 Rigidbodies remotos NO deben simular física
+            rb.isKinematic = true;
+            rb.useGravity = false;
 
-            this.enabled = false;
+            // 🔸 Colliders desactivados para evitar empujes
+            foreach (Collider c in GetComponentsInChildren<Collider>())
+                c.enabled = false;
+
+            // 🔸 Scripts solo del jugador local se desactivan
+            if (interactScript) interactScript.enabled = false;
+            if (headLookScript) headLookScript.enabled = false;
+
+            // 🔹 IMPORTANTE:
+            // NO desactivamos este script, porque controla animaciones del local
             return;
         }
+
+        // ================================================================
+        //     JUGADOR LOCAL — DESACTIVAMOS NETWORK SYNC DEL ROOT
+        // ================================================================
+        var sync = GetComponent<PlayerNetworkSync>();
+        if (sync) sync.enabled = false;
     }
 
-    private void Update()
+    void Update()
     {
-        if (!view.IsMine) return;
+        // ================================================================
+        //     SOLO EL JUGADOR LOCAL MUEVE EL PERSONAJE
+        // ================================================================
+        if (!view.IsMine)
+            return;   // animación remota la controla PhotonAnimatorView
 
-        // Check if grounded
-        grounded = Physics.SphereCast(transform.position, 0.3f, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f, whatIsGround);
+        grounded = Physics.SphereCast(
+            transform.position,
+            0.3f,
+            Vector3.down,
+            out slopeHit,
+            playerHeight * 0.5f + 0.3f,
+            whatIsGround
+        );
 
         MyInput();
-        
-        // Handle linearDamping
-        if (grounded)
-            rb.linearDamping = groundDrag;
-        else
-            rb.linearDamping = 0;
 
-        // Animations
-        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        anim.SetFloat("Speed", flatVel.magnitude);
+        rb.linearDamping = grounded ? groundDrag : 0;
 
-        Quaternion targetRotation = Quaternion.Euler(0, orientation.eulerAngles.y, 0);
-        playerModel.rotation = Quaternion.Slerp(playerModel.rotation, targetRotation, Time.deltaTime * 10f);
+        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+        anim.SetFloat("Speed", flatVel.magnitude);  // PhotonAnimatorView lo envía a los remotos
 
+        // Rotación del modelo del jugador
+        Quaternion targetRot = Quaternion.Euler(0, orientation.eulerAngles.y, 0);
+        playerModel.rotation = Quaternion.Slerp(playerModel.rotation, targetRot, Time.deltaTime * 10f);
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         if (!view.IsMine) return;
 
@@ -95,60 +111,64 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (grounded && Mathf.Approximately(horizontalInput, 0f) && Mathf.Approximately(verticalInput, 0f))
+        if (grounded && Mathf.Abs(horizontalInput) < 0.1f && Mathf.Abs(verticalInput) < 0.1f)
         {
             Vector3 v = rb.linearVelocity;
-            v.x = 0f;
-            v.z = 0f;
+            v.x = 0;
+            v.z = 0;
             rb.linearVelocity = v;
             return;
-        }   
+        }
 
         MovePlayer();
         SpeedControl();
     }
 
-    private void MyInput()
+    void MyInput()
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
     }
 
-    private void MovePlayer()
+    void MovePlayer()
     {
-        // Calculate move direction
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
-        if (OnSlope() && grounded)
+        if (OnSlope())
         {
             Vector3 slopeDir = Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
             rb.AddForce(slopeDir * moveSpeed * 10f, ForceMode.Force);
         }
         else
         {
-            rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
-
+            rb.linearVelocity = new Vector3(
+                moveDirection.x * moveSpeed,
+                rb.linearVelocity.y,
+                moveDirection.z * moveSpeed
+            );
         }
     }
 
-    private void SpeedControl()
+    void SpeedControl()
     {
-        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        // Limit linearVelocity if needed
+        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+
         if (flatVel.magnitude > moveSpeed)
         {
-            Vector3 limitedVel = flatVel.normalized * moveSpeed;
-            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
+            Vector3 limited = flatVel.normalized * moveSpeed;
+            rb.linearVelocity = new Vector3(
+                limited.x,
+                rb.linearVelocity.y,
+                limited.z
+            );
         }
     }
 
-    private bool OnSlope()
+    bool OnSlope()
     {
-        if (grounded)
-        {
-            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
-            return angle < maxSlopeAngle && angle != 0;
-        }
-        return false;
-    }
+        if (!grounded) return false;
 
+        float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+        return angle < maxSlopeAngle && angle != 0;
+    }
 }
