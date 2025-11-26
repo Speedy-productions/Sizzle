@@ -1473,7 +1473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPlayers
   playerPrefab: {fileID: 5564841943189410345, guid: e41da602abe91f84fbc6d05545376072, type: 3}
-  mixX: 178.4
+  minX: 0
   maxX: 240
   minZ: 126.04
   maxZ: 140.5
@@ -3298,6 +3298,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 254533707173992688, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 254533707173992688, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4439371480775437319, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: sceneViewId
       value: 19
@@ -3313,6 +3321,10 @@ PrefabInstance:
     - target: {fileID: 5860229719633636871, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425177394361679706, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+      propertyPath: m_Constraints
+      value: 84
       objectReference: {fileID: 0}
     - target: {fileID: 7839068627275589329, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: sceneViewId
@@ -10536,7 +10548,19 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1349257834546054794, guid: f583f9013404258429861ea651cb9860, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1349257834546054794, guid: f583f9013404258429861ea651cb9860, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3000226748501201968, guid: f583f9013404258429861ea651cb9860, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4646623305906326753, guid: f583f9013404258429861ea651cb9860, type: 3}
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
@@ -10547,6 +10571,10 @@ PrefabInstance:
     - target: {fileID: 5829672541982989445, guid: f583f9013404258429861ea651cb9860, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.225
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985092138021983941, guid: f583f9013404258429861ea651cb9860, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8249370214734458518, guid: f583f9013404258429861ea651cb9860, type: 3}
       propertyPath: m_Name
@@ -14059,7 +14087,7 @@ MonoBehaviour:
   dineroDisponibleTexto: {fileID: 1361245705}
   panelSuministros: {fileID: 1391488143}
   panelTienda: {fileID: 1699132534}
-  dineroUI: {fileID: 1697309637}
+  dineroUI: {fileID: 0}
 --- !u!1 &1393308051
 GameObject:
   m_ObjectHideFlags: 0
@@ -18489,17 +18517,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687943441}
   m_CullTransparentMesh: 1
---- !u!114 &1697309637 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2013451006711861459, guid: e41da602abe91f84fbc6d05545376072, type: 3}
-  m_PrefabInstance: {fileID: 374183437}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ccb9dabcd5260cf48915c23c382aec64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DineroUI
 --- !u!1 &1699132534
 GameObject:
   m_ObjectHideFlags: 0
@@ -19277,7 +19294,7 @@ MonoBehaviour:
   dineroDisponibleTexto: {fileID: 956174461}
   panelMejoras: {fileID: 1719277599}
   panelTienda: {fileID: 72979345}
-  dineroUI: {fileID: 1697309637}
+  dineroUI: {fileID: 0}
 --- !u!1 &1721200323
 GameObject:
   m_ObjectHideFlags: 0
@@ -20565,7 +20582,7 @@ Transform:
   m_GameObject: {fileID: 1815714593}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.9999987, z: -0, w: -0.0016638269}
-  m_LocalPosition: {x: -50.66916, y: -5.6, z: -38.362244}
+  m_LocalPosition: {x: -50.66916, y: -5.4, z: -38.4}
   m_LocalScale: {x: 4.1473284, y: 3.3188045, z: 5.444661}
   m_ConstrainProportionsScale: 0
   m_Children: []
