@@ -69,6 +69,27 @@ MonoBehaviour:
   - CantHearYou
   - ChangeColour
   - HeresWhy
+  - RPC_InitBurgerIngredients
+  - RPC_SetCookingUI
+  - RPC_UpdateUIProgress
+  - RPC_ClearMeat
+  - RPC_SyncCookingState
+  - RPC_SetProgress
+  - RPC_RemoveIngredient
+  - RPC_ClearBoard
+  - RPC_ClearMesa
+  - RPC_OnFriesBurned
+  - RPC_OnFriesCooked
+  - RPC_StartCooking
+  - RPC_ApplyFullCookingState
+  - RPC_BeginCookingSharedState
+  - RPC_SyncTimerAndUI
+  - RPC_FlipOnPan
+  - RPC_SetFlipState
+  - RPC_DoFlip
+  - RPC_SetNpcOrder
+  - RPC_StartPopupWithOrder
+  - RPC_AttachHamburgerToNPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
