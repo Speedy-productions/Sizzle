@@ -1473,7 +1473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPlayers
   playerPrefab: {fileID: 5564841943189410345, guid: e41da602abe91f84fbc6d05545376072, type: 3}
-  minX: 0
+  mixX: 0
   maxX: 240
   minZ: 126.04
   maxZ: 140.5
@@ -3372,6 +3372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3875505132416736428, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+    - {fileID: 8904374777110595020, guid: e41da602abe91f84fbc6d05545376072, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
