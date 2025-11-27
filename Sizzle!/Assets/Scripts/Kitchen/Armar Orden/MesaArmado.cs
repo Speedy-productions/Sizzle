@@ -6,31 +6,23 @@ using Photon.Pun;
 public class MesaArmado : MonoBehaviourPun
 {
     [Header("Configuración")]
-    public Transform assemblePoint;  // Punto donde se coloca cada ingrediente
-    public Transform stackRoot;  // Contenedor fijo para los ingredientes apilados
-    public float separationY = 0.01f;  // Separación vertical entre ingredientes
+    public Transform assemblePoint;
+    public Transform stackRoot;
+    public float separationY = 0.01f;
 
     [Header("Referencias")]
-    public ArmarPedido armarPedido;  // Sistema que valida y combina los ingredientes
-    public RecipeSO currentRecipe;  // Prefab final de la hamburguesa (si aplica)
+    public RecipeSO currentRecipe;
 
     [Header("Prefabs hamburguesa")]
-public GameObject finalBurgerPrefabOffline;
+    public GameObject finalBurgerPrefabOffline;
 
-    // Estado interno
-    private List<GameObject> placedIngredients = new List<GameObject>();  // Ingredientes colocados en la mesa
-    private Vector3 baseAssembleLocalPos;  // Posición base de ensamblaje
-    private float currentTopY = 0f;  // Altura acumulada de los ingredientes
+    private List<GameObject> placedIngredients = new List<GameObject>();
+    private Vector3 baseAssembleLocalPos;
+    private float currentTopY = 0f;
+    private bool burgerAlreadyCreated = false;
 
     void Awake()
     {
-        if (armarPedido == null)
-        {
-            armarPedido = FindObjectOfType<ArmarPedido>();
-            if (armarPedido == null)
-                Debug.LogWarning("[MesaArmado] No se encontró referencia a ArmarPedido en la escena.");
-        }
-
         if (assemblePoint == null)
         {
             Debug.LogError("[MesaArmado] Falta asignar assemblePoint.");
@@ -38,98 +30,103 @@ public GameObject finalBurgerPrefabOffline;
             return;
         }
 
-        if (stackRoot == null) stackRoot = transform;  // Si no hay contenedor, usamos el propio objeto
+        if (stackRoot == null) stackRoot = transform;
         baseAssembleLocalPos = assemblePoint.localPosition;
         ResetStackHeight();
     }
 
-    // Método para colocar un ingrediente en la mesa
-    // ---------------------- MÉTODO PRINCIPAL ----------------------
     public void TryPlaceIngredientFromHand(Ingredient ing)
-    {
-        if (ing == null || !ing.IsReady()) return;
-        GameObject obj = ing.gameObject;
-
-        if (placedIngredients.Contains(obj)) return;
-
-        if (ing.TryGetComponent(out PhotonView pv))
-        {
-            float syncTopY = currentTopY;
-            photonView.RPC(nameof(RPC_PlaceIngredient), RpcTarget.AllBuffered, pv.ViewID, syncTopY);
-        }
-        else
-        {
-            Debug.LogWarning($"[MesaArmado] {obj.name} no tiene PhotonView asignado.");
-        }
-    }
-
-    // ---------------------- RPC DE SINCRONIZACIÓN ----------------------
-    [PunRPC]
-void RPC_PlaceIngredient(int viewID, float syncTopY)
 {
-    PhotonView pv = PhotonView.Find(viewID);
-    if (pv == null)
-    {
-        Debug.LogWarning($"[MesaArmado] No se encontró objeto con ViewID {viewID}");
+    if (ing == null) return;
+
+    GameObject obj = ing.gameObject;
+
+    // ❌ No permitir hamburguesas dentro de hamburguesas
+    if (obj.CompareTag("Burger") || obj.GetComponent<Hamburguesa>())
         return;
-    }
 
-    GameObject obj = pv.gameObject;
-    PrepareForTable(obj);
+    string ingName = ing.ingredientName;
 
-    assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * syncTopY;
-    Vector3 topWorld = assemblePoint.position;
+    // ✅ DETECCIÓN DE CARNE
+    bool isMeat = ing.TryGetComponent(out MeatCookingState meat);
 
-    // Reparent manteniendo escala mundial
-    Vector3 worldScale = WorldScaleUtils.GetOrInitWorldScaleMemory(obj.transform);
-    WorldScaleUtils.ReparentKeepWorldScale(obj.transform, stackRoot, worldScale);
+    // ✅ VALIDACIÓN COMPLETA DE INGREDIENTES PERMITIDOS
+    bool isValid =
+        ingName == "Tapa" ||                // ✅ Pan superior
+        ingName == "Base" ||                // ✅ Pan inferior
+        ingName.Contains("Sliced") ||       // ✅ Tomate / Lechuga cortados
+        isMeat;                             // ✅ Carne
 
-    // ✅ Colocar a una altura correcta y resetear rotación
-    obj.transform.rotation = Quaternion.identity;
-    obj.transform.position = topWorld;
+    if (!isValid)
+        return;
 
-    // ✅ Asegurar colliders activos
-    foreach (var c in obj.GetComponentsInChildren<Collider>(true))
+    // ✅ BLOQUEAR CARNE CRUDA
+    if (isMeat && !ing.IsReady())
+        return;
+
+    // ✅ EVITAR DUPLICADOS
+    if (placedIngredients.Contains(obj))
+        placedIngredients.Remove(obj);
+
+    // ✅ SINCRONIZACIÓN NORMAL
+    if (ing.TryGetComponent(out PhotonView pv))
     {
-        c.enabled = true;
-        c.isTrigger = false;
+        float syncTopY = currentTopY;
+        photonView.RPC(nameof(RPC_PlaceIngredient), RpcTarget.AllBuffered, pv.ViewID, syncTopY);
     }
-
-    if (!placedIngredients.Contains(obj))
-        placedIngredients.Add(obj);
-
-    currentTopY = syncTopY + GetWorldHeight(obj) + separationY;
-    UpdateAssemblePointY();
-
-    // 🔽 Pequeña corrección: bajarlo apenas para evitar "flotar"
-    obj.transform.position = new Vector3(
-        obj.transform.position.x,
-        obj.transform.position.y - (GetWorldHeight(obj) * 0.5f),
-        obj.transform.position.z
-    );
-
-    // Notificar a ArmarPedido
-    if (armarPedido != null)
+    else
     {
-        armarPedido.OnIngredientPlaced(
-            obj.GetComponent<Ingredient>()?.ingredientName ?? obj.name,
-            placedIngredients,
-            currentRecipe,
-            this
-        );
+        Debug.LogWarning($"[MesaArmado] {obj.name} no tiene PhotonView asignado.");
     }
 }
 
 
-    public void CreateCustomBurger()
+
+    [PunRPC]
+    void RPC_PlaceIngredient(int viewID, float syncTopY)
+    {
+        PhotonView pv = PhotonView.Find(viewID);
+        if (pv == null) return;
+
+        GameObject obj = pv.gameObject;
+        PrepareForTable(obj);
+
+        assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * syncTopY;
+        Vector3 topWorld = assemblePoint.position;
+
+        Vector3 worldScale = WorldScaleUtils.GetOrInitWorldScaleMemory(obj.transform);
+        WorldScaleUtils.ReparentKeepWorldScale(obj.transform, stackRoot, worldScale);
+
+        obj.transform.rotation = Quaternion.identity;
+        obj.transform.position = topWorld;
+
+        foreach (var c in obj.GetComponentsInChildren<Collider>(true))
+        {
+            c.enabled = true;
+            c.isTrigger = false;
+        }
+
+        if (!placedIngredients.Contains(obj))
+            placedIngredients.Add(obj);
+
+        currentTopY = syncTopY + GetWorldHeight(obj) + separationY;
+        UpdateAssemblePointY();
+
+        obj.transform.position = new Vector3(
+            obj.transform.position.x,
+            obj.transform.position.y - (GetWorldHeight(obj) * 0.5f),
+            obj.transform.position.z
+        );
+    }
+
+    public void FinalizeBurger()
 {
     if (placedIngredients.Count == 0)
     {
-        Debug.LogError("[MesaArmado] No hay ingredientes en la mesa.");
+        Debug.LogWarning("[MesaArmado] No hay ingredientes para crear una hamburguesa.");
         return;
     }
 
-    // Recolectamos los nombres de ingredientes
     List<string> ingredientNames = new List<string>();
     foreach (var ingredient in placedIngredients)
     {
@@ -137,88 +134,95 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
             ingredientNames.Add(ing.ingredientName);
     }
 
-    Order customOrder = new Order(ingredientNames.ToArray());
-    OrderManager.Instance.SetCurrentOrder(customOrder);
+    // Solo este jugador crea la hamburguesa y limpia su mesa
+    CreateAndClearBurgerLocal(currentRecipe.finalProductPrefab.name, ingredientNames.ToArray());
 
-    Vector3 spawnPos = assemblePoint.position;
-    Quaternion spawnRot = Quaternion.identity;
-
-    GameObject burger = null;
-
-    // ✅ MULTIJUGADOR: usamos el prefab con PhotonView
-    if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
-    {
-        burger = PhotonNetwork.Instantiate(
-            currentRecipe.finalProductPrefab.name,
-            spawnPos,
-            spawnRot
-        );
-
-        PhotonView burgerPV = burger.GetComponent<PhotonView>();
-        if (burgerPV != null)
-        {
-            string csv = string.Join(",", ingredientNames);
-            photonView.RPC(nameof(RPC_InitBurgerIngredients),
-                RpcTarget.AllBuffered,
-                burgerPV.ViewID,
-                csv);
-        }
-    }
-    else
-    {
-        // ✅ SINGLEPLAYER: usamos el prefab SIN PhotonView
-        GameObject prefabToUse = finalBurgerPrefabOffline != null
-            ? finalBurgerPrefabOffline
-            : currentRecipe.finalProductPrefab; // por si te olvidas de asignarlo
-
-        burger = Instantiate(prefabToUse, spawnPos, spawnRot);
-
-        if (burger.TryGetComponent(out Hamburguesa hamb))
-            hamb.SetIngredientes(ingredientNames);
-    }
-
-    var sfx = Object.FindFirstObjectByType<BurgerCompleteSound>();
-    if (sfx != null) sfx.Play();
-
-    Debug.Log("[MesaArmado] ¡Hamburguesa personalizada creada!");
-
-    // Limpieza local
-    ClearMesa();
+    // Luego avisa a los demás para que limpien sus mesas
+    photonView.RPC(nameof(RPC_ClearMesa), RpcTarget.OthersBuffered);
 }
 
 
-    // 🔁 NUEVO: en lugar de instanciar dentro del RPC, solo inicializamos la hamburguesa ya creada
     [PunRPC]
-    void RPC_InitBurgerIngredients(int burgerViewID, string ingredientsCSV)
+void RPC_CreateAndClearBurger(string burgerPrefabName, string[] ingredientNames)
+{
+    if (burgerAlreadyCreated) return;
+    burgerAlreadyCreated = true;
+
+    // Solo este cliente crea la hamburguesa, luego PUN sincroniza el objeto a todos
+    if (photonView.IsMine)
     {
-        PhotonView burgerPV = PhotonView.Find(burgerViewID);
-        if (burgerPV == null) return;
+        Vector3 spawnPos = assemblePoint.position;
+        GameObject burger = PhotonNetwork.Instantiate(
+            burgerPrefabName,
+            spawnPos,
+            Quaternion.identity
+        );
 
-        var hamburguesaScript = burgerPV.GetComponent<Hamburguesa>();
-        if (hamburguesaScript == null) return;
+        if (burger.TryGetComponent(out Hamburguesa hamb))
+            hamb.SetIngredientes(ingredientNames.ToList());
 
-        var ingredients = ingredientsCSV.Split(',').ToList();
-        hamburguesaScript.SetIngredientes(ingredients);
-
-        Debug.Log("[MesaArmado] Ingredientes sincronizados en la hamburguesa de red.");
+        Debug.Log("[MesaArmado] Hamburguesa creada con ingredientes: " + string.Join(",", ingredientNames));
     }
 
+    ClearMesaLocal();
+}
+
+void CreateAndClearBurgerLocal(string burgerPrefabName, string[] ingredientNames)
+{
+    if (burgerAlreadyCreated) return;
+    burgerAlreadyCreated = true;
+
+    Vector3 spawnPos = assemblePoint.position;
+    GameObject burger = PhotonNetwork.Instantiate(
+        burgerPrefabName,
+        spawnPos,
+        Quaternion.identity
+    );
+
+    if (burger.TryGetComponent(out Hamburguesa hamb))
+        hamb.SetIngredientes(ingredientNames.ToList());
+
+    Debug.Log("[MesaArmado] Hamburguesa creada con ingredientes: " + string.Join(",", ingredientNames));
+
+    ClearMesaLocal();
+}
 
 
-
-    // Método para limpiar la mesa
     public void ClearMesa()
     {
-        foreach (var obj in placedIngredients)
-        {
-            if (obj)
-                Destroy(obj);
-        }
-        placedIngredients.Clear();
-        ResetStackHeight();
+        photonView.RPC(nameof(RPC_ClearMesa), RpcTarget.AllBuffered);
     }
 
-    // Método para verificar la altura de un objeto (usado para calcular la posición)
+    [PunRPC]
+    void RPC_ClearMesa()
+    {
+        ClearMesaLocal();
+    }
+
+    void ClearMesaLocal()
+{
+    foreach (var obj in placedIngredients)
+    {
+        if (obj == null) continue;
+
+        if (PhotonNetwork.IsConnected && obj.TryGetComponent(out PhotonView pv))
+        {
+            // ✅ Destruye solo si el cliente actual es el dueño (pv.IsMine)
+            if (pv.IsMine)
+                PhotonNetwork.Destroy(obj);
+        }
+        else
+        {
+            Destroy(obj);
+        }
+    }
+
+    placedIngredients.Clear();
+    burgerAlreadyCreated = false;
+    ResetStackHeight();
+}
+
+
     float GetWorldHeight(GameObject obj)
     {
         var rends = obj.GetComponentsInChildren<Renderer>(true);
@@ -231,7 +235,6 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
         return Mathf.Max(0.001f, obj.transform.lossyScale.y);
     }
 
-    // Ajuste de la altura de la mesa
     void ResetStackHeight()
     {
         currentTopY = 0f;
@@ -243,7 +246,6 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
         assemblePoint.localPosition = baseAssembleLocalPos + Vector3.up * currentTopY;
     }
 
-    // Preparar el objeto (ingrediente) para la mesa
     void PrepareForTable(GameObject obj)
     {
         if (obj.TryGetComponent(out MeatCookingState meat))
@@ -268,9 +270,9 @@ void RPC_PlaceIngredient(int viewID, float syncTopY)
                 c.isTrigger = false;
         }
     }
-public void ResetAfterComplete(bool destroyChildrenUnderAssemblePoint = false)
+
+    public void ResetAfterComplete(bool destroyChildrenUnderAssemblePoint = false)
     {
-        // (normalmente no habrá hijos bajo assemblePoint, pero dejo la opción)
         if (destroyChildrenUnderAssemblePoint && assemblePoint)
         {
             for (int i = assemblePoint.childCount - 1; i >= 0; i--)
@@ -283,6 +285,7 @@ public void ResetAfterComplete(bool destroyChildrenUnderAssemblePoint = false)
         placedIngredients.Clear();
         currentTopY = 0f;
         assemblePoint.localPosition = baseAssembleLocalPos;
+        burgerAlreadyCreated = false;
     }
 
     public bool Contains(GameObject obj)
@@ -297,55 +300,50 @@ public void ResetAfterComplete(bool destroyChildrenUnderAssemblePoint = false)
     }
 
     public void RemoveIngredient(GameObject obj)
-{
-    if (obj == null) return;
-
-    if (placedIngredients.Contains(obj))
     {
-        placedIngredients.Remove(obj);
+        if (obj == null) return;
 
-        // ✅ Reactivar físicas
-        if (obj.TryGetComponent(out Rigidbody rb))
+        if (placedIngredients.Contains(obj))
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            placedIngredients.Remove(obj);
+
+            if (obj.TryGetComponent(out Rigidbody rb))
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            obj.transform.SetParent(null);
+
+            foreach (var c in obj.GetComponentsInChildren<Collider>(true))
+                c.enabled = true;
+
+            obj.transform.position += Vector3.up * 0.02f;
+
+            Debug.Log($"[MesaArmado] Ingrediente '{obj.name}' retirado de la mesa (no destruido).");
+
+            RecalculateStackHeight();
+        }
+    }
+
+    private void RecalculateStackHeight()
+    {
+        currentTopY = 0f;
+
+        foreach (var ing in placedIngredients)
+        {
+            if (!ing) continue;
+            float h = GetWorldHeight(ing);
+            currentTopY += h + separationY;
         }
 
-        // ✅ Quitar parent (liberarlo de la mesa)
-        obj.transform.SetParent(null);
-
-        // ✅ Asegurar que sus colliders vuelvan a estar activos
-        foreach (var c in obj.GetComponentsInChildren<Collider>(true))
-            c.enabled = true;
-
-        // ✅ Levantarlo un poquito para evitar que se quede pegado
-        obj.transform.position += Vector3.up * 0.02f;
-
-        Debug.Log($"[MesaArmado] Ingrediente '{obj.name}' retirado de la mesa (no destruido).");
-
-        // ✅ Recalcular la altura de la pila después de quitarlo
-        RecalculateStackHeight();
+        UpdateAssemblePointY();
     }
-}
-private void RecalculateStackHeight()
-{
-    currentTopY = 0f;
 
-    foreach (var ing in placedIngredients)
+    public List<GameObject> GetPlacedIngredients()
     {
-        if (!ing) continue;
-        float h = GetWorldHeight(ing);
-        currentTopY += h + separationY;
+        return placedIngredients;
     }
-
-    UpdateAssemblePointY();
-}
-
-public List<GameObject> GetPlacedIngredients()
-{
-    return placedIngredients;
-}
-
 }
