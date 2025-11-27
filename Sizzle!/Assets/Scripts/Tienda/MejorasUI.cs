@@ -36,6 +36,8 @@ public class MejorasUI : MonoBehaviour
 
     private MejoraData mejoraSeleccionada;
 
+    public UpgradeManager upgradeManager;
+
     void Awake()
     {
         if (dineroUI == null)
@@ -98,6 +100,11 @@ public class MejorasUI : MonoBehaviour
         {
             Debug.Log("Dinero insuficiente");
             return;
+        }
+
+        if (mejoraSeleccionada.nombre == "Parrilla")
+        {
+            UpgradeManager.Instance.UpgradeGrill();
         }
 
         dineroUI.QuitarDinero(costo);

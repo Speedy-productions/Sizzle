@@ -16,7 +16,11 @@ public class CookMeatInPan : MonoBehaviourPun
     float currentCookingTime = 0f;
     bool isFlipped = false;   // false = lado 1, true = lado 2
 
-    void Start() => ResetCookingSystem();
+    void Start()
+    {
+        ResetCookingSystem();
+        ApplyGrillUpgrade();
+    }
 
     void Update()
     {
@@ -122,6 +126,8 @@ public class CookMeatInPan : MonoBehaviourPun
     public bool TryStartCooking(MeatCookingState meat)
     {
         if (!meat || isCooking) return false;
+
+        ApplyGrillUpgrade();
 
         bool side1Finished = meat.isSide1Cooked || meat.isSide1Burned;
         bool side2Finished = meat.isSide2Cooked || meat.isSide2Burned;
@@ -419,6 +425,36 @@ public class CookMeatInPan : MonoBehaviourPun
     currentMeat = null;
     isFlipped = false;
 }
+
+    void ApplyGrillUpgrade()
+    {
+        if (UpgradeManager.Instance == null) return;
+        int level = UpgradeManager.Instance.grillLevel;
+
+        switch (level)
+        {
+            case 0:
+                cookingTime = 10f;
+                burningTime = 5f;
+                break;
+            case 1:
+                cookingTime = 10f;
+                burningTime = 9f;
+                break;
+            case 2:
+                cookingTime = 5f;
+                burningTime = 8f;
+                break;
+            case 3:
+                cookingTime = 4f;
+                burningTime = 10f;
+                break;
+            default:
+                cookingTime = 10f;
+                burningTime = 5f;
+                break;
+        }
+    }
 
 public bool IsCookingThis(MeatCookingState meat)
 {
