@@ -112,6 +112,11 @@ public class MejorasUI : MonoBehaviour
             UpgradeManager.Instance.UpgradeCut();
         }
 
+        if (mejoraSeleccionada.nombre == "Freidora")
+        {
+            UpgradeManager.Instance.UpgradeFryer();
+        }
+
         dineroUI.QuitarDinero(costo);
         mejoraSeleccionada.nivelActual++;
 

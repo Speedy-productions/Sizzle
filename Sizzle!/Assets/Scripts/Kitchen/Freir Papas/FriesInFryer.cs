@@ -36,6 +36,7 @@ public class CookFriesInFryer : MonoBehaviourPun
         Debug.Log($"[FRYER] Start -> ResetSystem() en {name}");
         inter = Object.FindFirstObjectByType<Interact>();
         ResetSystem();
+        ApplyFryerUpgrade();
     }
 
     void Update()
@@ -91,6 +92,8 @@ public class CookFriesInFryer : MonoBehaviourPun
     public bool TryStartCooking(FriesCookingState fries)
     {
         Debug.Log($"[FRYER] TryStartCooking() llamado con: {(fries ? fries.name : "NULL")}");
+
+        ApplyFryerUpgrade();
 
         if (!fries || isCooking || currentFries != null)
         {
@@ -314,6 +317,41 @@ public class CookFriesInFryer : MonoBehaviourPun
     }
 
     // --------------------------------------------------------------------------------
+    // UPGRADE FRYER
+    // --------------------------------------------------------------------------------
+    
+    void ApplyFryerUpgrade()
+    {
+        if (UpgradeManager.Instance == null) return;
+
+        int level = UpgradeManager.Instance.fryerLevel;
+
+        switch (level)
+        {
+            case 0:
+                cookingTime = 8f;
+                burningTime = 5f;
+                break;
+            case 1:
+                cookingTime = 8f;
+                burningTime = 8f;
+                break;
+            case 2:
+                cookingTime = 5f;
+                burningTime = 8f;
+                break;
+            case 3:
+                cookingTime = 3f;
+                burningTime = 10f;
+                break;
+            default:
+                cookingTime = 8f;
+                burningTime = 5f;
+                break;
+        }
+
+    }
+
     #region Papas Decorativas (logs incluidos)
     // --------------------------------------------------------------------------------
 

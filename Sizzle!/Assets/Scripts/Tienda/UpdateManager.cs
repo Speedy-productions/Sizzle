@@ -6,6 +6,7 @@ public class UpgradeManager : MonoBehaviour
 
     public int grillLevel { get; private set; }   // 0–3
     public int cutLevel { get; private set; }     // 0–3
+    public int fryerLevel { get; private set; }  // 0–3 
 
     void Awake()
     {
@@ -29,6 +30,8 @@ public class UpgradeManager : MonoBehaviour
         PlayerPrefs.Save();
 
         cutLevel = PlayerPrefs.GetInt("CutLevel", 0);
+        PlayerPrefs.DeleteKey("FryerLevel");
+        fryerLevel = PlayerPrefs.GetInt("FryerLevel", 0);
     }
 
     public void UpgradeGrill()
@@ -48,6 +51,15 @@ public class UpgradeManager : MonoBehaviour
 
         cutLevel++;
         PlayerPrefs.SetInt("CutLevel", cutLevel);
+        PlayerPrefs.Save();
+    }
+    public void UpgradeFryer()
+    {
+        if (fryerLevel >= 3)
+            return;
+
+        fryerLevel++;
+        PlayerPrefs.SetInt("FryerLevel", fryerLevel);
         PlayerPrefs.Save();
     }
 
