@@ -107,6 +107,11 @@ public class MejorasUI : MonoBehaviour
             UpgradeManager.Instance.UpgradeGrill();
         }
 
+        if (mejoraSeleccionada.nombre == "Cortar")
+        {
+            UpgradeManager.Instance.UpgradeCut();
+        }
+
         dineroUI.QuitarDinero(costo);
         mejoraSeleccionada.nivelActual++;
 

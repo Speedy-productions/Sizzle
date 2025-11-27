@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
+using TMPro;
 
 public class Blade : MonoBehaviour
 {
@@ -80,6 +81,8 @@ public class Blade : MonoBehaviour
             return;
         }
 
+        ApplyCuttingUpgrade();
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out RaycastHit hit)) return;
 
@@ -131,6 +134,20 @@ public class Blade : MonoBehaviour
             progress = 0f;
             currentIngredient = null;
             currentFillImage = null;
+        }
+    }
+
+    void ApplyCuttingUpgrade()
+    {
+        if (UpgradeManager.Instance == null) return;
+
+        int level = UpgradeManager.Instance.cutLevel;
+        switch (level)
+        {
+            case 0: fillPerClick = 0.25f; break;
+            case 1: fillPerClick = 0.25f * 1.10f; break;
+            case 2: fillPerClick = 0.25f * 1.25f; break;
+            case 3: fillPerClick = 0.25f * 1.75f; break;
         }
     }
 
