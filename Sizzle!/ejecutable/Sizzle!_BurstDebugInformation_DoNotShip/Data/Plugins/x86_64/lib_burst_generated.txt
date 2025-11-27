@@ -13,7 +13,6 @@ Library: C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64
 --linker-options=PdbAltPath="Sizzle!_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Library\Burst
 --output=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
@@ -35,7 +34,6 @@ Library: C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64
 --linker-options=PdbAltPath="Sizzle!_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Library\Burst
 --output=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
@@ -55,7 +53,6 @@ Library: C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64
 --linker-options=PdbAltPath="Sizzle!_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Library\Burst
 --output=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated
@@ -167,7 +164,6 @@ Library: C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64
 --linker-options=PdbAltPath="Sizzle!_Data/Plugins/x86_64/lib_burst_generated.pdb"
 --generate-link-xml=Temp\burst.link.xml
 --temp-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\Burst
---debug=Full
 --key-folder=C:/Program Files/Unity/Hub/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport
 --decode-folder=C:\Users\giann\SIZZLEUNITY\Sizzle!\Library\Burst
 --output=C:\Users\giann\SIZZLEUNITY\Sizzle!\Temp\BurstOutput\Data\Plugins\x86_64\lib_burst_generated

@@ -9,7 +9,6 @@ public class CookFriesInFryer : MonoBehaviourPun
     [SerializeField] float burningTime = 5f;
 
     [Header("UI")]
-    [SerializeField] GameObject fryerCanvasHint;
     [SerializeField] CookingProgressUI cookingUI;
 
     [Header("Referencias")]
@@ -277,9 +276,6 @@ public class CookFriesInFryer : MonoBehaviourPun
                           fries.currentState == FriesCookingState.CookingState.Cooking))
                 show = true;
         }
-
-        if (fryerCanvasHint) fryerCanvasHint.SetActive(show);
-        Debug.Log($"[FRYER] ShowAimHint() -> SetActive({show})");
     }
 
     // --------------------------------------------------------------------------------
@@ -290,7 +286,6 @@ public class CookFriesInFryer : MonoBehaviourPun
     {
         Debug.Log($"[FRYER] StopAll() en {name}. currentFries={(currentFries ? currentFries.name : "NULL")}");
         StopCookingUIOnly();
-        if (fryerCanvasHint) fryerCanvasHint.SetActive(false);
 
         if (currentFries)
         {
@@ -309,7 +304,6 @@ public class CookFriesInFryer : MonoBehaviourPun
         cookedBroadcasted = false;
         burnedBroadcasted = false;
 
-        if (fryerCanvasHint) fryerCanvasHint.SetActive(false);
         if (cookingUI)
         {
             cookingUI.SetVisible(false);

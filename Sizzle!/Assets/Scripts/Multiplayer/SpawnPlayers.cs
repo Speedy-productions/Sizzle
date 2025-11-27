@@ -5,30 +5,34 @@ using Photon.Pun;
 
 public class SpawnPlayers : MonoBehaviour
 {
-    
     public GameObject playerPrefab;
 
-
-    public float mixX;
-    public float maxX;
-    public float minZ;
-    public float maxZ;
+    // Valores fijos de spawn
+    // (Usando el mínimo y máximo que diste: X: 226–264, Z: 126–147)
+    private const float minX = 180f;
+    private const float maxX = 230f;
+    private const float minZ = 126f;
+    private const float maxZ = 150f;
 
     private void Start()
     {
-        
         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
         {
-            GameObject existingPlayer = GameObject.Find("Player");
+            // Desactivar el jugador de singleplayer
+            GameObject existingPlayer = GameObject.Find("PlayerSingle");
             if (existingPlayer)
             {
                 existingPlayer.SetActive(false);
             }
 
-            Vector3 randomPosition = new Vector3(Random.Range(mixX, maxX), transform.position.y, Random.Range(minZ, maxZ));
+            // Posición aleatoria dentro del rango fijo
+            Vector3 randomPosition = new Vector3(
+                Random.Range(minX, maxX),
+                transform.position.y,
+                Random.Range(minZ, maxZ)
+            );
+
             PhotonNetwork.Instantiate(playerPrefab.name, randomPosition, Quaternion.identity);
         }
     }
-
-
 }

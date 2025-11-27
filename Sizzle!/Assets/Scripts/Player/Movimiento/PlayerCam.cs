@@ -23,14 +23,17 @@ public class PlayerCam : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-
-        Cursor.lockState = CursorLockMode.Locked; // Mantiene el mouse en el centro de la pantalla
-        Cursor.visible = false; // Oculta el mouse
     }
 
     private void Update()
     {
         if (!view.IsMine) return;
+
+        if (PauseMenu.GameIsPaused)
+        {
+            DesbloquearCursor();
+            return;
+        }
 
         // Input del mouse
         float mouseX = Input.GetAxis("Mouse X") * Time.deltaTime * sensX;
@@ -43,6 +46,15 @@ public class PlayerCam : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(rotacionX, rotacionY, 0);
         orientacion.rotation = Quaternion.Euler(0, rotacionY, 0);
+
+        if (!PauseMenu.GameIsPaused)
+        {
+            BloquearCursor();
+        }
+        else
+        {
+            DesbloquearCursor();
+        }
     }
 
     public void BloquearCursor()
