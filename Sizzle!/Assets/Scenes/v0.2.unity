@@ -1473,10 +1473,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPlayers
   playerPrefab: {fileID: 5564841943189410345, guid: e41da602abe91f84fbc6d05545376072, type: 3}
-  mixX: 0
-  maxX: 240
-  minZ: 126.04
-  maxZ: 140.5
 --- !u!4 &162313752
 Transform:
   m_ObjectHideFlags: 0
@@ -3310,9 +3306,17 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 19
       objectReference: {fileID: 0}
+    - target: {fileID: 5258367812445476960, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 163.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5258367812445476960, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 304.5
+      objectReference: {fileID: 0}
     - target: {fileID: 5564841943189410345, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: PlayerSingle
       objectReference: {fileID: 0}
     - target: {fileID: 5860229719633636871, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_AnchorMax.x
@@ -3332,7 +3336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 240
+      value: 226
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3340,7 +3344,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 126.04
+      value: 147
       objectReference: {fileID: 0}
     - target: {fileID: 8741210604143763974, guid: e41da602abe91f84fbc6d05545376072, type: 3}
       propertyPath: m_LocalRotation.w
