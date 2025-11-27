@@ -8,30 +8,29 @@ public class RefrigeratorUI : MonoBehaviour
     [System.Serializable]
     public class RefrigeratedItem
     {
-        public string nombre;               // Jitomate, Papas, Pan, Carne, Lechuga
-        public GameObject prefab;           // Prefab registrado (Photon) o normal
-        public int cantidad;                // Cantidad actual
-        public Text cantidadTexto;      // Texto UI para mostrar cantidad
-        public Button retirarUnoButton;     // Botón para sacar 1
+        public string nombre;                   // Jitomate, Papas, Pan, Carne, Lechuga
+        public GameObject prefab;               // Prefab único (compatibilidad)
+        public List<GameObject> prefabsPorClick = new(); // Prefabs que se entregan en un solo click
+        public int cantidad;                    // Cantidad disponible
+        public int cantidadPorClick = 1;        // Cuántas unidades descuenta por click
+        public Text cantidadTexto;              // Texto UI para mostrar cantidad
+        public Button retirarUnoButton;         // Botón para sacar
     }
 
     [Header("Inventario Refrigerador")]
     public List<RefrigeratedItem> items = new();
 
-    [Header("Referencia al jugador para poner en mano")]
-    public Interact interactJugador;          // Asignar el componente Interact del jugador local
-
-    [Header("Transform opcional para spawn (si se requiere)")]
-    public Transform posicionSpawnTemporal;   // Si null, usa la mano directamente
+    [Header("Punto de Spawn")]
+    public Transform puntoDeSpawn;              // Punto donde aparecerán los objetos
 
     [Header("Detección por Crosshair")]
-    public Camera camaraJugador;              // Cámara del jugador
+    public Camera camaraJugador;                // Cámara del jugador
     [Range(0.01f, 0.3f)] public float radioDeteccionPantalla = 0.15f;
     public float distanciaMaximaUI = 5f;
 
     Dictionary<string, RefrigeratedItem> mapa;
     private Button botonApuntado;
-    private Button ultimoBotonApuntado; // nuevo para detectar cambio de apuntado
+    private Button ultimoBotonApuntado;
 
     void Awake()
     {
@@ -39,6 +38,14 @@ public class RefrigeratorUI : MonoBehaviour
         foreach (var it in items)
         {
             if (string.IsNullOrEmpty(it.nombre)) continue;
+
+            // Compatibilidad: si hay 'prefab' y la lista está vacía, úsalo como único prefab por click
+            if (it.prefab != null && (it.prefabsPorClick == null || it.prefabsPorClick.Count == 0))
+                it.prefabsPorClick = new List<GameObject> { it.prefab };
+
+            // Si no se configuró cantidad por click, poner 1
+            if (it.cantidadPorClick <= 0) it.cantidadPorClick = 1;
+
             string key = Normalizar(it.nombre);
             if (!mapa.ContainsKey(key))
                 mapa.Add(key, it);
@@ -175,29 +182,45 @@ public class RefrigeratorUI : MonoBehaviour
             Debug.LogWarning("[REFRIGERATOR] No existe item: " + nombre);
             return;
         }
-        if (it.cantidad <= 0)
+        
+        if (!puntoDeSpawn)
         {
-            Debug.Log("[REFRIGERATOR] Cantidad 0 de " + nombre);
-            return;
-        }
-        if (!interactJugador)
-        {
-            Debug.LogWarning("[REFRIGERATOR] Falta referencia a InteractJugador.");
-            return;
-        }
-        if (!it.prefab)
-        {
-            Debug.LogWarning("[REFRIGERADOR] Prefab nulo para " + nombre);
+            Debug.LogWarning("[REFRIGERATOR] Falta asignar el punto de spawn.");
             return;
         }
 
-        // Solo descontar y delegar a Interact
-        it.cantidad--;
+        if (it.prefabsPorClick == null || it.prefabsPorClick.Count == 0)
+        {
+            Debug.LogWarning("[REFRIGERADOR] No hay prefabs configurados para " + nombre);
+            return;
+        }
+
+        // Verificar stock suficiente para este click
+        if (it.cantidad < it.cantidadPorClick)
+        {
+            Debug.Log("[REFRIGERATOR] Stock insuficiente de " + nombre + " (requiere " + it.cantidadPorClick + ", disponible: " + it.cantidad + ")");
+            return;
+        }
+
+        // Descontar stock por click
+        it.cantidad -= it.cantidadPorClick;
         ActualizarTexto(it);
 
-        // Interact se encarga de instanciar y poner en la mano
-        interactJugador.RecibirDesdeRefrigerador(it.prefab);
+        // Spawnear todos los prefabs configurados en el punto de spawn
+        foreach (var prefab in it.prefabsPorClick)
+        {
+            if (!prefab)
+            {
+                Debug.LogWarning("[REFRIGERADOR] Prefab nulo dentro de " + nombre);
+                continue;
+            }
 
-        Debug.Log("[REFRIGERATOR UI] Retirando 1 de: " + nombre + " | Restantes: " + it.cantidad);
+            // Instanciar en el punto de spawn
+            GameObject obj = Instantiate(prefab, puntoDeSpawn.position, puntoDeSpawn.rotation);
+            Debug.Log("[REFRIGERATOR] Spawneado: " + prefab.name + " en " + puntoDeSpawn.position);
+        }
+
+        Debug.Log("[REFRIGERATOR UI] Retiro '" + nombre + "' | -" + it.cantidadPorClick + " | Restantes: " + it.cantidad +
+                  " | Prefabs spawneados: " + it.prefabsPorClick.Count);
     }
 }
