@@ -540,7 +540,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 415034781}
   stackRoot: {fileID: 2090374461}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &64246153
@@ -3262,8 +3261,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9580ee051126d45aef0bb8251c922c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameController
-  armarPedido: {fileID: 1860317275}
-  recetaActual: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
 --- !u!1 &319373425
 GameObject:
   m_ObjectHideFlags: 0
@@ -3403,7 +3400,6 @@ RectTransform:
   - {fileID: 2053037317}
   - {fileID: 1557805434}
   - {fileID: 140383176}
-  - {fileID: 801061744}
   - {fileID: 463513416}
   - {fileID: 2055968044}
   - {fileID: 546216927}
@@ -3426,6 +3422,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 330938211}
+  - component: {fileID: 330938212}
   m_Layer: 0
   m_Name: Punto Spawn
   m_TagString: Untagged
@@ -3452,6 +3449,20 @@ RectTransform:
   m_AnchoredPosition: {x: 13.64, y: 1.44}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &330938212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330938210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d547b4733ea8b24ca01efde601bf8eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RefrigeratorInteraction
+  storageCanvas: {fileID: 0}
+  activationDistance: 2
 --- !u!1 &335298280
 GameObject:
   m_ObjectHideFlags: 0
@@ -5338,7 +5349,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 993212321}
   stackRoot: {fileID: 1919577377}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &527441492
@@ -5943,8 +5953,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 329006189}
-  - {fileID: 394262031}
   - {fileID: 330938211}
+  - {fileID: 1373456455}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 270, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -6005,7 +6015,7 @@ MonoBehaviour:
     cantidad: 3
     cantidadPorClick: 1
     cantidadTexto: {fileID: 1081358300}
-    retirarUnoButton: {fileID: 801061741}
+    retirarUnoButton: {fileID: 0}
   puntoDeSpawn: {fileID: 330938211}
   camaraJugador: {fileID: 374183444}
   radioDeteccionPantalla: 0.15
@@ -9524,7 +9534,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1609227665}
   stackRoot: {fileID: 416949208}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &899013830
@@ -14835,6 +14844,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1373456454
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1373456455}
+  - component: {fileID: 1373456457}
+  - component: {fileID: 1373456456}
+  m_Layer: 0
+  m_Name: Interactuar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1373456455
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373456454}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 560839968}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -4.83}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1373456456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373456454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d547b4733ea8b24ca01efde601bf8eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RefrigeratorInteraction
+  storageCanvas: {fileID: 329006186}
+  activationDistance: 2
+--- !u!65 &1373456457
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373456454}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 10.017818, y: 1, z: 6.957016}
+  m_Center: {x: -0.20464373, y: 0, z: -2.9785087}
 --- !u!65 &1379068436
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17261,7 +17342,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 666314554}
   stackRoot: {fileID: 1511942353}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1487448945
@@ -21276,7 +21356,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1215219152}
   stackRoot: {fileID: 995956151}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1771564354
@@ -21830,6 +21909,7 @@ MonoBehaviour:
     - {fileID: 1978575675, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
     - {fileID: -1799599557, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
     - {fileID: 2085850041, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  friesGroups: []
   smileyFace: {fileID: 0}
   angryFace: {fileID: 0}
   switchInterval: 1
@@ -22111,7 +22191,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1002554773}
   stackRoot: {fileID: 976528672}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1835606483
@@ -22479,9 +22558,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c278a3dd609dcd6469589afb43a60b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArmarPedido
-  currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
-  requireExactOrder: 1
-  requireExactCount: 1
 --- !u!65 &1895220528
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25239,6 +25315,7 @@ MonoBehaviour:
   popupChar: {fileID: 6396521079867671826}
   popupAtPointIndex: 4
   handTransform: {fileID: 6396521079867671825}
+  friesHandTransform: {fileID: 0}
 --- !u!114 &6396521079867671831
 MonoBehaviour:
   m_ObjectHideFlags: 0
