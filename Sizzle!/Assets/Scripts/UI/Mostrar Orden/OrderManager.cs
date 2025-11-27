@@ -7,8 +7,11 @@ public class OrderManager : MonoBehaviourPun
 
     public FoodGroup[] foodGroups;
 
-    // Pedido activo que seguirá la mesa/armado
+    // Pedido activo que seguirá la mesa/armado (HAMBURGUESA)
     public Order CurrentOrder { get; private set; }
+
+    // Pedido exclusivo de PAPAS
+    public OrderPapas CurrentFriesOrder { get; private set; }
 
     void Awake()
     {
@@ -20,26 +23,53 @@ public class OrderManager : MonoBehaviourPun
     {
         if (PhotonNetwork.IsMasterClient)
         {
+            // Generamos la orden de hamburguesa
             CurrentOrder = GenerateHamburgerOrder();
-            photonView.RPC(nameof(RPC_SetCurrentOrder), RpcTarget.OthersBuffered, CurrentOrder.ingredients);
+
+            // ? 50% de probabilidad de papas
+            bool wantsFries = Random.value < 0.5f;
+
+            CurrentFriesOrder = wantsFries ? new OrderPapas() : null;
+
+            // ? Sincronizamos hamburguesa + si hay papas o no
+            photonView.RPC(
+                nameof(RPC_SetCurrentOrderFull),
+                RpcTarget.OthersBuffered,
+                CurrentOrder.ingredients,
+                wantsFries
+            );
         }
     }
+
 
     [PunRPC]
-    void RPC_SetCurrentOrder(string[] ingredients)
-    {
-        CurrentOrder = new Order(ingredients);
-    }
+void RPC_SetCurrentOrderFull(string[] ingredients, bool wantsFries)
+{
+    CurrentOrder = new Order(ingredients);
+    CurrentFriesOrder = wantsFries ? new OrderPapas() : null;
+}
 
     public void SetCurrentOrder(Order order)
+{
+    CurrentOrder = order;
+
+    bool wantsFries = Random.value < 0.8f;
+    CurrentFriesOrder = wantsFries ? new OrderPapas() : null;
+
+    if (PhotonNetwork.IsMasterClient)
     {
-        CurrentOrder = order;
-        if (PhotonNetwork.IsMasterClient)
-        {
-            photonView.RPC(nameof(RPC_SetCurrentOrder), RpcTarget.OthersBuffered, order.ingredients);
-        }
-        Debug.Log($"[OrderManager] CurrentOrder seteado: {(order != null ? string.Join(",", order.ingredients) : "NULL")}");
+        photonView.RPC(
+            nameof(RPC_SetCurrentOrderFull),
+            RpcTarget.OthersBuffered,
+            order.ingredients,
+            wantsFries
+        );
     }
+
+    string ingredientes = (order != null) ? string.Join(",", order.ingredients) : "NULL";
+    Debug.Log("[OrderManager] CurrentOrder: " + ingredientes + " | Papas: " + wantsFries);
+}
+
 
     public Order GenerateHamburgerOrder()
     {
@@ -51,9 +81,9 @@ public class OrderManager : MonoBehaviourPun
         for (int i = 1; i < totalIngredients - 1; i++)
         {
             int ranChoice = Random.Range(0, 4);
-            if (ranChoice == 1) ingredientNames[i] = "Lechuga";
-            else if (ranChoice == 2) ingredientNames[i] = "Tomate";
-            else ingredientNames[i] = "Carne";
+            if (ranChoice == 1)       ingredientNames[i] = "Lechuga";
+            else if (ranChoice == 2)  ingredientNames[i] = "Tomate";
+            else                      ingredientNames[i] = "Carne";
         }
 
         return new Order(ingredientNames);

@@ -138,47 +138,68 @@ public class Interact : MonoBehaviourPun
 
         if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && mesaApuntada != null)
         {
-            mesaApuntada.CreateCustomBurger(); // Crear la hamburguesa con los ingredientes actuales
+            mesaApuntada.FinalizeBurger(); // Crear la hamburguesa con los ingredientes actuales
         }
 
         // E: interactuar con el NPC
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && npcApuntado)
+{
+    Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
+    FriesCookingState papasEnMano = GetFriesEnMano();
+
+    // =================== HAMBURGUESA ===================
+    if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
+    {
+        Order npcOrder = npcApuntado.GetAssignedOrder();
+
+        if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
         {
-            Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
+            TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
 
-            if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
-            {
-                Order npcOrder = npcApuntado.GetAssignedOrder();
-                if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
-                {
-                    TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
+            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
+            npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
+            npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
 
-                    DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-                    npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
-                    npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
+            if (dineroUI != null)
+                dineroUI.AgregarDinero(10);
 
-                    if (dineroUI != null)
-                        dineroUI.AgregarDinero(10);
-
-                    Debug.Log("[INTERACT] ¡Hamburguesa entregada correctamente! Dinero agregado.");
-                }
-                else
-                {
-                    npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
-                    npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
-
-                    DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-                    if (dineroUI != null)
-                        dineroUI.QuitarDinero(5);
-
-                    Debug.Log("[INTERACT] La hamburguesa no coincide con la orden del NPC. Dinero restado.");
-                }
-            }
-            else
-            {
-                npcApuntado.OnPlayerInteracted();
-            }
+            Debug.Log("[INTERACT] ✅ Hamburguesa entregada correctamente.");
         }
+        else
+        {
+            npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
+            npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
+
+            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
+            if (dineroUI != null)
+                dineroUI.QuitarDinero(5);
+
+            Debug.Log("[INTERACT] ❌ Hamburguesa incorrecta.");
+        }
+
+        return;
+    }
+
+    // =================== ✅ PAPAS ===================
+            if (papasEnMano != null)
+            {
+                Debug.Log("[INTERACT] ✅ Papas entregadas al NPC.");
+
+                npcApuntado.SetPapasEnManoJugador(papasEnMano);
+
+                // ✅ BLOQUEO TOTAL DEL SISTEMA DE SOLTAR
+                papasEnMano.enabled = false;
+
+                return;
+            }
+
+
+
+
+    // =================== SOLO HABLAR ===================
+    npcApuntado.OnPlayerInteracted();
+}
+
     }
 
     Hamburguesa ObtenerHamburguesaEnMano()
