@@ -796,4 +796,41 @@ public class Interact : MonoBehaviourPun
     }
 
     void OnDisable() => LimpiarHighlight();
+
+    // Exponer agarre directo (wrapper seguro)
+    public void ForzarAgarrarObjeto(GameObject objeto)
+    {
+        if (!objeto) return;
+        AgarrarObjeto(objeto);
+    }
+
+    // Recibir un prefab desde el refrigerador: instancia (Photon o local) y lo agarra
+    public void RecibirDesdeRefrigerador(GameObject prefab)
+    {
+        if (!prefab)
+        {
+            Debug.LogWarning("[INTERACT] Prefab nulo desde refrigerador.");
+            return;
+        }
+        if (ObjetosEnMano() > 0)
+        {
+            Debug.Log("[INTERACT] Mano ocupada, no se puede recibir del refrigerador.");
+            return;
+        }
+
+        Vector3 spawnPos = SlotMano() ? SlotMano().position : transform.position;
+        Quaternion rot = Quaternion.identity;
+
+        GameObject instancia;
+        #if PHOTON_UNITY_NETWORKING
+        if (Photon.Pun.PhotonNetwork.InRoom)
+            instancia = Photon.Pun.PhotonNetwork.Instantiate(prefab.name, spawnPos, rot);
+        else
+            instancia = Instantiate(prefab, spawnPos, rot);
+        #else
+        instancia = Instantiate(prefab, spawnPos, rot);
+        #endif
+
+        ForzarAgarrarObjeto(instancia);
+    }
 }

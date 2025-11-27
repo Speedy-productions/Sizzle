@@ -27,6 +27,9 @@ public class SuministrosUI : MonoBehaviour
     [Header("Sistema de Dinero")]
     public DineroUI dineroUI;
 
+    [Header("Refrigerador destino")]
+    public RefrigeratorUI refrigeratorUI;   // ASIGNAR en Inspector
+
     private Dictionary<string, int> carrito = new Dictionary<string, int>();
     private int total = 0;
 
@@ -79,6 +82,10 @@ public class SuministrosUI : MonoBehaviour
             Debug.Log("Dinero insuficiente!");
             return;
         }
+
+        // Antes de limpiar carrito → pasar al refrigerador
+        if (refrigeratorUI != null)
+            refrigeratorUI.AgregarCompra(carrito);
 
         dineroUI.QuitarDinero(total);
         Debug.Log("Compra realizada por $" + total);
