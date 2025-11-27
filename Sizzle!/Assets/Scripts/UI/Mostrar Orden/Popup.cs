@@ -4,24 +4,25 @@ using TMPro;
 
 public class Popup : MonoBehaviour
 {
-    public Image foodIcon;            // puede ser null si el popup es sólo de cara
-    public Image bubbleIcon;          // puede ser null si el popup es sólo de cara
-    public Image faceIcon;            // puede ser null si el popup es sólo de ingredientes
-    public TextMeshProUGUI messageText; // NUEVO: texto en el popup (opcional)
+    public Image foodIcon;             
+    public Image bubbleIcon;           
+    public Image faceIcon;             
+    public TextMeshProUGUI messageText;
 
     private Transform target;
 
-    /// <summary>
-    /// Muestra el popup.
-    /// </summary>
-    /// <param name="targetTransform">Transform a seguir</param>
-    /// <param name="food">Sprite de comida (o null)</param>
-    /// <param name="bubble">Sprite de burbuja (o null)</param>
-    /// <param name="face">Sprite de cara (o null)</param>
-    /// <param name="message">Texto a mostrar (opcional)</param>
-    /// <param name="fontSize">Tamaño de fuente (opcional). Si es null, se mantiene el del prefab.</param>
-    public void Show(Transform targetTransform, Sprite food, Sprite bubble, Sprite face = null, string message = "", float? fontSize = null)
+    public void Show(
+        Transform targetTransform,
+        Sprite food,
+        Sprite bubble,
+        Sprite face = null,
+        string message = "",
+        float? fontSize = null
+    )
     {
+        // ? Seguridad para evitar NullReference
+        if (targetTransform == null) return;
+
         target = targetTransform;
 
         if (foodIcon != null)

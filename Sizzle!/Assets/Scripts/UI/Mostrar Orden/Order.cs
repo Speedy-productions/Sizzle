@@ -9,3 +9,10 @@ public class Order
         ingredients = ingredientNames;
     }
 }
+
+public class OrderPapas : Order
+{
+    public OrderPapas() : base(new string[] { "Papas" })
+    {
+    }
+}
