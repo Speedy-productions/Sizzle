@@ -3933,7 +3933,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RefrigeratorInteraction
   storageCanvas: {fileID: 329006186}
-  activationDistance: 10
+  activationDistance: 15
 --- !u!65 &394262033
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -15119,7 +15119,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1391488144
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15226,8 +15226,8 @@ MonoBehaviour:
   dineroDisponibleTexto: {fileID: 1361245705}
   panelSuministros: {fileID: 1391488143}
   panelTienda: {fileID: 1699132534}
-  dineroUI: {fileID: 0}
-  refrigeratorUI: {fileID: 0}
+  dineroUI: {fileID: 1647233547}
+  refrigeratorUI: {fileID: 560839969}
 --- !u!1 &1393308051
 GameObject:
   m_ObjectHideFlags: 0
@@ -19197,6 +19197,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1646883096}
   m_CullTransparentMesh: 1
+--- !u!114 &1647233547 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7406167531941137557, guid: e41da602abe91f84fbc6d05545376072, type: 3}
+  m_PrefabInstance: {fileID: 374183437}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccb9dabcd5260cf48915c23c382aec64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DineroUI
 --- !u!1001 &1660692976
 PrefabInstance:
   m_ObjectHideFlags: 0
