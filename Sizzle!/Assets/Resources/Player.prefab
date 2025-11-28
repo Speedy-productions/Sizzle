@@ -1782,8 +1782,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TemporizadorUI
   textoTemporizador: {fileID: 5370843334486727851}
-  panelGameOver: {fileID: 0}
-  sonidoGameOver: {fileID: 0}
   playerCam: {fileID: 7113609408320595837}
 --- !u!1001 &1375673423508246327
 PrefabInstance:
