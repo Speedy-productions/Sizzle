@@ -125,6 +125,14 @@ public bool  dropToRight     = true;   // true = lado derecho, false = izquierdo
             tablaApuntada.TryPlaceIngredient(ingredienteEnMano);
             return;
         }
+var spawnerApuntado = DetectarBandejaSpawnerApuntado();
+
+// E para spawnear una bandeja en el punto más cercano del spawner mirado
+if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && spawnerApuntado)
+{
+    spawnerApuntado.RequestSpawnFrom(camaraJugador.transform.position);
+    return;
+}
 
         // E: colocar ingrediente en la mesa (armar)
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && mesaApuntada && ingredienteEnManoPedido)
@@ -196,6 +204,34 @@ public bool  dropToRight     = true;   // true = lado derecho, false = izquierdo
 
     }
 
+BandejaSpawner DetectarBandejaSpawnerApuntado()
+{
+    var spawners = Object.FindObjectsByType<BandejaSpawner>(FindObjectsSortMode.None);
+    if (spawners.Length == 0) return null;
+
+    BandejaSpawner mejor = null;
+    float mejorScore = float.MaxValue;
+    Vector2 centro = new(0.5f, 0.5f);
+
+    foreach (var sp in spawners)
+    {
+        var r = sp.GetComponentInChildren<Renderer>();
+        Vector3 pos = r ? r.bounds.center : sp.transform.position;
+
+        var vp = camaraJugador.WorldToViewportPoint(pos);
+        if (vp.z <= 0f) continue;
+
+        float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+        if (dPantalla > radioPantallaPan) continue;
+
+        float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+        if (dist > distanciaPan) continue;
+
+        float score = dPantalla * 10f + dist;
+        if (score < mejorScore) { mejorScore = score; mejor = sp; }
+    }
+    return mejor;
+}
 
 BandejaFinal ObtenerBandejaFinalEnMano()
 {
