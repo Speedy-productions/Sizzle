@@ -33,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 24.093948, y: 1.5069996, z: 29.418}
-  m_LocalScale: {x: 0.1226171, y: 0.122617, z: 0.1226171}
+  m_LocalScale: {x: 0.7120763, y: 0.845182, z: 0.7120763}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -174,7 +174,8 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 2
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 5881704409564738624}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

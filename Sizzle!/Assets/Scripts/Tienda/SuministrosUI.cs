@@ -11,7 +11,7 @@ public class SuministrosUI : MonoBehaviour
         public string nombre;
         public int precio;
         public Button botonUI;
-        public TMP_Text cantidadTexto; // Nuevo: muestra cantidad
+        public TMP_Text cantidadTexto;
     }
 
     [Header("Lista de Suministros")]
@@ -27,6 +27,9 @@ public class SuministrosUI : MonoBehaviour
     [Header("Sistema de Dinero")]
     public DineroUI dineroUI;
 
+    [Header("Almacen destino")]
+    public Almacen almacen;
+
     private Dictionary<string, int> carrito = new Dictionary<string, int>();
     private int total = 0;
 
@@ -37,7 +40,7 @@ public class SuministrosUI : MonoBehaviour
             if (item.botonUI != null)
                 item.botonUI.onClick.AddListener(() => AgregarItem(item));
             if (item.cantidadTexto != null)
-                item.cantidadTexto.text = "0"; // inicia en 0
+                item.cantidadTexto.text = "0";
         }
 
         ActualizarCarritoUI();
@@ -45,7 +48,6 @@ public class SuministrosUI : MonoBehaviour
 
     void Update()
     {
-        // Actualiza el dinero disponible cada frame
         if (dineroDisponibleTexto != null && dineroUI != null)
         {
             dineroDisponibleTexto.text = "$" + dineroUI.dineroActual.ToString("N0");
@@ -83,13 +85,43 @@ public class SuministrosUI : MonoBehaviour
         dineroUI.QuitarDinero(total);
         Debug.Log("Compra realizada por $" + total);
 
+        // Agrupar por tipo (usa nombre directamente)
+        var porTipo = AgruparCarritoPorTipo();
+
+        if (almacen != null)
+        {
+            almacen.AgregarPorTipo(porTipo);
+        }
+        else
+        {
+            Debug.LogWarning("Almacen no asignado en SuministrosUI.");
+        }
+
         carrito.Clear();
         total = 0;
 
-        ReiniciarCantidadesVisuales(); // reinicia visibles
+        ReiniciarCantidadesVisuales();
         ActualizarCarritoUI();
     }
 
+    Dictionary<string, int> AgruparCarritoPorTipo()
+    {
+        var result = new Dictionary<string, int>();
+
+        // Usa el nombre del item directamente como tipo
+        foreach (var kv in carrito)
+        {
+            string tipo = kv.Key; // El nombre ES el tipo
+            int cantidad = kv.Value;
+
+            if (!result.ContainsKey(tipo))
+                result[tipo] = 0;
+
+            result[tipo] += cantidad;
+        }
+
+        return result;
+    }
 
     void ActualizarCarritoUI()
     {

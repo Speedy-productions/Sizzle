@@ -29,7 +29,8 @@ public class PlayerCam : MonoBehaviour
     {
         if (!view.IsMine) return;
 
-        if (PauseMenu.GameIsPaused)
+        // Si tienda o pausa: liberar cursor y no rotar cámara
+        if (AbrirTiendaTrigger.TiendaAbierta || PauseMenu.GameIsPaused)
         {
             DesbloquearCursor();
             return;
@@ -47,14 +48,7 @@ public class PlayerCam : MonoBehaviour
         transform.rotation = Quaternion.Euler(rotacionX, rotacionY, 0);
         orientacion.rotation = Quaternion.Euler(0, rotacionY, 0);
 
-        if (!PauseMenu.GameIsPaused)
-        {
-            BloquearCursor();
-        }
-        else
-        {
-            DesbloquearCursor();
-        }
+        BloquearCursor();
     }
 
     public void BloquearCursor()

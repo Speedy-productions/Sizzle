@@ -161,7 +161,7 @@ public class Interact : MonoBehaviourPun
             npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
 
             if (dineroUI != null)
-                dineroUI.AgregarDinero(10);
+                dineroUI.AgregarDinero(25);
 
             Debug.Log("[INTERACT] ✅ Hamburguesa entregada correctamente.");
         }
