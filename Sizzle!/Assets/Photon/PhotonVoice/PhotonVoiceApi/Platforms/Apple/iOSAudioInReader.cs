@@ -18,7 +18,6 @@ namespace Photon.Voice.IOS
         private static extern bool Photon_Audio_In_Read(IntPtr handle, float[] buf, int len);
 
         IntPtr audioIn;
-        private bool initializationFinished;
 
         public AudioInReader(AudioSessionParameters sessParam, ILogger logger)
         {
@@ -44,10 +43,6 @@ namespace Photon.Voice.IOS
                         }
                         logger.Log(LogLevel.Error, "[PV] AudioInReader: " + Error);
                     }
-                    finally
-                    {
-                        initializationFinished = true;
-                    }
                 }
             });
             Util.SetThreadName(t, "[PV] IOSAudioInReaderCtr");
@@ -72,19 +67,20 @@ namespace Photon.Voice.IOS
 
         public void Dispose()
         {
-            lock (this)
+            // disopse in a separate thread to avoid pauses in main thread execution
+            var t = new Thread(() =>
             {
-                while (!initializationFinished) // should never happen because of lock if the thread in constructor started before Dispose() call
+                lock (this)
                 {
-                    Thread.Sleep(1);
+                    if (audioIn != IntPtr.Zero)
+                    {
+                        Photon_Audio_In_Destroy(audioIn);
+                        audioIn = IntPtr.Zero;
+                    }
                 }
-
-                if (audioIn != IntPtr.Zero)
-                {
-                    Photon_Audio_In_Destroy(audioIn);
-                    audioIn = IntPtr.Zero;
-                }
-            }
+            });
+            Util.SetThreadName(t, "[PV] IOSAudioInReaderDisp");
+            t.Start();
         }
 
         public bool Read(float[] buf)

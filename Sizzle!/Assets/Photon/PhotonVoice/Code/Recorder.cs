@@ -72,7 +72,7 @@ namespace Photon.Voice.Unity
         private SamplingRate samplingRate = SamplingRate.Sampling24000;
 
         [SerializeField]
-        private OpusCodec.FrameDuration frameDuration = OpusCodec.FrameDuration.Frame20ms;
+        private OpusCodec.FrameDuration frameDuration = OpusCodec.FrameDuration.Frame40ms;
 
         [SerializeField, Range(MIN_OPUS_BITRATE, MAX_OPUS_BITRATE)]
         private int bitrate = 30000;

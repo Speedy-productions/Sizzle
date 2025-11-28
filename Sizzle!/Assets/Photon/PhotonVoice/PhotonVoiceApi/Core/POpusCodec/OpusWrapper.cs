@@ -1,4 +1,4 @@
-﻿#if (((UNITY_IOS || UNITY_VISIONOS) || UNITY_SWITCH) && !UNITY_EDITOR) || __IOS__
+﻿#if (((UNITY_IOS || UNITY_VISIONOS) || UNITY_SWITCH || UNITY_OUNCE) && !UNITY_EDITOR) || __IOS__
 #define DLL_IMPORT_INTERNAL
 #endif
 
@@ -43,7 +43,9 @@ namespace POpusCodec
     {
 #if DLL_IMPORT_INTERNAL
         const string lib_name = "__Internal";
+        const string prefix_sym = "egpv_"; // static lib symbols are prefixed to avoid conflicts with other opus libs in the project (e.g. from Unity)
 #else
+        const string prefix_sym = "";
 #if OPUS_EGPV
         const string lib_name = "opus_egpv";
 #else
@@ -94,10 +96,10 @@ namespace POpusCodec
             Marshal.FreeHGlobal(st);
         }
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decode")]
         private static extern int opus_decode(IntPtr st, IntPtr data, int len, short[] pcm, int frame_size, int decode_fec);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decode_float")]
         private static extern int opus_decode_float(IntPtr st, IntPtr data, int len, float[] pcm, int frame_size, int decode_fec);
 
         public static int opus_decode_async(IntPtr st, IntPtr data, int len, int decodeFEC, bool eos)
@@ -118,19 +120,19 @@ namespace POpusCodec
         const string jsProxyPref = "";
 #endif
         // methods w/o jsProxyPref in EntryPoint are not called in WebGL
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encoder_get_size")]
         private static extern int opus_encoder_get_size(Channels channels);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_encoder_init")]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encoder_init")]
         private static extern OpusStatusCode opus_encoder_init(IntPtr st, SamplingRate Fs, Channels channels, OpusApplicationType application);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_get_version_string")]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_get_version_string")]
         public static extern IntPtr opus_get_version_string();
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_encode")]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encode")]
         private static extern int opus_encode(IntPtr st, short[] pcm, int frame_size, byte[] data, int max_data_bytes);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_encode_float")]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encode_float")]
         private static extern int opus_encode_float(IntPtr st, float[] pcm, int frame_size, byte[] data, int max_data_bytes);
 
 #if OPUS_EGPV_INTEROP_HELPER_BUILTIN
@@ -143,31 +145,31 @@ namespace POpusCodec
         const string ctl_entry_point_set = "";
         const string ctl_entry_point_get = "";
 #endif
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_encoder_ctl" + ctl_entry_point_set)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encoder_ctl" + ctl_entry_point_set)]
         private static extern int opus_encoder_ctl_set(IntPtr st, OpusCtlSetRequest request, int value);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_encoder_ctl" + ctl_entry_point_get)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_encoder_ctl" + ctl_entry_point_get)]
         private static extern int opus_encoder_ctl_get(IntPtr st, OpusCtlGetRequest request, ref int value);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_decoder_ctl" + ctl_entry_point_set)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decoder_ctl" + ctl_entry_point_set)]
         private static extern int opus_decoder_ctl_set(IntPtr st, OpusCtlSetRequest request, int value);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_decoder_ctl" + ctl_entry_point_get)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decoder_ctl" + ctl_entry_point_get)]
         private static extern int opus_decoder_ctl_get(IntPtr st, OpusCtlGetRequest request, ref int value);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decoder_get_size")]
         private static extern int opus_decoder_get_size(Channels channels);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + "opus_decoder_init")]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_decoder_init")]
         private static extern OpusStatusCode opus_decoder_init(IntPtr st, SamplingRate Fs, Channels channels);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_packet_get_bandwidth")]
         public static extern int opus_packet_get_bandwidth(IntPtr data);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_packet_get_nb_channels")]
         public static extern int opus_packet_get_nb_channels(byte[] data);
 
-        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(lib_name, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = jsProxyPref + prefix_sym + "opus_strerror")]
         private static extern IntPtr opus_strerror(OpusStatusCode error);
 
         public static IntPtr opus_encoder_create(SamplingRate Fs, Channels channels, OpusApplicationType application)

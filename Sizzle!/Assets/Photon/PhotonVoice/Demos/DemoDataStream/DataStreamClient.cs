@@ -38,6 +38,7 @@ namespace DataStreamDemo
 
         protected virtual void Start()
         {
+
             logger.Level = LogLevel;
             lbt = new LoadBalancingTransport2(logger);
 
@@ -140,6 +141,7 @@ namespace DataStreamDemo
 
             var options = new VoiceCreateOptions()
             {
+                DebugEchoMode = Echo,
                 Encoder = encoder,
                 EventBufSize = 4 * 256, // receiving buffer of increased size
                 Fragment = true,
@@ -162,6 +164,7 @@ namespace DataStreamDemo
 
         int cnt = 0;
         int nextReport = Environment.TickCount + 1000;
+        int sent = 0;
 
         void produceEncoderInput()
         {
@@ -171,15 +174,18 @@ namespace DataStreamDemo
             System.Random rand = new System.Random();
             while (streaming)
             {
-                if (buf == null || buf.Length != FrameSize + 4)
+                if (lbt.State == ClientState.Joined)
                 {
-                    buf = new byte[FrameSize + 4];
+                    if (buf == null || buf.Length != FrameSize + 4)
+                    {
+                        buf = new byte[FrameSize + 4];
+                    }
+                    rand.NextBytes(buf);
+                    var hash = BitConverter.GetBytes(Util.CalculateCrc(buf, 0, buf.Length - 4));
+                    Array.Copy(hash, 0, buf, buf.Length - 4, 4);
+                    encoder.Input(buf);
+                    sent++;
                 }
-                rand.NextBytes(buf);
-                var hash = BitConverter.GetBytes(Util.CalculateCrc(buf, 0, buf.Length - 4));
-                Array.Copy(hash, 0, buf, buf.Length - 4, 4);
-
-                encoder.Input(buf);
                 Thread.Sleep(1000 / FPS);
             }
             Debug.LogFormat("Streaming stop");
@@ -192,17 +198,23 @@ namespace DataStreamDemo
             var hash = Util.CalculateCrc(buf.Array, buf.Offset, buf.Length - 4);
             if (hash != BitConverter.ToUInt32(buf.Array, buf.Offset + buf.Length - 4))
             {
-                Debug.LogError("Decoder corrupted frame");
+                Debug.LogErrorFormat("Decoder corrupted frame, FrameSize: {0}, buf len: {1}", FrameSize, buf.Length);
             }
 
             cnt += buf.Length;
             var t = Environment.TickCount;
             if (t - nextReport > 0)
             {
-                Debug.LogFormat("Decoder received {0} bytes/sec", cnt);
+                Debug.LogFormat("Decoder received {0} bytes/sec, FrameSize: {1}, buf len: {2}", cnt, FrameSize, buf.Length);
                 cnt = 0;
                 nextReport = t + 1000;
             }
+
+        }
+
+        private void OnGUI()
+        {
+            GUILayout.Label("Sent: " + sent);
         }
     }
 }

@@ -493,12 +493,12 @@ return;
             else
             {
                 // we add 1 or 2 bytes with the fragments count to the end of the 1st fragment buffer
+                // intermediate packets are shorter than 1st by this amount
                 int fragCountSize = EV_BUF_SIZE > 256 ? 2 : 1; // backward compatibility
                 // adjust the fragment size accordingly
                 maxFragSize -= fragCountSize;
 
-                int totSize = compressed.Count + fragCountSize;
-                ushort fragCount = (ushort)((totSize + maxFragSize - 1) / maxFragSize);
+                ushort fragCount = (ushort)((compressed.Count + maxFragSize - 1) / maxFragSize);
                 for (ushort i = 0; i < fragCount; i++)
                 {
                     bool last = i == fragCount - 1;
@@ -514,7 +514,7 @@ return;
                         flagsFrag |= FrameFlags.FragNotEnd;
                     }
 
-                    int fragSize;
+                    int fragSize; // packet size
                     byte borrowedByte = 0;
                     byte borrowedByte2 = 0;
                     if (i == 0)
@@ -532,7 +532,7 @@ return;
                     }
                     else if (last)
                     {
-                        fragSize = compressed.Count % maxFragSize;
+                        fragSize = compressed.Count - maxFragSize * (fragCount - 1);
                     }
                     else
                     {

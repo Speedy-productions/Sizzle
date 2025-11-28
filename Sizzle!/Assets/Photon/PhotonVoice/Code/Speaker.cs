@@ -54,7 +54,7 @@ namespace Photon.Voice.Unity
             /// <summary>Send audio output to Unity and afterwards re-route the output of the Unity audio mixer to the Sony audio output APIs.
             // <remarks>This enables support for using Unity AudioMixer on PlayStation, but requires the app to
             // <remarks>- specify an AudioMixer as the output for the AudioSource component of your Photon Voice Speaker prefab
-           // <remarks>- to add the 'RouteOutputToSonyPSNativeAPI' effect from AudioPluginPhotonVoice to that AudioMixer
+            // <remarks>- to add the 'RouteOutputToSonyPSNativeAPI' effect from AudioPluginPhotonVoice to that AudioMixer
             AudioPluginPhotonVoice,
             /// <summary>The default value is PhotonVoiceAudioOutputPlugin
             Default = PhotonVoiceAudioOutputPlugin
@@ -163,7 +163,7 @@ namespace Photon.Voice.Unity
             if(OutputPlugin == AudioOutputPlugin.PhotonVoiceAudioOutputPlugin)
             {
                 this.Logger.Log(LogLevel.Info, "sending output to PlayStationAudioOut.");
-                return new Photon.Voice.PlayStation.PlayStationAudioOut(this.PlayStationUserID);
+                return new Photon.Voice.PlayStation.PlayStationAudioOut(this.PlayStationUserID, this.GetComponent<AudioSource>());
             }
             else
             {
