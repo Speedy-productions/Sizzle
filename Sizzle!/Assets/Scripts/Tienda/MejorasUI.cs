@@ -110,6 +110,11 @@ public class MejorasUI : MonoBehaviour
         if (mejoraSeleccionada.nombre == "Cortar")
         {
             UpgradeManager.Instance.UpgradeCut();
+            var blade = FindObjectOfType<Blade>();
+            if (blade != null)
+            {
+                blade.ApplyCuttingUpgrade();
+            }
         }
 
         if (mejoraSeleccionada.nombre == "Freidora")

@@ -86,6 +86,17 @@ namespace Photon.Voice
 #endif
         }
 
+#if UNITY_5_3_OR_NEWER // #if UNITY
+        public static IAudioOut<float> CreateUnityAudioOut(UnityEngine.AudioSource audioSource, AudioOutDelayControl.PlayDelayConfig playDelayConfig, ILogger logger, string logPrefix, bool debugInfo)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR // allows non-WebGL workflow in Editor
+            return new Photon.Voice.Unity.WebAudioAudioOut(playDelayConfig, 0, logger, logPrefix, debugInfo);
+#else
+            return new Photon.Voice.Unity.UnityAudioOut(audioSource, playDelayConfig, logger, logPrefix, debugInfo);
+#endif
+        }
+#endif // UNITY_5_3_OR_NEWER 
+
 #if PHOTON_VOICE_VIDEO_ENABLE
         static public IDeviceEnumerator CreateVideoInEnumerator(ILogger logger)
         {
@@ -310,5 +321,5 @@ namespace Photon.Voice
         }
 #endif // UNITY_5_3_OR_NEWER
 #endif // PHOTON_VOICE_VIDEO_ENABLE
-        }
     }
+}

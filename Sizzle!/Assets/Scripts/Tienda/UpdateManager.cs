@@ -1,6 +1,7 @@
+using Photon.Pun;
 using UnityEngine;
 
-public class UpgradeManager : MonoBehaviour
+public class UpgradeManager : MonoBehaviourPun
 {
     public static UpgradeManager Instance;
 
@@ -42,6 +43,8 @@ public class UpgradeManager : MonoBehaviour
         grillLevel++;
         PlayerPrefs.SetInt("GrillLevel", grillLevel);
         PlayerPrefs.Save();
+
+        photonView.RPC(nameof(RPC_SetGrillLevel), RpcTarget.Others, grillLevel);
     }
 
     public void UpgradeCut()
@@ -52,6 +55,9 @@ public class UpgradeManager : MonoBehaviour
         cutLevel++;
         PlayerPrefs.SetInt("CutLevel", cutLevel);
         PlayerPrefs.Save();
+
+        photonView.RPC(nameof(RPC_SetCutLevel), RpcTarget.Others, cutLevel);
+        photonView.RPC(nameof(RPC_RefreshCuttingBlades), RpcTarget.All);
     }
     public void UpgradeFryer()
     {
@@ -61,6 +67,25 @@ public class UpgradeManager : MonoBehaviour
         fryerLevel++;
         PlayerPrefs.SetInt("FryerLevel", fryerLevel);
         PlayerPrefs.Save();
+    }
+
+    [PunRPC]
+    void RPC_SetGrillLevel(int lvl)
+    {
+        grillLevel = lvl;
+    }
+
+    [PunRPC]
+    void RPC_SetCutLevel(int lvl)
+    {
+        cutLevel = lvl;
+        PlayerPrefs.SetInt("CutLevel", cutLevel);
+    }
+    [PunRPC]
+    void RPC_RefreshCuttingBlades()
+    {
+        foreach (var blade in FindObjectsOfType<Blade>())
+            blade.ApplyCuttingUpgrade();
     }
 
 }

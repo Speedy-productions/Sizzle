@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f3758f8f58fdef43803eb9be1df0608, type: 3}
   m_Name: PhotonServerSettings
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.ServerSettings
+  m_EditorClassIdentifier: 
   AppSettings:
     AppIdRealtime: 788ca7dd-161c-4b81-9e08-ba24cfcdedb0
     AppIdFusion: 
@@ -28,75 +28,52 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  DevRegion: ussc
+  DevRegion: us
   PunLogging: 0
   EnableSupportLogger: 0
   RunInBackground: 1
   StartInOfflineMode: 0
   RpcList:
+  - CantHearYou
+  - ChangeColour
   - ClickRpc
   - DestroyRpc
+  - HeresWhy
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
-  - CargarEscena
+  - RPC_AttachHamburgerToNPC
+  - RPC_AttachPapasToNPC
   - RPC_AvisarAgarrarObjeto
   - RPC_AvisarSoltarObjeto
-  - RPC_Flip
-  - RPC_SetMaterial
-  - RPC_ClearMeatFromPan
-  - RPC_SetMeatOnPan
-  - RPC_SyncMeatOnPan
-  - RPC_UpdateVisualState
-  - RPC_SetParent
-  - RPC_PerformCut
-  - RPC_PlaceIngredient
-  - RPC_CombineIntoFinalDish
-  - RPC_SetCurrentOrder
-  - RPC_AgarrarObjeto
-  - RPC_ColocarIngredienteEnTabla
-  - RPC_SoltarObjeto
-  - RPC_CreateBurger
-  - RPC_RequestPopup
-  - RPC_SetHamburguesaEnMano_Master
-  - RPC_ShowAngryFace
-  - RPC_ShowHappyFace
-  - RPC_StartPopup
-  - RPC_HideUI
-  - RPC_RequestFlip
-  - RPC_SyncMeatFlip
-  - RPC_UpdateCookUI
-  - CantHearYou
-  - ChangeColour
-  - HeresWhy
-  - RPC_InitBurgerIngredients
-  - RPC_SetCookingUI
-  - RPC_UpdateUIProgress
-  - RPC_ClearMeat
-  - RPC_SyncCookingState
-  - RPC_SetProgress
-  - RPC_RemoveIngredient
-  - RPC_ClearBoard
+  - RPC_BeginCookingSharedState
   - RPC_ClearMesa
+  - RPC_CreateAndClearBurger
+  - RPC_DoFlip
+  - RPC_Flip
   - RPC_OnFriesBurned
   - RPC_OnFriesCooked
-  - RPC_StartCooking
-  - RPC_ApplyFullCookingState
-  - RPC_BeginCookingSharedState
-  - RPC_SyncTimerAndUI
-  - RPC_FlipOnPan
-  - RPC_SetFlipState
-  - RPC_DoFlip
-  - RPC_SetNpcOrder
-  - RPC_StartPopupWithOrder
-  - RPC_AttachHamburgerToNPC
-  - RPC_SetFillPerClick
-  - RPC_SetFryerTimes
-  - RPC_SetGrillTimes
-  - RPC_AttachPapasToNPC
-  - RPC_CreateAndClearBurger
+  - RPC_PlaceIngredient
+  - RPC_RemoveIngredient
+  - RPC_RequestFlip
+  - RPC_SetCookingUI
   - RPC_SetCurrentOrderFull
+  - RPC_SetGrillTimes
+  - RPC_SetHamburguesaEnMano_Master
+  - RPC_SetMaterial
+  - RPC_SetMeatOnPan
   - RPC_SetPapasEnMano_Master
+  - RPC_SetParent
+  - RPC_ShowAngryFace
+  - RPC_ShowHappyFace
+  - RPC_StartCooking
+  - RPC_StartPopupWithOrder
+  - RPC_SyncCookingState
+  - RPC_UpdateUIProgress
+  - RPC_SetFillPerClick
+  - RPC_SetCutLevel
+  - RPC_SetGrillLevel
+  - RPC_RefreshCuttingBlades
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

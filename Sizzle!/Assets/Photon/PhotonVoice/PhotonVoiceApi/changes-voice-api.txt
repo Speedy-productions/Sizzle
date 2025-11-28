@@ -1,5 +1,35 @@
 Photon Voice API Change Log
 
+v2.62 (November 24, 2025)
+Unity:
+   FIXED: UnityAudioOut calls Object.Destroy() for the clip in Stop() to avoid memory leaks
+iOS, visionOS:
+   FIXED: opus static libraries symbols are prefixed with egpv_ to avoid conflicts
+MacOS:
+   FIXED: AudioInPusher and AudioInReader are created and disposed in worker threads to prevent main thread lag
+PS4/PS5:
+   ADDED: support for changing the volume to PlayStationAudioOut and PhotonVoiceAudioOutputPlugin
+   FIXED: PlayStationAudioOut now waits 50ms after playing output has ended before setting the value of the IsPlaying property back to false to avoid flickering visual IsPlaying indicators
+
+v2.61 (October 28, 2025)
+Core:
+   FIXED: outgoing fragments count and fragment size calculation (corrupted data for some payload sizes around 2 full packets)
+Unity:
+   BREAKING: ScreenRecorder.SetEncoder() -> Init(), ScreenRecorder selects the encoder itself
+   ADDED: VideoRecorderUnity.StartRecord() now checks if there are any devices to start. Else, it stops early with an Error log.
+Android:
+   CHANGED: AudioInAEC: added null checks for created hardware effects which may be null even if isAvailable() is true
+   FIXED: native video library low resolution of camera preview
+   ADDED: Unity.AndroidTextureVideoEncoder: encodes an arbitrary Unity texture as video
+   ADDED: Android native SurfaceDrawer: draws a texture on a Surface
+   ADDED: Unity.ScreenRecorder implementation for Android via AndroidTextureVideoEncoder
+WebGL:
+   ADDED: Platform.CreateUnityAudioOut() factory returns WebAudioAudioOut on WebGL and UnityAudioOut on other platforms
+PS4/PS5:
+   FIXED: PlayStationAudioOut::Push() wasn't entirely thread-safe
+Nintendo Switch:
+   ADDED: Opus codec support for Switch 2
+
 v2.59 (May 13, 2025)
 Core:
    CHANGED: incoming events ring buffer can be of arbitrary size to better support high bitrate video streams

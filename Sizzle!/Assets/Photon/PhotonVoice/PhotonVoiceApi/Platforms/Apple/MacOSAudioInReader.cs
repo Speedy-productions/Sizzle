@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
 using System;
+using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Photon.Voice.MacOS
@@ -18,19 +19,28 @@ namespace Photon.Voice.MacOS
 
         public AudioInReader(int deviceID, ILogger logger)
         {
-            try
+            // initialization in a separate thread to avoid 0.5 - 1 sec. pauses in main thread execution
+            var t = new Thread(() =>
             {
-                audioIn = Photon_Audio_In_CreateReader(deviceID);
-            }
-            catch (Exception e)
-            {
-                Error = e.ToString();
-                if (Error == null) // should never happen but since Error used as validity flag, make sure that it's not null
+                lock (this)
                 {
-                    Error = "Exception in AudioInReader constructor";
+                    try
+                    {
+                        audioIn = Photon_Audio_In_CreateReader(deviceID);
+                    }
+                    catch (Exception e)
+                    {
+                        Error = e.ToString();
+                        if (Error == null) // should never happen but since Error used as validity flag, make sure that it's not null
+                        {
+                            Error = "Exception in AudioInReader constructor";
+                        }
+                        logger.Log(LogLevel.Error, "[PV] AudioInReader: " + Error);
+                    }
                 }
-                logger.Log(LogLevel.Error, "[PV] AudioInReader: " + Error);
-            }
+            });
+            Util.SetThreadName(t, "[PV] MacOSAudioInReaderCtr");
+            t.Start();
         }
         public int Channels { get { return 1; } }
 
@@ -40,11 +50,20 @@ namespace Photon.Voice.MacOS
 
         public void Dispose()
         {
-            if (audioIn != IntPtr.Zero)
+            // disopse in a separate thread to avoid pauses in main thread execution
+            var t = new Thread(() =>
             {
-                Photon_Audio_In_Destroy(audioIn);
-                audioIn = IntPtr.Zero;
-            }
+                lock (this)
+                {
+                    if (audioIn != IntPtr.Zero)
+                    {
+                        Photon_Audio_In_Destroy(audioIn);
+                        audioIn = IntPtr.Zero;
+                    }
+                }
+            });
+            Util.SetThreadName(t, "[PV] MacOSAudioInReaderDisp");
+            t.Start();
         }
 
         public bool Read(float[] buf)

@@ -1,5 +1,42 @@
 Photon Voice 2 Change Log
 
+v2.62 (November 24, 2025)
+   PUN2: v2.51 (PUN2.51)
+   RT/lib: v4.1.8.16
+   PhotonVoiceApi: revision 8085
+   Unity: 2019.4.39 or higher
+Unity:
+   FIXED: UnityAudioOut calls Object.Destroy() for the clip in Stop() to avoid memory leaks
+iOS, visionOS:
+   FIXED: opus static libraries symbols are prefixed with egpv_ to avoid conflicts
+MacOS:
+   FIXED: AudioInPusher and AudioInReader are created and disposed in worker threads to prevent main thread lag
+PS4/PS5:
+   CHANGED: the Sony SDK version of all PS4 native plugins to SDK 12.5
+   CHANGED: the Sony SDK version of all PS5 native plugins to SDK 1.0
+   ADDED: support for changing the volume to PlayStationAudioOut and PhotonVoiceAudioOutputPlugin
+   FIXED: PlayStationAudioOut now waits 50ms after playing output has ended before setting the value of the IsPlaying property back to false to avoid flickering visual IsPlaying indicators
+
+v2.61 (October 28, 2025)
+   PUN2: v2.51 (PUN2.51)
+   RT/lib: v4.1.8.16
+   PhotonVoiceApi: revision 8085
+   Unity: 2019.4.39 or higher
+   UPDATED: Photon3Unity3D.dll, Photon Realtime (LoadBalancing), Photon Chat to v4.1.8.16, PUN to v2.51
+Unity: 
+   CHANGED: default Recorder frameDuration to Frame40ms for a slightly more conservative interval.
+Android:
+   CHANGED: x86_64 opus and webrtc_audio libraries 16kb alignment
+   CHANGED: AudioInAEC: added null checks for created hardware effects which may be null even if isAvailable() is true
+WebGL:
+   ADDED: Platform.CreateUnityAudioOut() factory returns WebAudioAudioOut on WebGL and UnityAudioOut on other platforms
+PS4/PS5:
+   FIXED: PlayStationAudioOut::Push() wasn't entirely thread-safe
+Nintendo Switch:
+   ADDED: Opus codec support for Switch 2
+   ADDED: libPhotonVoiceAudioInputPlugin.a for the Switch
+   UPDATED: the Switch build of opus_egpv.a to the same Nintendo SDK as used for the Switch 2 build
+
 v2.59 (May 13, 2025)
    PUN2: v2.49 (PUN2.49)
    RT/lib: v4.1.8.15

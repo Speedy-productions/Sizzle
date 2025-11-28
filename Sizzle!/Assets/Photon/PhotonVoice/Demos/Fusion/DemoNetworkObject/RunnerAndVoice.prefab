@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7741978242582812951}
   m_RootOrder: 0
@@ -47,31 +48,33 @@ MonoBehaviour:
   voiceDetectionThreshold: 0.01
   voiceDetectionDelayMs: 500
   interestGroup: 0
+  useTargetPlayers: 0
+  targetPlayers: 
   debugEchoMode: 0
   reliableMode: 0
   encrypt: 0
   transmitEnabled: 1
   samplingRate: 24000
-  frameDuration: 20000
+  frameDuration: 40000
   bitrate: 30000
   sourceType: 0
   microphoneType: 0
   audioClip: {fileID: 0}
   loopAudioClip: 1
-  autoStart: 1
+  recordingEnabled: 1
   audioSessionParameters:
     Category: 4
     Mode: 1
     CategoryOptions: 0800000004000000
   editorAudioSessionPreset: 1
-  androidNativeMicrophoneSettings:
-    AcousticEchoCancellation: 1
-    AutomaticGainControl: 1
-    NoiseSuppression: 1
+  androidMicrophoneSettings:
+    EnableAEC: 1
+    EnableAGC: 1
+    EnableNS: 1
   stopRecordingWhenPaused: 0
   useOnAudioFilterRead: 0
   useMicrophoneTypeFallback: 1
-  recordOnlyWhenJoined: 1
+  recordWhenJoined: 1
 --- !u!1 &7741978242582812946
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,6 +104,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6635893595086709757}
   m_Father: {fileID: 0}
@@ -138,6 +142,7 @@ MonoBehaviour:
   speakerPrefab: {fileID: 0}
   primaryRecorder: {fileID: 512525420553855486}
   usePrimaryRecorder: 0
+  cppCompatibilityMode: 0
   Settings:
     AppIdRealtime: 
     AppIdFusion: 
@@ -155,6 +160,7 @@ MonoBehaviour:
     EnableLobbyStatistics: 0
     NetworkLogging: 1
   ShowSettings: 1
+  AutoConnectAndJoin: 1
   UseFusionAppSettings: 1
   UseFusionAuthValues: 1
 --- !u!114 &4023997488491675906

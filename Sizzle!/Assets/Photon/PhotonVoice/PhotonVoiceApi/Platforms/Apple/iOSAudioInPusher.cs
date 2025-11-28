@@ -17,7 +17,6 @@ namespace Photon.Voice.IOS
         private static extern void Photon_Audio_In_Destroy(IntPtr handler);
 
         private delegate void CallbackDelegate(int instanceID, IntPtr buf, int len);
-        private bool initializationFinished;
 
         public AudioInPusher(AudioSessionParameters sessParam, ILogger logger)
         {
@@ -41,10 +40,6 @@ namespace Photon.Voice.IOS
                             Error = "Exception in AudioInPusher constructor";
                         }
                         logger.Log(LogLevel.Error, "[PV] AudioInPusher: " + Error);
-                    }
-                    finally
-                    {
-                        initializationFinished = true;
                     }
                 }
             });
@@ -112,21 +107,22 @@ namespace Photon.Voice.IOS
 
         public void Dispose()
         {
-            lock (instancePerHandle)
+            // disopse in a separate thread to avoid pauses in main thread execution
+            var t = new Thread(() =>
             {
-                instancePerHandle.Remove(instanceID);
-
-                while (!initializationFinished) // should never happen because of lock if the thread in constructor started before Dispose() call
+                lock (instancePerHandle)
                 {
-                    Thread.Sleep(1);
-                }
+                    instancePerHandle.Remove(instanceID);
 
-                if (handle != IntPtr.Zero)
-                {
-                    Photon_Audio_In_Destroy(handle);
-                    handle = IntPtr.Zero;
+                    if (handle != IntPtr.Zero)
+                    {
+                        Photon_Audio_In_Destroy(handle);
+                        handle = IntPtr.Zero;
+                    }
                 }
-            }
+            });
+            Util.SetThreadName(t, "[PV] IOSAudioInPusherDisp");
+            t.Start();
         }
     }
 }

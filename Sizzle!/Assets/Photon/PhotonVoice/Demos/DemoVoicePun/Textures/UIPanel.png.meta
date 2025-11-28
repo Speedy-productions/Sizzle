@@ -4,9 +4,9 @@ AssetOrigin:
   serializedVersion: 1
   productId: 130518
   packageName: Photon Voice 2
-  packageVersion: 2.59
+  packageVersion: 2.62
   assetPath: Assets/Photon/PhotonVoice/Demos/DemoVoicePun/Textures/UIPanel.png
-  uploadId: 756092
+  uploadId: 824178
 TextureImporter:
   internalIDToNameTable:
   - first:
