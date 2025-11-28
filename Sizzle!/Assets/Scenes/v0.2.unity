@@ -541,7 +541,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 415034781}
   stackRoot: {fileID: 2090374461}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &64246153
@@ -4781,7 +4780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4cc53c9707817045b8f56d6931b43a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManagerTiempo
-  tiempoInicial: 240
+  tiempoInicial: 420
   tiempoRestante: 0
   corriendo: 1
 --- !u!4 &513054567
@@ -5113,7 +5112,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 993212321}
   stackRoot: {fileID: 1919577377}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &527441492
@@ -8906,7 +8904,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1609227665}
   stackRoot: {fileID: 416949208}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &899013830
@@ -16461,7 +16458,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 666314554}
   stackRoot: {fileID: 1511942353}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1487448945
@@ -20517,7 +20513,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1215219152}
   stackRoot: {fileID: 995956151}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1771564354
@@ -21071,6 +21066,7 @@ MonoBehaviour:
     - {fileID: 1978575675, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
     - {fileID: -1799599557, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
     - {fileID: 2085850041, guid: 1871815f8a4e0604bbf8e701cc8bea23, type: 3}
+  friesGroups: []
   smileyFace: {fileID: 0}
   angryFace: {fileID: 0}
   switchInterval: 1
@@ -21352,7 +21348,6 @@ MonoBehaviour:
   assemblePoint: {fileID: 1002554773}
   stackRoot: {fileID: 976528672}
   separationY: 0
-  armarPedido: {fileID: 1860317275}
   currentRecipe: {fileID: 11400000, guid: 7d38f2de6a9b6eb4ea19ad69ceccbc96, type: 2}
   finalBurgerPrefabOffline: {fileID: 5898702171912911067, guid: 71677410544a22448a1dcb17b2acc727, type: 3}
 --- !u!65 &1835606483
@@ -23903,6 +23898,7 @@ MonoBehaviour:
   popupChar: {fileID: 6396521079867671826}
   popupAtPointIndex: 4
   handTransform: {fileID: 6396521079867671825}
+  friesHandTransform: {fileID: 0}
 --- !u!114 &6396521079867671831
 MonoBehaviour:
   m_ObjectHideFlags: 0

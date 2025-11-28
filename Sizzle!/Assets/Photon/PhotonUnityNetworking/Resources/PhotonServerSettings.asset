@@ -93,6 +93,10 @@ MonoBehaviour:
   - RPC_SetFillPerClick
   - RPC_SetFryerTimes
   - RPC_SetGrillTimes
+  - RPC_AttachPapasToNPC
+  - RPC_CreateAndClearBurger
+  - RPC_SetCurrentOrderFull
+  - RPC_SetPapasEnMano_Master
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
