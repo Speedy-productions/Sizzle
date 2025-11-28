@@ -1,16 +1,13 @@
-using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
+using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class TemporizadorUI : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TMP_Text textoTemporizador;
-
-    [Header("Game Over")]
-    [SerializeField] private GameObject panelGameOver;
-    [SerializeField] private AudioSource sonidoGameOver;
 
     [Header("Referencias")]
     [SerializeField] private PlayerCam playerCam;
@@ -98,28 +95,15 @@ public class TemporizadorUI : MonoBehaviour
     // =============================
     void MostrarGameOver()
     {
-        if (panelGameOver != null)
-        {
-            Canvas canvas = panelGameOver.GetComponentInParent<Canvas>();
-            if (canvas == null)
-            {
-                Debug.LogError("Panel GameOver debe ser hijo de un Canvas");
-                return;
-            }
-
-            if (canvas.GetComponent<GraphicRaycaster>() == null)
-                canvas.gameObject.AddComponent<GraphicRaycaster>();
-
-            panelGameOver.SetActive(true);
-        }
-
+        // Desbloquea cursor si existe la cámara del jugador
         if (playerCam != null)
             playerCam.DesbloquearCursor();
 
-        if (sonidoGameOver != null)
-            sonidoGameOver.Play();
+        // Opcional: Pausar antes de cargar
+        Time.timeScale = 1f; // Asegura que la nueva escena no quede pausada
 
-        Time.timeScale = 0f;
+        // Cargar la escena deseada
+        SceneManager.LoadScene("Menus");
     }
 
     // =============================
@@ -127,9 +111,6 @@ public class TemporizadorUI : MonoBehaviour
     // =============================
     public void ReiniciarJuego()
     {
-        if (panelGameOver != null)
-            panelGameOver.SetActive(false);
-
         if (playerCam != null)
             playerCam.BloquearCursor();
 

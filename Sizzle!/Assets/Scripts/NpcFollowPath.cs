@@ -1,10 +1,12 @@
+
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
 [RequireComponent(typeof(Rigidbody))]
-public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
+public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable, IPunInstantiateMagicCallback
 {
     public enum NpcState
     {
@@ -17,6 +19,14 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
         Finished
     }
 
+    [Header("Lifetime")]
+[Tooltip("Tiempo máximo que el NPC permanece vivo antes de destruirse (solo Master cuenta).")]
+public float aliveTime = 90f;
+[Tooltip("Retardo al terminar por ruta feliz antes de destruir (decorativo).")]
+public float destroyGraceAfterHappy = 2f;
+
+private float aliveLeft;
+
     [Header("Path Settings")]
     public List<Transform> normalPathPoints;
     public List<Transform> happyPathPoints;
@@ -24,6 +34,8 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
     public float rotationSpeed = 5f;
     public float reachDistance = 0.4f;
     public float waitTimeAfterPopup = 10f;
+    [Tooltip("Índice del punto del camino normal donde se detiene a pedir.")]
+    public int popupAtPointIndex = 4;
 
     [Header("Animation")]
     public Animator anim;
@@ -31,194 +43,295 @@ public class NpcFollowPath : MonoBehaviourPunCallbacks, IPunObservable
 
     [Header("Popup")]
     public PopupChar popupChar;
-    public int popupAtPointIndex = 4;
 
-    [Header("NPC Hand")]
-    public Transform handTransform;
+    [Header("NPC Tray Hold")]
+    [Tooltip("Dónde se parenteará la bandeja final cuando la acepte el NPC.")]
+    public Transform trayHoldTransform;
 
-    [Header("NPC Fries Hand (Papas)")]
-public Transform friesHandTransform;
-
-
+    // --- Runtime ---
     private Rigidbody rb;
-
     private NpcState npcState = NpcState.WalkingNormal;
     private float stateTimer = 0f;
     private bool usingHappyPath = false;
     private int currentPoint = 0;
     private List<Transform> activePath;
 
-    // ORDEN PROPIA DE ESTE NPC
+    // Orden del NPC
     private Order npcAssignedOrder = null;
-    private bool orderCompleted = false;
-    private bool friesCompleted = false;
+    private bool orderCompleted = false; // hamburguesa correcta
+    private bool friesCompleted = false; // papas presentes (si la pide)
     private bool npcWantsFries = false;
-
 
     // Sync movimiento
     private Vector3 netPos;
     private Quaternion netRot;
     private float netSpeed;
     private bool firstSync = true;
-
-    // Sync de "esperando jugador"
     private bool syncWaiting;
 
-    // -------------------------------------------------------------------
-    // API externa
-    // -------------------------------------------------------------------
+    // --- Wait spot (punto exclusivo para esperar en la caja) ---
+    private int waitIndex = -1;
+    private Transform waitSpot;
+    private bool headingToWaitSpot = false;
+    private bool _despawned = false;
 
-    public bool IsWaitingForPlayer()
-{
-    if (!PhotonNetwork.IsConnected || PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
+    private bool appliedAltWaitYaw = false;
+private const float ALT_WAIT_YAW = 90f;
+
+
+    // =====================================================================
+    //   INSTANTIACIÓN (lee waitIndex del Spawner)
+    // =====================================================================
+    public void OnPhotonInstantiate(PhotonMessageInfo info)
     {
-        if (npcWantsFries)
-            return npcState == NpcState.WaitingForPlayer && !(orderCompleted && friesCompleted);
+        object[] data = info.photonView?.InstantiationData;
+        if (data != null && data.Length > 0 && data[0] is int idx)
+        {
+            waitIndex = idx;
+        }
         else
-            return npcState == NpcState.WaitingForPlayer && !orderCompleted;
+        {
+            // Fallback: si no llegó índice y somos Master, intentamos reservar uno
+            if (PhotonNetwork.IsMasterClient)
+                waitIndex = WaitSpotRegistry.MasterTryReserveAny();
+        }
+
+        waitSpot = WaitSpotRegistry.Get(waitIndex);
     }
 
-    return syncWaiting;
-}
+    // =====================================================================
+    //   API de BANDEJA
+    // =====================================================================
+    public void TryAcceptTray(BandejaFinal tray)
+    {
+        if (tray == null) return;
 
+        bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
 
+        if (!mp)
+        {
+            var (ok, msg) = ValidateTray(tray);
+            if (ok)
+            {
+                AttachTrayLocal(tray.gameObject);
+                popupChar?.MostrarCaraFeliz("¡Pedido completo!");
+                GoToHappyAfterDelay(4f);
+            }
+            else
+            {
+                popupChar?.MostrarCaraMolesta(msg);
+            }
+            return;
+        }
+
+        PhotonView trayPV = tray.GetComponent<PhotonView>();
+        if (!trayPV)
+        {
+            Debug.LogError("[NPC] La bandeja no tiene PhotonView en MULTIPLAYER.");
+            return;
+        }
+
+        if (!PhotonNetwork.IsMasterClient)
+            photonView.RPC(nameof(RPC_TryAcceptTray_Master), RpcTarget.MasterClient, trayPV.ViewID);
+        else
+            RPC_TryAcceptTray_Master(trayPV.ViewID);
+    }
+
+    private (bool ok, string message) ValidateTray(BandejaFinal tray)
+    {
+        if (npcAssignedOrder == null || npcAssignedOrder.ingredients == null || npcAssignedOrder.ingredients.Length == 0)
+            return (false, "¡No he pedido nada aún!");
+
+        var trayBurger = tray.ingredientesHamburguesa ?? new List<string>();
+        bool burgerOk = CompareBurgerToOrder(trayBurger, npcAssignedOrder);
+        if (!burgerOk) return (false, "¡que es esta &$%!");
+
+        if (npcWantsFries && !tray.contienePapas)
+            return (false, "¡donde estan mis papas!");
+
+        return (true, "OK");
+    }
+
+    private bool CompareBurgerToOrder(List<string> burger, Order order)
+    {
+        if (order == null || order.ingredients == null) return false;
+
+        var a = burger.Select(NormalizarNombre).OrderBy(x => x).ToList();
+        var b = order.ingredients.Select(NormalizarNombre).OrderBy(x => x).ToList();
+
+        if (a.Count != b.Count) return false;
+        for (int i = 0; i < a.Count; i++)
+            if (a[i] != b[i]) return false;
+
+        return true;
+    }
+
+    private string NormalizarNombre(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return name;
+        name = name.Replace("Sliced", "").Replace("Slice", "").Replace("Cortado", "");
+        return name.Trim();
+    }
+
+    [PunRPC]
+    private void RPC_TryAcceptTray_Master(int trayViewID)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        PhotonView trayPV = PhotonView.Find(trayViewID);
+        if (!trayPV) return;
+
+        BandejaFinal tray = trayPV.GetComponent<BandejaFinal>();
+        if (!tray) return;
+
+        var (ok, msg) = ValidateTray(tray);
+
+        if (!ok)
+        {
+            photonView.RPC(nameof(RPC_TrayResult), RpcTarget.All, false, msg);
+            return;
+        }
+
+        photonView.RPC(nameof(RPC_AttachTrayToNPC), RpcTarget.AllBuffered, trayViewID);
+
+        orderCompleted = true;
+        friesCompleted = !npcWantsFries || tray.contienePapas;
+        photonView.RPC(nameof(RPC_TrayResult), RpcTarget.All, true, "¡Pedido completo!");
+    }
+
+    [PunRPC]
+    private void RPC_AttachTrayToNPC(int trayViewID)
+    {
+        PhotonView trayPV = PhotonView.Find(trayViewID);
+        if (!trayPV) return;
+
+        Transform t = trayPV.transform;
+        t.SetParent(null);
+
+        Transform hold = trayHoldTransform != null ? trayHoldTransform : npcModel;
+        t.SetParent(hold);
+        t.localPosition = Vector3.zero;
+        t.localRotation = Quaternion.identity;
+
+        Rigidbody rbT = t.GetComponent<Rigidbody>();
+        if (rbT)
+        {
+            rbT.isKinematic = true;
+            rbT.useGravity = false;
+            rbT.linearVelocity = Vector3.zero;
+            rbT.angularVelocity = Vector3.zero;
+        }
+
+        foreach (Collider c in t.GetComponentsInChildren<Collider>(true))
+            c.isTrigger = true;
+    }
+
+    [PunRPC]
+    private void RPC_TrayResult(bool ok, string msg)
+    {
+        if (ok)
+        {
+            popupChar?.MostrarCaraFeliz(msg);
+            GoToHappyAfterDelay(4f);
+        }
+        else
+        {
+            popupChar?.MostrarCaraMolesta(msg);
+        }
+    }
+
+    // =====================================================================
+    //   ESTADOS / MOVIMIENTO
+    // =====================================================================
+    private void GoToHappyAfterDelay(float seconds)
+    {
+        npcState = NpcState.WaitingBeforeHappyPath;
+        stateTimer = seconds;
+
+        ResetAltWaitYawIfNeeded();
+        // Al abandonar la cola: liberar el wait spot (solo Master)
+        if (PhotonNetwork.IsMasterClient && waitIndex >= 0)
+        {
+            WaitSpotRegistry.MasterRelease(waitIndex);
+            waitIndex = -1;
+            waitSpot = null;
+            headingToWaitSpot = false;
+        }
+    }
+
+    public bool IsWaitingForPlayer()
+    {
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
+        {
+            if (npcWantsFries)
+                return npcState == NpcState.WaitingForPlayer && !(orderCompleted && friesCompleted);
+            else
+                return npcState == NpcState.WaitingForPlayer && !orderCompleted;
+        }
+        return syncWaiting;
+    }
 
     public void AssignNpcOrder(Order order)
-{
-    if (order == null) return;
-    npcAssignedOrder = order;
-    orderCompleted = false;
-    friesCompleted = false;
-}
-
+    {
+        if (order == null) return;
+        npcAssignedOrder = order;
+        orderCompleted = false;
+        friesCompleted = false;
+    }
 
     public Order GetAssignedOrder() => npcAssignedOrder;
 
-    // RPC: setear orden remotamente cuando otro jugador la genera
+    [PunRPC]
     void RPC_SetNpcOrder(string[] ingredients)
-{
-    npcAssignedOrder = new Order(ingredients);
-    orderCompleted = false;
-    friesCompleted = false;
-}
-
-
-    // -------------------------------------------------------------------
-    // Unity
-    // -------------------------------------------------------------------
+    {
+        npcAssignedOrder = new Order(ingredients);
+        orderCompleted = false;
+        friesCompleted = false;
+    }
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
 
-        activePath = new List<Transform>(normalPathPoints);
+        // === Cargar puntos desde la escena si el prefab viene vacío ===
+        if ((normalPathPoints == null || normalPathPoints.Count == 0) && PathPointRegistry.Instance != null)
+            normalPathPoints = new List<Transform>(PathPointRegistry.Instance.GetNormal());
+
+        if ((happyPathPoints == null || happyPathPoints.Count == 0) && PathPointRegistry.Instance != null)
+            happyPathPoints = new List<Transform>(PathPointRegistry.Instance.GetHappy());
+
+        if (normalPathPoints == null || normalPathPoints.Count == 0)
+            Debug.LogError("[NPC] normalPathPoints vacío. Asigna puntos en PathPointRegistry de la escena.");
+
+        if (happyPathPoints == null || happyPathPoints.Count == 0)
+            Debug.LogWarning("[NPC] happyPathPoints vacío. La ruta feliz no funcionará.");
+
+        if (normalPathPoints != null && normalPathPoints.Count > 0)
+            popupAtPointIndex = Mathf.Clamp(popupAtPointIndex, 0, normalPathPoints.Count - 1);
+
+        activePath = (normalPathPoints != null) ? new List<Transform>(normalPathPoints) : new List<Transform>();
 
         if (popupChar != null)
             popupChar.npcFollowPath = this;
 
-        // En multiplayer, solo el Master usa f�sica
+        // En MP, sólo el Master usa física/mueve
         if (PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode)
         {
-            if (!PhotonNetwork.IsMasterClient)
-                rb.isKinematic = true;
+            bool iAmMaster = PhotonNetwork.IsMasterClient;
+            rb.isKinematic = !iAmMaster;
+            Debug.Log($"[NPC] Start() - IAmMaster={iAmMaster}, normals={normalPathPoints?.Count}, happy={happyPathPoints?.Count}, waitIndex={waitIndex}, waitSpot={(waitSpot ? waitSpot.name : "null")}");
+        }
+        else
+        {
+            rb.isKinematic = false; // offline / singleplayer
         }
 
         netPos = transform.position;
-        netRot = npcModel.rotation;
+        netRot = npcModel ? npcModel.rotation : transform.rotation;
+
+        aliveLeft = Mathf.Max(0.1f, aliveTime);
     }
-
-
-public void SetPapasEnManoJugador(FriesCookingState papas)
-{
-    if (papas == null) return;
-
-    bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
-
-    // ------------------------------
-    // 🟢 SINGLE PLAYER
-    // ------------------------------
-    if (!mp)
-    {
-        AttachPapasLocal(papas.gameObject);
-        friesCompleted = true;
-        TryFinishOrder();
-        return;
-    }
-
-    // ------------------------------
-    // 🔵 MULTIJUGADOR
-    // ------------------------------
-    PhotonView papasPV = papas.GetComponent<PhotonView>();
-    if (!papasPV)
-    {
-        Debug.LogError("[NPC] Papas sin PhotonView en MULTIPLAYER.");
-        return;
-    }
-
-    // Cliente → pedir al host procesar
-    if (!PhotonNetwork.IsMasterClient)
-    {
-        photonView.RPC(nameof(RPC_SetPapasEnMano_Master), RpcTarget.MasterClient, papasPV.ViewID);
-        return;
-    }
-
-    // Host aplica directo
-    AssignPapasToNpcForAll(papasPV.ViewID);
-}
-
-[PunRPC]
-private void RPC_SetPapasEnMano_Master(int papasViewID)
-{
-    if (!PhotonNetwork.IsMasterClient) return;
-    AssignPapasToNpcForAll(papasViewID);
-}
-
-private void AssignPapasToNpcForAll(int papasViewID)
-{
-    photonView.RPC(nameof(RPC_AttachPapasToNPC), RpcTarget.AllBuffered, papasViewID);
-
-    friesCompleted = true;
-    TryFinishOrder();
-}
-
-[PunRPC]
-private void RPC_AttachPapasToNPC(int papasViewID)
-{
-    PhotonView papasPV = PhotonView.Find(papasViewID);
-    if (!papasPV) return;
-
-    Transform papasT = papasPV.transform;
-
-    papasT.SetParent(null);
-
-    if (friesHandTransform != null)
-    {
-        papasT.SetParent(friesHandTransform);
-        papasT.localPosition = Vector3.zero;
-        papasT.localRotation = Quaternion.identity;
-    }
-
-    Rigidbody rb = papasT.GetComponent<Rigidbody>();
-    if (rb)
-    {
-        rb.isKinematic = true;
-        rb.useGravity = false;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-    }
-
-    foreach (Collider c in papasT.GetComponentsInChildren<Collider>())
-    {
-        c.isTrigger = true;
-
-        // ✅ CLAVE: ignorar colisiones contra el NPC
-        Collider npcCol = GetComponent<Collider>();
-        if (npcCol)
-            Physics.IgnoreCollision(npcCol, c, true);
-    }
-}
-
 
     private void FixedUpdate()
     {
@@ -236,29 +349,43 @@ private void RPC_AttachPapasToNPC(int papasViewID)
         }
         else
         {
-            // Interpolaci�n en clientes
+            // Interpolación en clientes
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 netPos,
                 moveSpeed * Time.fixedDeltaTime * 1.25f
             );
 
-            npcModel.rotation = Quaternion.Slerp(
-                npcModel.rotation,
-                netRot,
-                rotationSpeed * Time.fixedDeltaTime * 1.25f
-            );
+            if (npcModel)
+            {
+                npcModel.rotation = Quaternion.Slerp(
+                    npcModel.rotation,
+                    netRot,
+                    rotationSpeed * Time.fixedDeltaTime * 1.25f
+                );
+            }
 
             anim.SetFloat("Speed", netSpeed);
         }
     }
 
-    // -------------------------------------------------------------------
-    // STATE MACHINE
-    // -------------------------------------------------------------------
+public bool WantsFries() => npcWantsFries;
+public int GetWaitIndex() => waitIndex;           // -1 si no tiene spot
+public bool IsWaitingNow() => IsWaitingForPlayer();
+
 
     private void TickLogic(float dt)
     {
+        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+{
+    // Countdown de vida del NPC
+    aliveLeft -= dt;
+    if (aliveLeft <= 0f && npcState != NpcState.Finished)
+    {
+        Despawn("timeout");
+        return; // este NPC ya se va a destruir
+    }
+}
         switch (npcState)
         {
             case NpcState.WalkingNormal:
@@ -306,63 +433,58 @@ private void RPC_AttachPapasToNPC(int papasViewID)
                 break;
         }
 
-        // Sincronizar flag "esperando al jugador"
-        syncWaiting = (npcState == NpcState.WaitingForPlayer && !(orderCompleted && friesCompleted));
-
+        // “Esperando” = aún no cumple (si quiere papas, ambas condiciones)
+        syncWaiting = (npcState == NpcState.WaitingForPlayer && !(orderCompleted && (npcWantsFries ? friesCompleted : true)));
     }
 
     private void TickWalking(float dt)
     {
-        if (activePath == null || activePath.Count == 0) return;
         if (npcState == NpcState.Finished) return;
 
-        Transform target = activePath[currentPoint];
-
-        Vector3 direction = target.position - transform.position;
-        Vector3 flatDir = new Vector3(direction.x, 0, direction.z).normalized;
-
-        Vector3 nextPos = Vector3.MoveTowards(
-            transform.position,
-            target.position,
-            moveSpeed * dt
-        );
-
-        if (rb != null)
-            rb.MovePosition(nextPos);
-        else
-            transform.position = nextPos;
-
-        if (flatDir.sqrMagnitude > 0.001f)
+        // Si estamos yendo al waitSpot, ignorar la ruta normal hasta llegar
+        if (headingToWaitSpot && waitSpot != null)
         {
-            Quaternion targetRot = Quaternion.LookRotation(flatDir);
-            npcModel.rotation = Quaternion.Slerp(
-                npcModel.rotation,
-                targetRot,
-                rotationSpeed * dt
-            );
-        }
-
-        float speed = (nextPos - transform.position).magnitude / dt;
-        anim.SetFloat("Speed", speed);
-        netSpeed = speed;
-
-        Vector3 flatA = new Vector3(transform.position.x, 0, transform.position.z);
-        Vector3 flatB = new Vector3(target.position.x, 0, target.position.z);
-
-        if (Vector3.Distance(flatA, flatB) < reachDistance)
-        {
-            // Solo el Master decide cambios de estado
-            bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
-            if (mp && !PhotonNetwork.IsMasterClient)
-                return;
-
-            if (!usingHappyPath && currentPoint == popupAtPointIndex)
+            MoveTowards(waitSpot.position, dt);
+            if (FlatDist(transform.position, waitSpot.position) < reachDistance)
             {
+                headingToWaitSpot = false;
                 npcState = NpcState.WaitingForPlayer;
                 anim.SetFloat("Speed", 0f);
                 netSpeed = 0f;
 
-                // Aqu� NO generamos la orden a�n, eso lo hace el jugador que interact�e primero.
+                // 🔄 si el spot NO es el 0, darle yaw +90°
+                ApplyAltWaitYawIfNeeded();
+                return;
+            }
+            return;
+        }
+
+
+        if (activePath == null || activePath.Count == 0) return;
+
+        Transform target = activePath[currentPoint];
+        MoveTowards(target.position, dt);
+
+        // Llegada al punto objetivo
+        if (FlatDist(transform.position, target.position) < reachDistance)
+        {
+            // Sólo Master decide estados
+            bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
+            if (mp && !PhotonNetwork.IsMasterClient) return;
+
+            if (!usingHappyPath && currentPoint == popupAtPointIndex)
+            {
+                // Redirigir hacia el waitSpot si lo tenemos y no estamos ya ahí
+                if (waitSpot != null && FlatDist(transform.position, waitSpot.position) >= reachDistance)
+                {
+                    headingToWaitSpot = true;
+                    return;
+                }
+
+                // Ya en el waitSpot → esperar a jugador
+                npcState = NpcState.WaitingForPlayer;
+                anim.SetFloat("Speed", 0f);
+                netSpeed = 0f;
             }
             else
             {
@@ -371,28 +493,59 @@ private void RPC_AttachPapasToNPC(int papasViewID)
         }
     }
 
-    private void AdvancePoint()
+    private void MoveTowards(Vector3 worldTarget, float dt)
     {
-        currentPoint++;
+        Vector3 nextPos = Vector3.MoveTowards(transform.position, worldTarget, moveSpeed * dt);
+        if (rb != null) rb.MovePosition(nextPos);
+        else transform.position = nextPos;
 
-        if (currentPoint >= activePath.Count)
+        Vector3 flatDir = new Vector3(worldTarget.x - transform.position.x, 0, worldTarget.z - transform.position.z).normalized;
+        if (flatDir.sqrMagnitude > 0.001f && npcModel)
         {
-            if (usingHappyPath)
-            {
-                npcState = NpcState.Finished;
-                anim.SetFloat("Speed", 0f);
-                netSpeed = 0f;
-                return;
-            }
+            Quaternion targetRot = Quaternion.LookRotation(flatDir);
+            npcModel.rotation = Quaternion.Slerp(npcModel.rotation, targetRot, rotationSpeed * dt);
+        }
 
-            currentPoint = 0;
+        float speed = (nextPos - transform.position).magnitude / dt;
+        anim.SetFloat("Speed", speed);
+        netSpeed = speed;
+
+        // actualizar buffers de red en master
+        if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+        {
+            netPos = transform.position;
+            netRot = npcModel ? npcModel.rotation : transform.rotation;
         }
     }
 
-    // -------------------------------------------------------------------
-    // POPUP & INTERACCI�N
-    // -------------------------------------------------------------------
+    private float FlatDist(Vector3 a, Vector3 b)
+        => Vector3.Distance(new Vector3(a.x, 0, a.z), new Vector3(b.x, 0, b.z));
 
+    private void AdvancePoint()
+{
+    currentPoint++;
+
+    if (currentPoint >= (activePath?.Count ?? 0))
+    {
+        if (usingHappyPath)
+        {
+            npcState = NpcState.Finished;
+            anim.SetFloat("Speed", 0f);
+            netSpeed = 0f;
+
+            // OPCIONAL: destruir tras un pequeño grace
+            if (PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+                Invoke(nameof(_DestroyAfterHappy), destroyGraceAfterHappy);
+
+            return;
+        }
+        currentPoint = 0;
+    }
+}
+
+    // =====================================================================
+    //   POPUP / PEDIDO
+    // =====================================================================
     public void OnPlayerInteracted()
     {
         GetComponent<NpcAudio>()?.PlayTalk();
@@ -402,7 +555,6 @@ private void RPC_AttachPapasToNPC(int papasViewID)
 
         bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
 
-        // --- AVENTURA / OFFLINE ---
         if (!mp)
         {
             if (npcAssignedOrder == null && OrderManager.Instance != null)
@@ -417,11 +569,10 @@ private void RPC_AttachPapasToNPC(int papasViewID)
             return;
         }
 
-        // --- MULTIJUGADOR ---
-        // Cualquier jugador que interact�e primero genera la orden (si no existe)
         if (npcAssignedOrder == null && OrderManager.Instance != null)
         {
             npcAssignedOrder = OrderManager.Instance.GenerateHamburgerOrder();
+            npcWantsFries = OrderManager.Instance.CurrentFriesOrder != null;
         }
 
         if (npcAssignedOrder == null)
@@ -430,214 +581,61 @@ private void RPC_AttachPapasToNPC(int papasViewID)
             return;
         }
 
-        // Este jugador (cliente o host) dispara el popup y la orden para TODOS
         photonView.RPC(
             nameof(RPC_StartPopupWithOrder),
             RpcTarget.AllBuffered,
-            npcAssignedOrder.ingredients
+            npcAssignedOrder.ingredients,
+            npcWantsFries
         );
     }
 
     [PunRPC]
-    private void RPC_StartPopupWithOrder(string[] ingredients)
+    private void RPC_StartPopupWithOrder(string[] ingredients, bool wantsFries)
     {
-        // Fijar la orden en todos los clientes
         npcAssignedOrder = new Order(ingredients);
+        npcWantsFries = wantsFries;
 
-        // Mostrar popup localmente
         popupChar?.ShowPopup();
 
         npcState = NpcState.ShowingPopup;
         stateTimer = popupChar != null ? popupChar.popupDuration : waitTimeAfterPopup;
     }
 
-    public void OnPopupClosed()
+    private void AttachTrayLocal(GameObject trayGO)
     {
-        if (npcState == NpcState.ShowingPopup)
+        if (!trayGO) return;
+
+        Transform hold = trayHoldTransform != null ? trayHoldTransform : npcModel;
+
+        trayGO.transform.SetParent(hold);
+        trayGO.transform.localPosition = Vector3.zero;
+        trayGO.transform.localRotation = Quaternion.identity;
+
+        var rb = trayGO.GetComponent<Rigidbody>();
+        if (rb)
         {
-            npcState = NpcState.WaitingAfterPopup;
-            stateTimer = waitTimeAfterPopup;
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
-    }
 
-    // -------------------------------------------------------------------
-    // ENTREGA DE HAMBURGUESA
-    // -------------------------------------------------------------------
+        foreach (Collider c in trayGO.GetComponentsInChildren<Collider>(true))
+            c.isTrigger = true;
 
-   public void SetHamburguesaEnMano(Hamburguesa hamb)
-{
-    if (hamb == null) return;
-
-    bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
-
-    // ------------------------------
-    // 🟢 SINGLE PLAYER (NO PHOTON)
-    // ------------------------------
-    if (!mp)
-    {
-        // mover la hamburguesa localmente al NPC
-        AttachHamburguesaLocal(hamb);
-
+        var final = trayGO.GetComponent<BandejaFinal>();
         orderCompleted = true;
-        TryFinishOrder();
-
-        return;
+        friesCompleted = !npcWantsFries || (final != null && final.contienePapas);
     }
 
-    // ------------------------------
-    // 🔵 MULTIJUGADOR
-    // ------------------------------
-    PhotonView hambPV = hamb.GetComponent<PhotonView>();
-    if (!hambPV)
-    {
-        Debug.LogError("[NPC] Hamburguesa sin PhotonView en MULTIPLAYER.");
-        return;
-    }
-
-    // Cliente → pedir al host procesar
-    if (!PhotonNetwork.IsMasterClient)
-    {
-        photonView.RPC(nameof(RPC_SetHamburguesaEnMano_Master), RpcTarget.MasterClient, hambPV.ViewID);
-        return;
-    }
-
-    // Host / Master → aplicar de una vez
-    AssignHamburgerToNpcForAll(hambPV.ViewID);
-}
-
-
-public void SetPapasEnMano(GameObject papas)
-{
-    if (papas == null) return;
-
-    AttachPapasLocal(papas);
-    friesCompleted = true;
-    TryFinishOrder();
-}
-
-private void TryFinishOrder()
-{
-    if (npcWantsFries)
-    {
-        if (!(orderCompleted && friesCompleted))
-            return;
-    }
-    else
-    {
-        if (!orderCompleted)
-            return;
-    }
-
-    npcState = NpcState.WaitingBeforeHappyPath;
-    stateTimer = 4f;
-    popupChar?.MostrarCaraFeliz("¡Pedido completo!");
-}
-
-
-
-
-    [PunRPC]
-private void RPC_SetHamburguesaEnMano_Master(int hamburgerViewID)
-{
-    if (!PhotonNetwork.IsMasterClient) return;
-    AssignHamburgerToNpcForAll(hamburgerViewID);
-}
-
-private void AssignHamburgerToNpcForAll(int hamburgerViewID)
-{
-    photonView.RPC(nameof(RPC_AttachHamburgerToNPC), RpcTarget.AllBuffered, hamburgerViewID);
-
-    orderCompleted = true;
-
-    // ✅ YA NO MUEVE AL NPC AQUÍ
-    // ✅ Espera a que TryFinishOrder decida
-
-    TryFinishOrder();
-
-    photonView.RPC(nameof(RPC_ShowHappyFace), RpcTarget.All, "¡Hamburguesa lista!");
-}
-
-
-
-[PunRPC]
-private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
-{
-    PhotonView hambPV = PhotonView.Find(hamburgerViewID);
-    if (!hambPV) return;
-
-    Transform hambT = hambPV.transform;
-
-    // 1) Quitarlo de la mano del jugador
-    hambT.SetParent(null);
-
-    // 2) Reparentarlo al NPC
-    if (handTransform != null)
-    {
-        hambT.SetParent(handTransform);
-        hambT.localPosition = Vector3.zero;
-        hambT.localRotation = Quaternion.identity;
-    }
-
-    // 3) F�sicas correctas
-    Rigidbody rb = hambT.GetComponent<Rigidbody>();
-    if (rb)
-    {
-        rb.isKinematic = true;
-        rb.useGravity = false;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-    }
-
-    // 4) Colliders correctos
-    foreach (Collider c in hambT.GetComponentsInChildren<Collider>())
-        c.isTrigger = true;
-}
-
-
-
-    private void AttachHamburguesaLocal(Hamburguesa hamb)
-    {
-        if (handTransform != null)
-        {
-            hamb.transform.SetParent(handTransform);
-            hamb.transform.localPosition = Vector3.zero;
-            hamb.transform.localRotation = Quaternion.identity;
-        }
-    }
-
-    private void AttachPapasLocal(GameObject papas)
-{
-    if (friesHandTransform != null)
-    {
-        papas.transform.SetParent(friesHandTransform);
-        papas.transform.localPosition = Vector3.zero;
-        papas.transform.localRotation = Quaternion.identity;
-    }
-}
-
-
-    [PunRPC]
-    public void RPC_ShowHappyFace(string msg)
-    {
-        popupChar?.MostrarCaraFeliz(msg);
-    }
-
-    [PunRPC]
-    public void RPC_ShowAngryFace(string msg)
-    {
-        popupChar?.MostrarCaraMolesta(msg);
-    }
-
-    // -------------------------------------------------------------------
-    // MASTER SWITCH
-    // -------------------------------------------------------------------
-
+    // =====================================================================
+    //   MASTER SWITCH & CLEANUP
+    // =====================================================================
     public override void OnMasterClientSwitched(Player newMaster)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
         rb.isKinematic = false;
-
         currentPoint = FindNextPointInDirection();
 
         if (npcState != NpcState.Finished)
@@ -647,13 +645,37 @@ private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
         }
     }
 
+    void ApplyAltWaitYawIfNeeded()
+{
+    if (appliedAltWaitYaw) return;
+    if (waitIndex <= 0) return;                  // solo spots alternos (índice > 0)
+    if (!npcModel) return;
+
+    // gira +90° en Y (world)
+    npcModel.Rotate(0f, ALT_WAIT_YAW, 0f, Space.World);
+    appliedAltWaitYaw = true;
+}
+
+void ResetAltWaitYawIfNeeded()
+{
+    if (!appliedAltWaitYaw) return;
+    if (!npcModel) return;
+
+    // deshacer el giro aplicado
+    npcModel.Rotate(0f, -ALT_WAIT_YAW, 0f, Space.World);
+    appliedAltWaitYaw = false;
+}
+
+
     private int FindNextPointInDirection()
     {
+        if (activePath == null || activePath.Count == 0) return 0;
+
         int bestIndex = 0;
         float bestAngle = 999f;
 
         Vector3 pos = transform.position;
-        Vector3 fwd = npcModel.forward;
+        Vector3 fwd = npcModel ? npcModel.forward : transform.forward;
 
         for (int i = 0; i < activePath.Count; i++)
         {
@@ -666,14 +688,24 @@ private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
                 bestIndex = i;
             }
         }
-
         return bestIndex;
     }
 
-    // -------------------------------------------------------------------
-    // PHOTON SYNC
-    // -------------------------------------------------------------------
+    public void OnPopupClosed()
+    {
+        if (npcState == NpcState.ShowingPopup)
+        {
+            npcState = NpcState.WaitingAfterPopup;
+            stateTimer = waitTimeAfterPopup;
+            ResetAltWaitYawIfNeeded();
+        }
+    }
 
+
+
+    // =====================================================================
+    //   PUN OBSERVE (sync movimiento)
+    // =====================================================================
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         bool mp = PhotonNetwork.IsConnected && !PhotonNetwork.OfflineMode;
@@ -682,7 +714,7 @@ private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
         if (stream.IsWriting)
         {
             stream.SendNext(transform.position);
-            stream.SendNext(npcModel.rotation);
+            stream.SendNext(npcModel ? npcModel.rotation : transform.rotation);
             stream.SendNext(netSpeed);
             stream.SendNext(syncWaiting);
         }
@@ -697,8 +729,54 @@ private void RPC_AttachHamburgerToNPC(int hamburgerViewID)
             {
                 firstSync = false;
                 transform.position = netPos;
-                npcModel.rotation = netRot;
+                if (npcModel) npcModel.rotation = netRot;
             }
         }
     }
+
+    private void _DestroyAfterHappy()
+{
+    if (!PhotonNetwork.IsMasterClient) return;
+    Despawn("happy");
 }
+private void Despawn(string reason)
+{
+    if (_despawned) return;
+    _despawned = true;
+
+    // Liberar wait spot si aún está reservado (solo Master)
+    if (PhotonNetwork.IsMasterClient && waitIndex >= 0)
+    {
+        WaitSpotRegistry.MasterRelease(waitIndex);
+        waitIndex = -1;
+        waitSpot = null;
+        headingToWaitSpot = false;
+    }
+
+    // Notificar al spawner (solo Master)
+    if (PhotonNetwork.IsMasterClient && NpcSpawner.Instance != null)
+        NpcSpawner.Instance.NotifyNpcDespawn();
+
+    // Destruir por red (solo Master)
+    if (PhotonNetwork.IsMasterClient)
+        PhotonNetwork.Destroy(photonView);
+}
+
+// ===== ajusta OnDestroy() para redundancia segura =====
+void OnDestroy()
+{
+    // Liberar el wait spot si el NPC muere/desaparece
+    if (PhotonNetwork.IsMasterClient && waitIndex >= 0)
+    {
+        WaitSpotRegistry.MasterRelease(waitIndex);
+        waitIndex = -1;
+        waitSpot = null;
+    }
+
+    // Notificar al spawner solo en Master (en clientes OnDestroy también corre)
+    if (PhotonNetwork.IsMasterClient && NpcSpawner.Instance != null)
+        NpcSpawner.Instance.NotifyNpcDespawn();
+}
+}
+
+
