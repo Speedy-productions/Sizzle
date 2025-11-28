@@ -7,7 +7,6 @@ public class Cambios_Menu : MonoBehaviour
     public GameObject panelSuministros;
     public GameObject panelMejoras;
 
-
     private GameObject panelActual;
 
     void Start()
@@ -17,11 +16,7 @@ public class Cambios_Menu : MonoBehaviour
         DesactivarCursor();
     }
 
-    void Update()
-    {
-        if (panelActual != null && Input.GetKeyDown(KeyCode.Q))
-            SalirTienda();
-    }
+    // Eliminado Escape aquí para evitar duplicar (lo maneja AbrirTiendaTrigger)
 
     public void AbrirTienda()
     {
@@ -47,16 +42,13 @@ public class Cambios_Menu : MonoBehaviour
         ActivarCursor();
     }
 
-    
-
     public void Volver()
     {
         if (panelActual == panelSuministros || panelActual == panelMejoras)
             AbrirTienda();
-        
     }
 
-    public void SalirTienda()
+    public void CerrarTienda()
     {
         CerrarTodos();
         panelActual = null;
@@ -68,7 +60,6 @@ public class Cambios_Menu : MonoBehaviour
         panelTienda.SetActive(false);
         panelSuministros.SetActive(false);
         panelMejoras.SetActive(false);
-        
     }
 
     private void ActivarCursor()

@@ -73,11 +73,16 @@ public class PlayerMovement : MonoBehaviourPun
 
     void Update()
     {
-        // ================================================================
-        //     SOLO EL JUGADOR LOCAL MUEVE EL PERSONAJE
-        // ================================================================
         if (!view.IsMine)
-            return;   // animación remota la controla PhotonAnimatorView
+            return;
+
+        // Bloqueo total si tienda o pausa
+        if (AbrirTiendaTrigger.TiendaAbierta || PauseMenu.GameIsPaused)
+        {
+            rb.linearVelocity = Vector3.zero;
+            anim.SetFloat("Speed", 0f);
+            return;
+        }
 
         grounded = Physics.SphereCast(
             transform.position,
@@ -93,9 +98,8 @@ public class PlayerMovement : MonoBehaviourPun
         rb.linearDamping = grounded ? groundDrag : 0;
 
         Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-        anim.SetFloat("Speed", flatVel.magnitude);  // PhotonAnimatorView lo envía a los remotos
+        anim.SetFloat("Speed", flatVel.magnitude);
 
-        // Rotación del modelo del jugador
         Quaternion targetRot = Quaternion.Euler(0, orientation.eulerAngles.y, 0);
         playerModel.rotation = Quaternion.Slerp(playerModel.rotation, targetRot, Time.deltaTime * 10f);
     }
@@ -104,13 +108,12 @@ public class PlayerMovement : MonoBehaviourPun
     {
         if (!view.IsMine) return;
 
-        if (PauseMenu.GameIsPaused)
+        if (AbrirTiendaTrigger.TiendaAbierta || PauseMenu.GameIsPaused)
         {
             rb.linearVelocity = Vector3.zero;
             return;
         }
 
-        if (grounded && Mathf.Approximately(horizontalInput, 0f) && Mathf.Approximately(verticalInput, 0f))
         if (grounded && Mathf.Abs(horizontalInput) < 0.1f && Mathf.Abs(verticalInput) < 0.1f)
         {
             Vector3 v = rb.linearVelocity;
@@ -170,5 +173,22 @@ public class PlayerMovement : MonoBehaviourPun
 
         float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
         return angle < maxSlopeAngle && angle != 0;
+    }
+
+    public void FreezeMovement(bool freeze)
+    {
+        if (!view.IsMine) return;
+
+        if (freeze)
+        {
+            rb.linearVelocity = Vector3.zero;
+            horizontalInput = verticalInput = 0f;
+            anim.SetFloat("Speed", 0f);
+            rb.isKinematic = true;
+        }
+        else
+        {
+            rb.isKinematic = false;
+        }
     }
 }
