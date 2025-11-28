@@ -8378,7 +8378,6 @@ Transform:
   - {fileID: 1772665578}
   - {fileID: 828098982}
   - {fileID: 199392821}
-  - {fileID: 573239183}
   - {fileID: 353582457}
   - {fileID: 1450025448}
   m_Father: {fileID: 0}
@@ -9155,7 +9154,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &796227983
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13038,7 +13037,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7061913345461329133, guid: 7a0aeba9d9ba0424eb2815e4f00de743, type: 3}
       propertyPath: sceneViewId
-      value: 33
+      value: 39
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15688,50 +15687,6 @@ RectTransform:
   m_AnchoredPosition: {x: 744.182, y: 465.87}
   m_SizeDelta: {x: 337.4441, y: 99.865}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1365067801
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1365067803}
-  - component: {fileID: 1365067802}
-  m_Layer: 0
-  m_Name: PruebaDinero
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1365067802
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1365067801}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f14d2b18929c7549a12b792827d8d60, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PruebaDinero
---- !u!4 &1365067803
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1365067801}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 430.86264, y: 182.19072, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1366564423
 GameObject:
   m_ObjectHideFlags: 0
@@ -21709,7 +21664,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7061913345461329133, guid: 7a0aeba9d9ba0424eb2815e4f00de743, type: 3}
       propertyPath: sceneViewId
-      value: 20
+      value: 43
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -22530,6 +22485,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IInteractive
   primaryCanvas: {fileID: 341509331}
   secondaryCanvas: {fileID: 1152544141}
+  canvasToOpen: {fileID: 0}
+  interactionKey: 101
+  secondaryKey: 113
 --- !u!1 &1772665577
 GameObject:
   m_ObjectHideFlags: 0
@@ -25923,7 +25881,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2770230498495304343, guid: 09d465791e5b20541a952e4b77e54169, type: 3}
       propertyPath: sceneViewId
-      value: 33
+      value: 42
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -26109,7 +26067,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8190219159069449246, guid: 1d6fbdf799ca25b4999e9d15bc79f275, type: 3}
       propertyPath: sceneViewId
-      value: 20
+      value: 44
       objectReference: {fileID: 0}
     - target: {fileID: 8190219159069449246, guid: 1d6fbdf799ca25b4999e9d15bc79f275, type: 3}
       propertyPath: ObservedComponents.Array.size
@@ -26153,11 +26111,6 @@ Transform:
 --- !u!1 &6396521079867671824 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4678458902987814682, guid: 1d6fbdf799ca25b4999e9d15bc79f275, type: 3}
-  m_PrefabInstance: {fileID: 6396521079867671822}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &6396521079867671825 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3000818664626812863, guid: 1d6fbdf799ca25b4999e9d15bc79f275, type: 3}
   m_PrefabInstance: {fileID: 6396521079867671822}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &6396521079867671826 stripped
@@ -26210,6 +26163,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ede7a4f5f143db4dbd493f35c545af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcFollowPath
+  aliveTime: 90
+  destroyGraceAfterHappy: 2
   normalPathPoints:
   - {fileID: 1602906489}
   - {fileID: 1539342491}
@@ -26227,12 +26182,11 @@ MonoBehaviour:
   rotationSpeed: 5
   reachDistance: 1
   waitTimeAfterPopup: 2
+  popupAtPointIndex: 4
   anim: {fileID: 6396521079867671829}
   npcModel: {fileID: 6396521079867671823}
   popupChar: {fileID: 6396521079867671826}
-  popupAtPointIndex: 4
-  handTransform: {fileID: 6396521079867671825}
-  friesHandTransform: {fileID: 0}
+  trayHoldTransform: {fileID: 0}
 --- !u!114 &6396521079867671831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26434,7 +26388,6 @@ SceneRoots:
   - {fileID: 2012360557}
   - {fileID: 745771170}
   - {fileID: 1477612157}
-  - {fileID: 1365067803}
   - {fileID: 2026520836}
   - {fileID: 1373257516}
   - {fileID: 59313248}
@@ -26461,9 +26414,9 @@ SceneRoots:
   - {fileID: 72979349}
   - {fileID: 513054567}
   - {fileID: 53350267}
-  - {fileID: 901639892}
   - {fileID: 1153417419}
   - {fileID: 1724900274}
   - {fileID: 1194890087}
   - {fileID: 1243836030}
   - {fileID: 669695371}
+  - {fileID: 6396521079867671822}

@@ -186,33 +186,7 @@ public bool  dropToRight     = true;   // true = lado derecho, false = izquierdo
     BandejaFinal tray = ObtenerBandejaFinalEnMano();
     if (tray != null)
     {
-        Order npcOrder = npcApuntado.GetAssignedOrder();
-
-        if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
-        {
-            TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
-
-            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-            npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
-            npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
-
-            if (dineroUI != null)
-                dineroUI.AgregarDinero(25);
-
-            Debug.Log("[INTERACT] ✅ Hamburguesa entregada correctamente.");
-        }
-        else
-        {
-            npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
-            npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
-
-            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-            if (dineroUI != null)
-                dineroUI.QuitarDinero(5);
-
-            Debug.Log("[INTERACT] ❌ Hamburguesa incorrecta.");
-        }
-
+        npcApuntado.TryAcceptTray(tray);
         return;
     }
 
