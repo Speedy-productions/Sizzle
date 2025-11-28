@@ -208,6 +208,9 @@ public class CookMeatInPan : MonoBehaviourPun
         isCooking = true;
         currentCookingTime = 0f;
 
+        // Mandar tiempos modificados por mejora a TODOS
+        photonView.RPC(nameof(RPC_SetGrillTimes), RpcTarget.Others, cookingTime, burningTime);
+
         float frac = cookingTime / (cookingTime + burningTime);
 
         // UI visible y reseteada para todos
@@ -456,7 +459,15 @@ public class CookMeatInPan : MonoBehaviourPun
         }
     }
 
-public bool IsCookingThis(MeatCookingState meat)
+    [PunRPC]
+    void RPC_SetGrillTimes(float cook, float burn)
+    {
+        cookingTime = cook;
+        burningTime = burn;
+    }
+
+
+    public bool IsCookingThis(MeatCookingState meat)
 {
     return currentMeat == meat;
 }
