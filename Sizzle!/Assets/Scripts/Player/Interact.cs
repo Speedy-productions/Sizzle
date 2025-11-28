@@ -42,6 +42,15 @@ public class Interact : MonoBehaviourPun
     CookMeatInPan ultimoPanApuntado;
     CookFriesInFryer ultimaFreidoraApuntada;
 
+
+    [Header("Drop tweak")]
+public float dropSideOffset = 0.25f;   // cuánto se desplaza a un lado al soltar
+public float dropSideForce  = 1.5f;    // fuerza lateral extra
+public float dropPitchTorque = 4f;     // torque en X (rotar hacia adelante/atrás)
+public float dropYawTorque   = 0f;     // opcional, en Y
+public float dropRollTorque  = 0f;     // opcional, en Z
+public bool  dropToRight     = true;   // true = lado derecho, false = izquierdo
+
     private PhotonView view;
 
     GameObject objetoActualHighlight;
@@ -68,6 +77,7 @@ public class Interact : MonoBehaviourPun
 
         // --- MESA DE ARMADO: detectar y colocar mientras sostienes --
         MesaArmado mesaApuntada = DetectarMesaApuntada();
+        BandejaArmado bandejaApuntada = DetectarBandejaApuntada();
         Ingredient ingredienteEnManoPedido = GetIngredienteEnManoPedido();
 
         // --- FREIDORA: detectar y usar mientras sostienes papas ---
@@ -123,6 +133,34 @@ public class Interact : MonoBehaviourPun
             return;
         }
 
+                // E: colocar HAMBURGUESA o PAPAS en la bandeja
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && bandejaApuntada)
+        {
+            Hamburguesa hamburguesa = ObtenerHamburguesaEnMano();
+            FriesCookingState papas = GetFriesEnMano();
+
+            if (hamburguesa != null)
+            {
+                bandejaApuntada.ColocarHamburguesa(hamburguesa);
+                return;
+            }
+
+            if (papas != null)
+            {
+                bandejaApuntada.ColocarPapas(papas);
+                return;
+            }
+        }
+
+        if ((Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Q)) && bandejaApuntada != null)
+{
+    // valida distancia dentro de BandejaArmado.TryFinalizeFromPlayer
+    bandejaApuntada.TryFinalizeFromPlayer(
+        camaraJugador.transform.position,
+        PhotonNetwork.LocalPlayer.ActorNumber
+    );
+    return;
+}
         // E: empezar a freír en la freidora apuntada (freir)
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && freidoraApuntada && friesEnMano)
         {
@@ -144,63 +182,27 @@ public class Interact : MonoBehaviourPun
         // E: interactuar con el NPC
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && npcApuntado)
 {
-    Hamburguesa hamburguesaEnMano = ObtenerHamburguesaEnMano();
-    FriesCookingState papasEnMano = GetFriesEnMano();
-
-    // =================== HAMBURGUESA ===================
-    if (hamburguesaEnMano != null && npcApuntado.GetAssignedOrder() != null)
+    // si traes una bandeja final en la mano → intentar entregarla
+    BandejaFinal tray = ObtenerBandejaFinalEnMano();
+    if (tray != null)
     {
-        Order npcOrder = npcApuntado.GetAssignedOrder();
-
-        if (CompararHamburguesaConOrden(hamburguesaEnMano, npcOrder))
-        {
-            TransferirHamburguesaAlNpc(npcApuntado, hamburguesaEnMano);
-
-            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-            npcApuntado.popupChar?.MostrarCaraFeliz("¡Bien hecho!");
-            npcApuntado.GetComponent<NpcAudio>()?.PlayHappy();
-
-            if (dineroUI != null)
-                dineroUI.AgregarDinero(10);
-
-            Debug.Log("[INTERACT] ✅ Hamburguesa entregada correctamente.");
-        }
-        else
-        {
-            npcApuntado.popupChar?.MostrarCaraMolesta("¿Qué es esta $#*!?");
-            npcApuntado.GetComponent<NpcAudio>()?.PlayAngry();
-
-            DineroUI dineroUI = FindFirstObjectByType<DineroUI>();
-            if (dineroUI != null)
-                dineroUI.QuitarDinero(5);
-
-            Debug.Log("[INTERACT] ❌ Hamburguesa incorrecta.");
-        }
-
+        npcApuntado.TryAcceptTray(tray);
         return;
     }
 
-    // =================== ✅ PAPAS ===================
-            if (papasEnMano != null)
-            {
-                Debug.Log("[INTERACT] ✅ Papas entregadas al NPC.");
-
-                npcApuntado.SetPapasEnManoJugador(papasEnMano);
-
-                // ✅ BLOQUEO TOTAL DEL SISTEMA DE SOLTAR
-                papasEnMano.enabled = false;
-
-                return;
-            }
-
-
-
-
-    // =================== SOLO HABLAR ===================
+    // si no traes bandeja → solo interactúa (popup / pedido)
     npcApuntado.OnPlayerInteracted();
 }
 
     }
+
+
+BandejaFinal ObtenerBandejaFinalEnMano()
+{
+    var slot = SlotMano();
+    if (slot == null || slot.childCount == 0) return null;
+    return slot.GetChild(0).GetComponent<BandejaFinal>();
+}
 
     Hamburguesa ObtenerHamburguesaEnMano()
     {
@@ -209,28 +211,42 @@ public class Interact : MonoBehaviourPun
         return slot.GetChild(0).GetComponent<Hamburguesa>();
     }
 
-    bool CompararHamburguesaConOrden(Hamburguesa hamburguesa, Order npcOrder)
+
+BandejaArmado DetectarBandejaApuntada()
+{
+    var bandejas = Object.FindObjectsByType<BandejaArmado>(FindObjectsSortMode.None);
+    if (bandejas.Length == 0) return null;
+
+    BandejaArmado mejor = null;
+    float mejorScore = float.MaxValue;
+    Vector2 centro = new(0.5f, 0.5f);
+
+    foreach (var bandeja in bandejas)
     {
-        List<string> ingredientesHamburguesa = hamburguesa.GetIngredientes();
-        List<string> ingredientesOrden = new List<string>(npcOrder.ingredients);
+        var r = bandeja.GetComponentInChildren<Renderer>();
+        Vector3 pos = r ? r.bounds.center : bandeja.transform.position;
 
-        ingredientesHamburguesa = ingredientesHamburguesa.Select(NormalizarNombre).ToList();
-        ingredientesOrden = ingredientesOrden.Select(NormalizarNombre).ToList();
+        var vp = camaraJugador.WorldToViewportPoint(pos);
+        if (vp.z <= 0f) continue;
 
-        ingredientesHamburguesa.Sort();
-        ingredientesOrden.Sort();
+        float dPantalla = Vector2.Distance(new(vp.x, vp.y), centro);
+        if (dPantalla > radioPantallaPan) continue;
 
-        Debug.Log("[DEBUG] Ingredientes Hamburguesa: " + string.Join(", ", ingredientesHamburguesa));
-        Debug.Log("[DEBUG] Ingredientes Orden: " + string.Join(", ", ingredientesOrden));
+        float dist = Vector3.Distance(camaraJugador.transform.position, pos);
+        if (dist > distanciaPan) continue;
 
-        return ingredientesHamburguesa.SequenceEqual(ingredientesOrden);
+        float score = dPantalla * 10f + dist;
+        if (score < mejorScore)
+        {
+            mejorScore = score;
+            mejor = bandeja;
+        }
     }
 
-    void TransferirHamburguesaAlNpc(NpcFollowPath npcApuntado, Hamburguesa hamburguesa)
-    {
-        Debug.Log("[INTERACT] La hamburguesa ha sido transferida al NPC.");
-        npcApuntado.SetHamburguesaEnMano(hamburguesa);
-    }
+    return mejor;
+}
+
+    
 
     [HideInInspector]
     public int ObjetosEnMano() => SlotMano() ? SlotMano().childCount : 0;
@@ -258,8 +274,10 @@ public class Interact : MonoBehaviourPun
     if (((1 << go.layer) & mask) == 0 
         && !go.CompareTag("Food") 
         && !go.CompareTag("Burger")
-        && !go.GetComponent<Hamburguesa>())
+        && !go.GetComponent<Hamburguesa>()
+        && !go.GetComponent<BandejaFinal>())   // <-- NUEVO: permitir bandeja final
         continue;
+
 
     if (slot && go.transform.IsChildOf(slot)) continue;
     if (go == jugador) continue;
@@ -267,7 +285,7 @@ public class Interact : MonoBehaviourPun
     var mesaPadre = go.GetComponentInParent<MesaArmado>();
     if (mesaPadre && mesaPadre.Contains(go) && !mesaPadre.IsTopIngredient(go))
         continue;
-
+    
     candidatos.Add(go);
 }
 
@@ -459,6 +477,7 @@ public class Interact : MonoBehaviourPun
 
     void AgarrarObjeto(GameObject objeto)
 {
+    
     LimpiarHighlight();
 
     PhotonView pv = objeto.GetComponent<PhotonView>();
@@ -555,66 +574,92 @@ public class Interact : MonoBehaviourPun
 
 
     void SoltarObjeto()
+{
+    var slot = SlotMano();
+    if (!slot || slot.childCount == 0) return;
+
+    var objeto = slot.GetChild(0).gameObject;
+    PhotonView pv = objeto.GetComponent<PhotonView>();
+
+    // --- posición de drop desplazada hacia un lado ---
+    Vector3 fwd = camaraJugador.transform.forward;
+    Vector3 sideDir = camaraJugador.transform.right;   // derecha del jugador
+    float sideOffset = 0.25f;                          // qué tanto a un lado
+    float sideForce  = 1.5f;                           // fuerza lateral extra
+    float pitchTorque = 4f;                            // torque en X (rotación hacia adelante/atrás)
+    float sideSign = 1f;                               // 1 = derecha, -1 = izquierda (puedes invertir si quieres)
+
+    Vector3 dropPos = camaraJugador.transform.position
+                    + fwd * distanciaSoltar
+                    + sideDir * (sideOffset * sideSign);
+
+    // Colocar y des-parentar del slot
+    objeto.transform.position = dropPos;
+    objeto.transform.SetParent(null);
+
+    // Colliders: regresar a colisión normal
+    foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
+        c.isTrigger = false;
+
+    // Limpiar flags especiales si aplica
+    if (objeto.TryGetComponent(out MeatCookingState meat))
     {
-        var slot = SlotMano();
-        if (!slot || slot.childCount == 0) return;
+        meat.LockOnTable(false);
+        meat.SetCollidersAsTrigger(false);
+    }
+    if (objeto.TryGetComponent(out FriesCookingState fries))
+    {
+        fries.isInFryer = false;
+        fries.SetCollidersAsTrigger(false);
+    }
 
-        var objeto = slot.GetChild(0).gameObject;
-        PhotonView pv = objeto.GetComponent<PhotonView>();
+    // Rehabilitar colisiones con el jugador
+    if (jugador)
+    {
+        var playerCol = jugador.GetComponent<Collider>();
+        if (playerCol)
+            foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
+                Physics.IgnoreCollision(playerCol, c, false);
+    }
 
-        // Posición de drop calculada localmente
-        Vector3 dropPos = camaraJugador.transform.position + camaraJugador.transform.forward * distanciaSoltar;
-        objeto.transform.position = dropPos;
-        objeto.transform.SetParent(null);
-
-        // Flags locales (no re-parent aquí, eso lo maneja el RPC también pero da igual)
-        foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
-            c.isTrigger = false;
-
-        if (objeto.TryGetComponent(out MeatCookingState meat))
+    // ================== MULTIPLAYER: aplicar fuerzas vía RPC ==================
+    if (pv != null && view != null)
+    {
+        view.RPC(nameof(RPC_AvisarSoltarObjeto), RpcTarget.AllBuffered,
+            pv.ViewID,
+            dropPos,
+            fwd,
+            sideSign      // <--- nuevo parámetro para que todos apliquen el mismo lateral
+        );
+    }
+    else
+    {
+        // ================== SINGLE PLAYER: aplicar fuerzas localmente ==================
+        var rb = objeto.GetComponent<Rigidbody>();
+        if (rb)
         {
-            meat.LockOnTable(false);
-            meat.SetCollidersAsTrigger(false);
-        }
-        if (objeto.TryGetComponent(out FriesCookingState fries))
-        {
-            fries.isInFryer = false;
-            fries.SetCollidersAsTrigger(false);
-        }
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.constraints = RigidbodyConstraints.None;
+            rb.maxAngularVelocity = 50f;
 
-        if (jugador)
-        {
-            var playerCol = jugador.GetComponent<Collider>();
-            if (playerCol)
-                foreach (var c in objeto.GetComponentsInChildren<Collider>(true))
-                    Physics.IgnoreCollision(playerCol, c, false);
-        }
+            // impulso hacia delante + lateral + un poco hacia arriba
+            Vector3 impulso = fwd * fuerzaLanzamiento
+                            + sideDir * (sideForce * sideSign)
+                            + Vector3.up * fuerzaVertical;
 
-        // Todas las físicas del drop se aplican en el RPC para que TODOS vean lo mismo
-        if (pv != null && view != null)
-        {
-            view.RPC(nameof(RPC_AvisarSoltarObjeto), RpcTarget.AllBuffered,
-                pv.ViewID,
-                dropPos,
-                camaraJugador.transform.forward);
-        }
-        else
-        {
-            // Single player
-            var rb = objeto.GetComponent<Rigidbody>();
-            if (rb)
-            {
-                rb.isKinematic = false;
-                rb.useGravity = true;
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
+            rb.AddForce(impulso, ForceMode.VelocityChange);
 
-                Vector3 impulso = camaraJugador.transform.forward * fuerzaLanzamiento + Vector3.up * fuerzaVertical;
-                rb.AddForce(impulso, ForceMode.VelocityChange);
-                rb.AddTorque(Random.insideUnitSphere * torqueLanzamiento, ForceMode.VelocityChange);
-            }
+            // torque con preferencia en X (pitch) + un toque aleatorio existente
+            Vector3 torqueX = camaraJugador.transform.right * pitchTorque;
+            rb.AddTorque(torqueX, ForceMode.VelocityChange);
+            rb.AddTorque(Random.insideUnitSphere * torqueLanzamiento, ForceMode.VelocityChange);
         }
     }
+}
+
 
     // ====================== DETECCIÓN EXTRA ==========================
 
@@ -794,28 +839,47 @@ public class Interact : MonoBehaviourPun
     }
 
     [PunRPC]
-    void RPC_AvisarSoltarObjeto(int objetoViewID, Vector3 position, Vector3 forward)
+void RPC_AvisarSoltarObjeto(int objetoViewID, Vector3 position, Vector3 forward, float sideSign)
+{
+    PhotonView objetoPV = PhotonView.Find(objetoViewID);
+    if (!objetoPV) return;
+
+    Transform t = objetoPV.transform;
+    t.SetParent(null);
+    t.position = position;
+
+    Rigidbody rb = objetoPV.GetComponent<Rigidbody>();
+    if (rb)
     {
-        PhotonView objetoPV = PhotonView.Find(objetoViewID);
-        if (!objetoPV) return;
+        rb.isKinematic = false;
+        rb.useGravity = true;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.constraints = RigidbodyConstraints.None;
+        rb.maxAngularVelocity = 50f;
 
-        Transform t = objetoPV.transform;
-        t.SetParent(null);
-        t.position = position;
+        // reconstruir sideDir con el forward recibido
+        Vector3 sideDir = Vector3.Cross(Vector3.up, forward).normalized * Mathf.Sign(sideSign);
 
-        Rigidbody rb = objetoPV.GetComponent<Rigidbody>();
-        if (rb)
-        {
-            rb.isKinematic = false;
-            rb.useGravity = true;
+        Vector3 impulso = forward * fuerzaLanzamiento
+                        + sideDir * dropSideForce
+                        + Vector3.up * fuerzaVertical;
 
-            rb.linearVelocity = forward * 3f + Vector3.up * 0.75f;
-            rb.angularVelocity = Random.insideUnitSphere * 1f;
-        }
+        rb.AddForce(impulso, ForceMode.VelocityChange);
 
-        foreach (Collider c in objetoPV.GetComponentsInChildren<Collider>())
-            c.isTrigger = false;
+        Vector3 torque = Vector3.right * dropPitchTorque
+                       + Vector3.up    * dropYawTorque
+                       + Vector3.forward * dropRollTorque;
+
+        // aplicar en espacio del jugador aprox. usando rotación hacia 'forward'
+        Quaternion align = Quaternion.LookRotation(forward, Vector3.up);
+        rb.AddTorque(align * torque, ForceMode.VelocityChange);
     }
+
+    foreach (Collider c in objetoPV.GetComponentsInChildren<Collider>())
+        c.isTrigger = false;
+}
+
 
     void OnDisable() => LimpiarHighlight();
 }

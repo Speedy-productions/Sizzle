@@ -94,6 +94,15 @@ MonoBehaviour:
   - RPC_SetPapasEnMano_Master
   - RPC_SetCurrentOrderFull
   - RPC_CreateAndClearBurger
+  - RPC_AttachTrayToNPC
+  - RPC_TrayResult
+  - RPC_TryAcceptTray_Master
+  - RPC_ApplyDatos
+  - RPC_AttachToSpot
+  - RPC_Finalize_Master
+  - RPC_OwnerDestroy
+  - RPC_SetBurgerData
+  - RPC_SetHasFries
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

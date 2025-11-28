@@ -14,6 +14,7 @@ TagManager:
   - Bowl
   - fries
   - Burger
+  - Tray
   layers:
   - Default
   - TransparentFX

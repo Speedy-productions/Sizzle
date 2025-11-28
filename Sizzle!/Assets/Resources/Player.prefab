@@ -1159,7 +1159,7 @@ MonoBehaviour:
   manoJugador: {fileID: 6765659788783206150}
   jugador: {fileID: 4878147193079939802}
   camaraJugador: {fileID: 4387962106327238872}
-  distanciaInteraccion: 15
+  distanciaInteraccion: 20
   distanciaSoltar: 5
   pickableLayers:
     serializedVersion: 2
@@ -1168,13 +1168,19 @@ MonoBehaviour:
   distanciaPan: 14
   radioPantallaPan: 0.15
   puntoDeAgarre: {fileID: 6765659788783206150}
-  fuerzaLanzamiento: 14
-  fuerzaVertical: 10
-  torqueLanzamiento: 10
+  fuerzaLanzamiento: 6
+  fuerzaVertical: 5
+  torqueLanzamiento: 4
   highlightOverlayMat: {fileID: 2100000, guid: 1f09d59251233c34b8a946efb8bb5406, type: 2}
   highlightColor: {r: 0.4071842, g: 1, b: 0.19999999, a: 1}
   highlightIntensity: 1.5
   instanciarOverlay: 1
+  dropSideOffset: 0.1
+  dropSideForce: 0.5
+  dropPitchTorque: -3
+  dropYawTorque: 0
+  dropRollTorque: 0
+  dropToRight: 1
 --- !u!114 &8398368731538166000
 MonoBehaviour:
   m_ObjectHideFlags: 0
